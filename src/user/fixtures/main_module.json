@@ -1,0 +1,28 @@
+[
+  {
+    "model": "user.MainModule",
+    "pk": 1,
+    "fields": {
+      "name": "Core Setup",
+      "codename": "CORE-SETUP",
+      "is_active": true,
+      "is_archived": false,
+      "created_at": "2024-05-19T05:07:22.123456Z",
+      "updated_at": "2024-05-19T05:07:22.123456Z",
+      "created_by": 1
+    }
+  },
+  {
+    "model": "user.MainModule",
+    "pk": 2,
+    "fields": {
+      "name": "Website Setup",
+      "codename": "WEBSITE-SETUP",
+      "is_active": true,
+      "is_archived": false,
+      "created_at": "2024-05-19T05:07:22.123456Z",
+      "updated_at": "2024-05-19T05:07:22.123456Z",
+      "created_by": 1
+    }
+  }
+]
