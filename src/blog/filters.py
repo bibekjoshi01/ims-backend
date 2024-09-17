@@ -1,5 +1,5 @@
 from django_filters.filterset import FilterSet
-from .models import PostTag, PostCategory
+from .models import PostTag, PostCategory, Post
 
 
 class FilterForPostCategoryViewSet(FilterSet):
@@ -16,3 +16,11 @@ class FilterForPostTagViewSet(FilterSet):
     class Meta:
         model = PostTag
         fields = ["name", "is_active"]
+
+
+class FilterForPostViewSet(FilterSet):
+    """Filters for Blog Post"""
+
+    class Meta:
+        model = Post
+        fields = ["title", "is_active"]

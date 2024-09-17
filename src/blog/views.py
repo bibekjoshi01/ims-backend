@@ -18,8 +18,12 @@ from .serializers import (
     PostTagDetailSerializer,
     PostTagListSerializer,
     PostTagUpdateSerializer,
+    PostCreateSerializer,
+    PostDetailSerializer,
+    PostListSerializer,
+    PostUpdateSerializer
 )
-from .filters import FilterForPostCategoryViewSet, FilterForPostTagViewSet
+from .filters import FilterForPostCategoryViewSet, FilterForPostTagViewSet, FilterForPostViewSet
 
 
 class PostCategoryViewSet(ModelViewSet):
@@ -78,5 +82,34 @@ class PostTagViewSet(ModelViewSet):
             serializer_class = PostTagCreateSerializer
         if self.request.method == "PATCH":
             serializer_class = PostTagUpdateSerializer
+
+        return serializer_class
+
+
+class PostViewSet(ModelViewSet):
+    "Blog Post ViewSet"
+    
+    permission_classes = [BlogPostPermission]
+    filter_backends = [DjangoFilterBackend, SearchFilter, OrderingFilter]
+    filterset_class = FilterForPostViewSet
+    search_fields = ["title", "slug"]
+    ordering = ["-id"]
+    ordering_fields = ["id", "created_at", "published_at"]
+    http_method_names = ["options", "head", "get", "post", "patch"]
+
+    def get_queryset(self):
+        return Post.objects.filter(is_archived=False)
+
+    def get_serializer_class(self):
+        serializer_class = PostListSerializer
+        if self.request.method == "GET":
+            if self.action == "list":
+                serializer_class = PostListSerializer
+            else:
+                serializer_class = PostDetailSerializer
+        if self.request.method == "POST":
+            serializer_class = PostCreateSerializer
+        if self.request.method == "PATCH":
+            serializer_class = PostUpdateSerializer
 
         return serializer_class

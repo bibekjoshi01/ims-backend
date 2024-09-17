@@ -27,7 +27,7 @@ POST_FORMAT = (
 
 # Blog Comment Status
 COMMENT_STATUS = (
-    ("MODERATION", "Moderation"),
-    ("APPROVED", "Approved"),
-    ("REJECTED", "Rejected"),
+    ("MODERATION", _("Moderation")),
+    ("APPROVED", _("Approved")),
+    ("REJECTED", _("Rejected")),
 )

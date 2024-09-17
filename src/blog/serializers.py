@@ -1,5 +1,7 @@
-from django.contrib.auth import get_user_model
+from typing import Any
+from django.utils import timezone
 from rest_framework import serializers
+from django.contrib.auth import get_user_model
 
 from src.base.serializers import AbstractInfoRetrieveSerializer
 from src.blog.validators import validate_blog_media
@@ -59,9 +61,6 @@ class PostCategoryCreateSerializer(serializers.ModelSerializer):
         return name
 
     def create(self, validated_data):
-        """
-        Create a new PostCategory instance.
-        """
         created_by = get_user_by_context(self.context)
 
         return PostCategory.objects.create(
@@ -143,9 +142,6 @@ class PostTagCreateSerializer(serializers.ModelSerializer):
         return name
 
     def create(self, validated_data):
-        """
-        Create a new PostTag instance.
-        """
         created_by = get_user_by_context(self.context)
 
         return PostTag.objects.create(
@@ -219,3 +215,132 @@ class PostListSerializer(serializers.ModelSerializer):
             data["updated_at"] = instance.updated_at
 
         return data
+
+
+class CategorySerializerForPostDetailSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = PostCategory
+        fields = ["id", "name"]
+
+
+class TagSerializerForPostDetailSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = PostTag
+        fields = ["id", "name"]
+
+
+class PostDetailSerializer(serializers.ModelSerializer):
+    author_full_name = serializers.ReadOnlyField(source="get_author_full_name")
+    categories = CategorySerializerForPostDetailSerializer(many=True)
+    tags = TagSerializerForPostDetailSerializer(many=True)
+    
+    class Meta:
+        model = Post
+        fields = [
+            "id",
+            "title",
+            "slug",
+            "status",
+            "views",
+            "up_votes",
+            "down_votes",
+            "categories",
+            "tags",
+            "published_at",
+            "author_full_name",
+        ]
+
+    def to_representation(self, instance):
+        data = super().to_representation(instance)
+
+        if instance.status == "PUBLISHED":
+            data["published_at"] = instance.published_at
+        else:
+            data["updated_at"] = instance.updated_at
+
+        return data
+
+
+class PostCreateSerializer(serializers.ModelSerializer):
+    author = serializers.PrimaryKeyRelatedField(
+        queryset=User.objects.filter(is_archived=False, is_active=True)
+    )
+    categories = serializers.PrimaryKeyRelatedField(
+        queryset=PostCategory.objects.filter(is_archived=False, is_active=True),
+        many=True,
+    )
+    tags = serializers.PrimaryKeyRelatedField(
+        queryset=PostTag.objects.filter(is_archived=False, is_active=True), many=True
+    )
+
+    class Meta:
+        model = Post
+        fields = [
+            "title",
+            "slug",
+            "status",
+            "format",
+            "visibility",
+            "content",
+            "excerpt",
+            "author",
+            "read_time",
+            "categories",
+            "tags",
+            "stick_at_top",
+            "allow_comments",
+        ]
+
+    def validate(self, attrs) -> Any:
+        return super().validate(attrs)
+
+    def validate_slug(self, slug):
+        if Post.objects.filter(slug=slug).exists():
+            raise serializers.ValidationError("Post with slug already exists.")
+        return slug
+
+    def create(self, validated_data) -> Any:
+        created_by = get_user_by_context(self.context)
+    
+        categories = validated_data.pop("categories", [])
+        tags = validated_data.pop("tags", [])
+
+        if validated_data["status"] == "PUBLISEHD":
+            validated_data["published_at"] = timezone.now()
+
+        post = Post.objects.create(
+            title=validated_data.pop("title").title(),
+            slug=validated_data.pop("slug"),
+            created_by=created_by,
+            **validated_data,
+        )
+
+        for category in categories:
+            post.categories.add(category)
+
+        for tag in tags:
+            post.tags.add(tag)
+
+        return post
+
+
+class PostUpdateSerializer(serializers.ModelSerializer):
+
+    class Meta:
+        model = Post
+        fields = ["title", "content", "is_active"]
+
+    def update(self, instance, validated_data):
+        for key, value in validated_data.items():
+            setattr(instance, key, value)
+
+        instance.save()
+
+        return instance
+
+    def to_representation(self, instance):
+        return {
+            "type": "Updated",
+            "message": "Post Updated Successfully.",
+            "id": instance.id,
+        }
