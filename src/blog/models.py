@@ -309,7 +309,7 @@ class PostComment(MPTTModel, AbstractInfoModel):
         null=True,
         on_delete=models.PROTECT,
         related_name="user_seen_comments",
-        help_text=_("The user who mark the comment seen."),
+        help_text=_("The admin user who mark the comment seen."),
     )
 
     class Meta:
