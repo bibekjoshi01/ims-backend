@@ -27,14 +27,17 @@ from .filters import FilterForPostCategoryViewSet, FilterForPostTagViewSet, Filt
 
 
 class PostCategoryViewSet(ModelViewSet):
-    """Blog Post Category ViewSet"""
+    """
+    Retrieve, create, update, or list blog categories.
+    This API supports filtering, searching, and ordering of categories.
+    """
 
     permission_classes = [PostCategoryPermission]
     filter_backends = [DjangoFilterBackend, SearchFilter, OrderingFilter]
     filterset_class = FilterForPostCategoryViewSet
     search_fields = ["name", "slug", "description"]
-    ordering = ["-id"]
-    ordering_fields = ["id", "created_at"]
+    ordering = ["-created_at"]
+    ordering_fields = ["name", "created_at"]
     http_method_names = ["options", "head", "get", "post", "patch"]
 
     def get_queryset(self):
@@ -58,14 +61,17 @@ class PostCategoryViewSet(ModelViewSet):
 
 
 class PostTagViewSet(ModelViewSet):
-    """Blog Post Tag ViewSet"""
+    """
+    Retrieve, create, update, or list blog tags.
+    This API supports filtering, searching, and ordering of tags.
+    """
 
     permission_classes = [PostTagPermission]
     filter_backends = [DjangoFilterBackend, SearchFilter, OrderingFilter]
     filterset_class = FilterForPostTagViewSet
     search_fields = ["name", "slug", "description"]
-    ordering = ["-id"]
-    ordering_fields = ["id", "created_at"]
+    ordering = ["-created_at"]
+    ordering_fields = ["created_at"]
     http_method_names = ["options", "head", "get", "post", "patch"]
 
     def get_queryset(self):
@@ -87,14 +93,17 @@ class PostTagViewSet(ModelViewSet):
 
 
 class PostViewSet(ModelViewSet):
-    "Blog Post ViewSet"
-    
+    """
+    Retrieve, create, update, or list blog posts.
+    This API supports filtering, searching, and ordering of posts.
+    """
+
     permission_classes = [BlogPostPermission]
     filter_backends = [DjangoFilterBackend, SearchFilter, OrderingFilter]
     filterset_class = FilterForPostViewSet
     search_fields = ["title", "slug"]
-    ordering = ["-id"]
-    ordering_fields = ["id", "created_at", "published_at"]
+    ordering = ["-created_at"]
+    ordering_fields = ["created_at", "published_at"]
     http_method_names = ["options", "head", "get", "post", "patch"]
 
     def get_queryset(self):

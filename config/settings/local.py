@@ -9,7 +9,7 @@ SECRET_KEY = env(
     "DJANGO_SECRET_KEY",
     default="sydPDD94R0UBhmbBTsXrQ4QDskUY3cPo6cmaa9YorUYNsbzgJqDgnEONnuGpxQ4x",
 )
-ALLOWED_HOSTS = env.list("DJANGO_ALLOWED_HOSTS")
+ALLOWED_HOSTS = ['*']
 
 # WhiteNoise
 # ------------------------------------------------------------------------------

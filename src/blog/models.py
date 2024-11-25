@@ -9,7 +9,7 @@ from mptt.models import TreeForeignKey, MPTTModel
 
 from .validators import validate_blog_media
 from src.base.models import AbstractInfoModel
-from .constants import COMMENT_STATUS, POST_STATUS, POST_FORMAT, POST_VISIBILITY
+from .constants import CommentStatus, PostStatus, PostFormat, PostVisibility
 
 User = get_user_model()
 
@@ -18,7 +18,7 @@ class Post(AbstractInfoModel):
     """
     Represents a post for a blog.
     """
-
+    id: int
     uuid = models.UUIDField(default=uuid4, editable=False, unique=True)
     title = models.CharField(
         _("Title"),
@@ -33,20 +33,20 @@ class Post(AbstractInfoModel):
         ),
     )
     status = models.CharField(
-        choices=POST_STATUS,
+        choices=PostStatus.choices(),
         max_length=20,
         default="PUBLISHED",
         help_text=_("Publication status of the post."),
     )
     format = models.CharField(
-        choices=POST_FORMAT,
+        choices=PostFormat.choices(),
         max_length=15,
         help_text=_(
             "Post format which designates how the theme will display the post."
         ),
     )
     visibility = models.CharField(
-        choices=POST_VISIBILITY,
+        choices=PostVisibility.choices(),
         max_length=20,
         help_text=_(
             "Determines who can see this post. "
@@ -122,15 +122,21 @@ class Post(AbstractInfoModel):
         self.views += 1
         self.save(update_fields=["views"])
 
+    def get_unread_comments(self) -> int:
+        return self.comments.filter(is_seen=False, is_archived=False).count()
+
+    def get_total_comments(self) -> int:
+        return self.comments.filter(is_archived=False).count()
+
     def get_next_post(self):
         return (
-            Post.objects.filter(id__gt=self.id, status="PUBLISHED")
+            Post.objects.filter(id__gt=self.id, status=PostStatus.PUBLISHED.value)
             .order_by("id")
             .first()
         )
 
     def get_prev_post(self):
-        return Post.objects.filter(id__lt=self.id, status="PUBLISHED").first()
+        return Post.objects.filter(id__lt=self.id, status=PostStatus.PUBLISHED.value).first()
 
 
 class PostCategory(MPTTModel, AbstractInfoModel):
@@ -138,7 +144,7 @@ class PostCategory(MPTTModel, AbstractInfoModel):
     Represents a category for organizing blog posts.
     Categories can be nested to form a hierarchy.
     """
-
+    id: int
     uuid = models.UUIDField(default=uuid4, editable=False, unique=True)
     name = models.CharField(
         _("name"),
@@ -179,7 +185,7 @@ class PostCategory(MPTTModel, AbstractInfoModel):
             models.Index(fields=["slug"]),
         ]
 
-    def get_post_count(self):
+    def get_post_count(self) -> int:
         """
         Returns the count of posts associated with this category.
         Cached for 10 hours.
@@ -195,7 +201,7 @@ class PostTag(AbstractInfoModel):
     Represents a tag for labeling blog posts.
     Tags are non-hierarchical keywords.
     """
-
+    id: int
     uuid = models.UUIDField(default=uuid4, editable=False, unique=True)
     name = models.CharField(
         _("Tag Name"),
@@ -290,7 +296,7 @@ class PostComment(MPTTModel, AbstractInfoModel):
     status = models.CharField(
         _("Status"),
         max_length=30,
-        choices=COMMENT_STATUS,
+        choices=CommentStatus.choices(),
         blank=True,
         default="APPROVED",
         help_text=_("The status of the comment (e.g., approved, moderation)."),

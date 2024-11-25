@@ -1,38 +1,43 @@
-from typing import Any
+from typing import List, Dict, Union, Any
+from drf_spectacular.utils import extend_schema_field
+
 from django.utils import timezone
 from rest_framework import serializers
 from django.contrib.auth import get_user_model
 
 from src.base.serializers import AbstractInfoRetrieveSerializer
-from src.blog.validators import validate_blog_media
+from src.blog.constants import PostStatus
+from src.blog.messages import CATEGORY_NAME_EXISTS, CATEGORY_CREATED_SUCCESS, CATEGORY_UPDATED_SUCCESS, \
+    POST_SLUG_EXISTS, POST_UPDATED_SUCCESS, POST_CREATED_SUCCESS, TAG_CREATED_SUCCESS, TAG_NAME_EXISTS, \
+    TAG_UPDATED_SUCCESS
+from src.blog.schemas import sub_category_schema
 from src.libs.get_context import get_user_by_context
 from src.blog.models import PostCategory, PostTag, Post
 
 User = get_user_model()
 
+
 # Blog Post Category Serializers
 
 
 class PostCategoryListSerializer(serializers.ModelSerializer):
-    post_count = serializers.SerializerMethodField()
+    post_count = serializers.IntegerField(source="get_post_count")
     sub_categories = serializers.SerializerMethodField()
 
     class Meta:
         model = PostCategory
         fields = ["id", "name", "description", "slug", "post_count", "sub_categories"]
 
-    def get_post_count(self, obj) -> int:
-        return obj.get_post_count()
-
-    def get_sub_categories(self, obj):
+    @extend_schema_field(sub_category_schema)
+    def get_sub_categories(self, obj: PostCategory) -> List[Dict]:
         if obj.is_leaf_node():
-            return None
+            return []
         serializer = self.__class__(obj.get_children(), many=True)
         return serializer.data
 
 
 class PostCategoryDetailSerializer(AbstractInfoRetrieveSerializer):
-    post_count = serializers.SerializerMethodField()
+    post_count = serializers.IntegerField(source="get_post_count")
 
     class Meta(AbstractInfoRetrieveSerializer.Meta):
         model = PostCategory
@@ -40,24 +45,16 @@ class PostCategoryDetailSerializer(AbstractInfoRetrieveSerializer):
 
         fields += AbstractInfoRetrieveSerializer.Meta.fields
 
-    def get_post_count(self, obj) -> int:
-        return obj.get_post_count()
-
 
 class PostCategoryCreateSerializer(serializers.ModelSerializer):
-
     class Meta:
         model = PostCategory
         fields = ["name", "slug", "description", "parent"]
 
-    def validate_name(self, name):
-        """
-        Validate that the name is unique.
-        """
+    def validate_name(self, name: str) -> str:
+        """Validate the uniqueness of the category name."""
         if PostCategory.objects.filter(name=name).exists():
-            raise serializers.ValidationError(
-                f"A category with the name '{name}' already exists."
-            )
+            raise serializers.ValidationError(CATEGORY_NAME_EXISTS.format(name=name))
         return name
 
     def create(self, validated_data):
@@ -68,21 +65,20 @@ class PostCategoryCreateSerializer(serializers.ModelSerializer):
             **validated_data,
         )
 
-    def to_representation(self, instance):
-        return {
-            "type": "Created",
-            "message": "Category Created Successfully.",
-            "id": instance.id,
-        }
+    def to_representation(self, instance: PostCategory) -> Dict[str, Union[str, int]]:
+        data = super(PostCategoryCreateSerializer, self).to_representation(instance)
+        data["type"] = "success"
+        data["message"] = CATEGORY_CREATED_SUCCESS
+        data["id"] = instance.id
+        return data
 
 
 class PostCategoryUpdateSerializer(serializers.ModelSerializer):
-
     class Meta:
         model = PostCategory
-        fields = ["name", "description", "is_active"]
+        fields = ["name", "slug", "description", "parent", "is_active"]
 
-    def update(self, instance, validated_data):
+    def update(self, instance: PostCategory, validated_data: Dict) -> PostCategory:
         for key, value in validated_data.items():
             setattr(instance, key, value)
 
@@ -90,10 +86,10 @@ class PostCategoryUpdateSerializer(serializers.ModelSerializer):
 
         return instance
 
-    def to_representation(self, instance):
+    def to_representation(self, instance: PostCategory) -> Dict:
         return {
-            "type": "Updated",
-            "message": "Category Updated Successfully.",
+            "type": "success",
+            "message": CATEGORY_UPDATED_SUCCESS,
             "id": instance.id,
         }
 
@@ -108,7 +104,7 @@ class PostTagListSerializer(serializers.ModelSerializer):
         model = PostTag
         fields = ["id", "name", "description", "slug", "post_count"]
 
-    def get_post_count(self, obj) -> int:
+    def get_post_count(self, obj: PostTag) -> int:
         return obj.get_post_count()
 
 
@@ -121,12 +117,11 @@ class PostTagDetailSerializer(AbstractInfoRetrieveSerializer):
 
         fields += AbstractInfoRetrieveSerializer.Meta.fields
 
-    def get_post_count(self, obj) -> int:
+    def get_post_count(self, obj: PostTag) -> int:
         return obj.get_post_count()
 
 
 class PostTagCreateSerializer(serializers.ModelSerializer):
-
     class Meta:
         model = PostTag
         fields = ["name", "slug", "description"]
@@ -136,9 +131,7 @@ class PostTagCreateSerializer(serializers.ModelSerializer):
         Validate that the name is unique.
         """
         if PostTag.objects.filter(name=name).exists():
-            raise serializers.ValidationError(
-                f"A Tag with the name '{name}' already exists."
-            )
+            raise serializers.ValidationError(TAG_NAME_EXISTS.format(name=name))
         return name
 
     def create(self, validated_data):
@@ -149,21 +142,20 @@ class PostTagCreateSerializer(serializers.ModelSerializer):
             **validated_data,
         )
 
-    def to_representation(self, instance):
+    def to_representation(self, instance: PostTag) -> Dict[str, Union[str, int]]:
         return {
-            "type": "Created",
-            "message": "Tag Created Successfully.",
+            "type": "success",
+            "message": TAG_CREATED_SUCCESS,
             "id": instance.id,
         }
 
 
 class PostTagUpdateSerializer(serializers.ModelSerializer):
-
     class Meta:
         model = PostTag
         fields = ["name", "description", "is_active"]
 
-    def update(self, instance, validated_data):
+    def update(self, instance: PostTag, validated_data: Dict[str, Union[str, int]]):
         for key, value in validated_data.items():
             setattr(instance, key, value)
 
@@ -171,10 +163,10 @@ class PostTagUpdateSerializer(serializers.ModelSerializer):
 
         return instance
 
-    def to_representation(self, instance):
+    def to_representation(self, instance: PostTag) -> dict[str, Union[str, int]]:
         return {
-            "type": "Updated",
-            "message": "Tag Updated Successfully.",
+            "type": "success",
+            "message": TAG_UPDATED_SUCCESS,
             "id": instance.id,
         }
 
@@ -200,16 +192,10 @@ class PostListSerializer(serializers.ModelSerializer):
             "total_comments",
         ]
 
-    def get_unread_comments(self, obj) -> int:
-        return obj.comments.filter(is_seen=False, is_archived=False).count()
-
-    def get_total_comments(self, obj) -> int:
-        return obj.comments.filter(is_archived=False).count()
-
-    def to_representation(self, instance):
+    def to_representation(self, instance: Post) -> Dict[str, Union[int, str]]:
         data = super().to_representation(instance)
 
-        if instance.status == "PUBLISHED":
+        if instance.status == PostStatus.PUBLISHED.value:
             data["published_at"] = instance.published_at
         else:
             data["updated_at"] = instance.updated_at
@@ -233,7 +219,7 @@ class PostDetailSerializer(serializers.ModelSerializer):
     author_full_name = serializers.ReadOnlyField(source="get_author_full_name")
     categories = CategorySerializerForPostDetailSerializer(many=True)
     tags = TagSerializerForPostDetailSerializer(many=True)
-    
+
     class Meta:
         model = Post
         fields = [
@@ -250,7 +236,7 @@ class PostDetailSerializer(serializers.ModelSerializer):
             "author_full_name",
         ]
 
-    def to_representation(self, instance):
+    def to_representation(self, instance: Post) -> dict[str, Union[str, int]]:
         data = super().to_representation(instance)
 
         if instance.status == "PUBLISHED":
@@ -291,23 +277,23 @@ class PostCreateSerializer(serializers.ModelSerializer):
             "allow_comments",
         ]
 
-    def validate(self, attrs) -> Any:
-        return super().validate(attrs)
-
-    def validate_slug(self, slug):
+    def validate_slug(self, slug: str) -> str:
         if Post.objects.filter(slug=slug).exists():
-            raise serializers.ValidationError("Post with slug already exists.")
+            raise serializers.ValidationError(POST_SLUG_EXISTS.format(slug=slug))
         return slug
 
-    def create(self, validated_data) -> Any:
+    def create(self, validated_data: Dict[str, Any]) -> Post:
         created_by = get_user_by_context(self.context)
-    
+
+        # Extracting nested data
         categories = validated_data.pop("categories", [])
         tags = validated_data.pop("tags", [])
 
-        if validated_data["status"] == "PUBLISEHD":
+        # Set the publication timestamp if the post status is PUBLISHED
+        if validated_data["status"] == PostStatus.PUBLISHED.value:
             validated_data["published_at"] = timezone.now()
 
+        # Create the post instance
         post = Post.objects.create(
             title=validated_data.pop("title").title(),
             slug=validated_data.pop("slug"),
@@ -315,17 +301,21 @@ class PostCreateSerializer(serializers.ModelSerializer):
             **validated_data,
         )
 
-        for category in categories:
-            post.categories.add(category)
-
-        for tag in tags:
-            post.tags.add(tag)
+        # Add categories and tags
+        post.categories.add(*categories)
+        post.tags.add(*tags)
 
         return post
 
+    def to_representation(self, instance: Post) -> Dict[str, Union[str, int]]:
+        return {
+            "type": "success",
+            "message": POST_CREATED_SUCCESS,
+            "id": instance.id,
+        }
+
 
 class PostUpdateSerializer(serializers.ModelSerializer):
-
     class Meta:
         model = Post
         fields = ["title", "content", "is_active"]
@@ -338,9 +328,9 @@ class PostUpdateSerializer(serializers.ModelSerializer):
 
         return instance
 
-    def to_representation(self, instance):
+    def to_representation(self, instance: Post) -> dict[str, Union[str, int]]:
         return {
-            "type": "Updated",
-            "message": "Post Updated Successfully.",
+            "type": "success",
+            "message": POST_UPDATED_SUCCESS,
             "id": instance.id,
         }

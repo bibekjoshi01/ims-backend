@@ -33,7 +33,8 @@ class AbstractInfoModel(models.Model):
     class Meta:
         abstract = True
 
-    def get_upload_path(self, upload_path, filename):
+    @staticmethod
+    def get_upload_path(upload_path: str, filename: str) -> str:
         return f"{upload_path}/{filename}"
 
 
@@ -58,7 +59,7 @@ class PublicAbstractInfoModel(models.Model):
         _("archived"),
         default=False,
         help_text=_(
-            "Designates whether this object should be treated as delected. "
+            "Designates whether this object should be treated as deleted. "
             "Unselect this instead of deleting instances.",
         ),
     )
@@ -66,5 +67,6 @@ class PublicAbstractInfoModel(models.Model):
     class Meta:
         abstract = True
 
-    def get_upload_path(self, upload_path, filename):
+    @staticmethod
+    def get_upload_path(upload_path: str, filename: str) -> str:
         return f"{upload_path}/{filename}"

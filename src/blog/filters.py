@@ -3,7 +3,7 @@ from .models import PostTag, PostCategory, Post
 
 
 class FilterForPostCategoryViewSet(FilterSet):
-    """Filters for Blog Post Cateogry"""
+    """Filters for Blog Post Category"""
 
     class Meta:
         model = PostCategory
