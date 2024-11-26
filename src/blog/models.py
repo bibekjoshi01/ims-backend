@@ -25,6 +25,9 @@ class Post(AbstractInfoModel):
         max_length=255,
         help_text=_("Title of the post."),
     )
+    cover_image = models.ImageField(null=True, help_text=_(
+        "Cover image of blog post, Use a ratio of 4:3 for best results."
+    ))
     slug = models.SlugField(
         unique=True,
         max_length=255,

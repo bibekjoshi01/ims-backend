@@ -6,8 +6,8 @@ from .views import PostViewSet, PostCategoryViewSet, PostTagViewSet
 router = routers.DefaultRouter(trailing_slash=False)
 
 router.register("categories", PostCategoryViewSet, basename="blog_post_category")
-# router.register("tags", PostTagViewSet, basename="blog_post_tag")
-# router.register("posts", PostViewSet, basename="blog_post")
+router.register("tags", PostTagViewSet, basename="blog_post_tag")
+router.register("posts", PostViewSet, basename="blog_post")
 
 # listing apis
 list_urls = [
