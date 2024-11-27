@@ -10,7 +10,7 @@ def validate_image(image):
     Validates the size of the image file.
 
     Parameters:
-        - image (django.core.files.uploadedfile.InMemoryUploadedFile):
+        - image (django.core.files.uploaded file.InMemoryUploadedFile):
         - The image file to validate.
 
     Raises:

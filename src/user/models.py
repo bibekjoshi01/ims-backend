@@ -1,58 +1,39 @@
+# Standard Library Imports
 from uuid import uuid4
 
-from django.conf import settings
-from django.contrib.auth.base_user import AbstractBaseUser, BaseUserManager
-from django.contrib.auth.hashers import make_password
-from django.contrib.auth.models import PermissionsMixin
+# Django Core Imports
 from django.db import models
+from django.conf import settings
 from django.utils import timezone
+from django.contrib.auth.hashers import make_password
 from django.utils.translation import gettext_lazy as _
+from django.contrib.auth.models import PermissionsMixin
+from django.contrib.auth.base_user import AbstractBaseUser, BaseUserManager
+
+# Third-Party Package Imports
 from rest_framework_simplejwt.tokens import RefreshToken
 
+# Custom Imports
 from src.base.models import AbstractInfoModel
 from src.user.exceptions import (
     EmailNotSetError,
     IsStaffError,
     IsSuperuserError,
-    UserGroupNotFound,
+    UserRoleNotFound,
 )
-
-from .constants import AUTH_PROVIDERS
 from .validators import CustomUsernameValidator, validate_image
-
-
-class MainModule(AbstractInfoModel):
-    """Main Module to group permission categories"""
-
-    name = models.CharField(
-        _("name"),
-        max_length=50,
-        unique=True,
-        help_text="Max: 50 characters",
-    )
-    codename = models.CharField(
-        _("codename"),
-        max_length=50,
-        unique=True,
-        help_text="Max: 50 characters",
-    )
-
-    def __str__(self):
-        return f"id - {self.id} : {self.name}"
+from ..core.constants import ThirdPartyApps
 
 
 class PermissionCategory(AbstractInfoModel):
     """Permission Category to group permissions"""
 
-    name = models.CharField(max_length=50, unique=True, help_text="Max: 50 characters")
-    main_module = models.ForeignKey(
-        MainModule,
-        on_delete=models.PROTECT,
-        related_name="permission_categories",
-    )
+    id: int
+    name = models.CharField(max_length=100)
+    codename = models.CharField(_("codename"), unique=True, max_length=100)
 
-    def __str__(self):
-        return f"id - {self.id} : {self.name} : {self.main_module.name}"
+    def __str__(self) -> str:
+        return f"id - {self.id} : {self.name}"
 
 
 class UserPermission(AbstractInfoModel):
@@ -64,9 +45,7 @@ class UserPermission(AbstractInfoModel):
     name = models.CharField(_("name"), max_length=100)
     codename = models.CharField(_("codename"), unique=True, max_length=100)
     permission_category = models.ForeignKey(
-        PermissionCategory,
-        on_delete=models.PROTECT,
-        related_name="permissions",
+        PermissionCategory, on_delete=models.PROTECT, related_name="permissions"
     )
 
     class Meta:
@@ -78,15 +57,15 @@ class UserPermission(AbstractInfoModel):
             "id",
         ]
 
-    def __str__(self):
+    def __str__(self) -> str:
         return f"{self.permission_category} : {self.name}"
 
 
-class UserGroup(AbstractInfoModel):
+class UserRole(AbstractInfoModel):
     """
-    Groups are a generic way of categorizing users to apply permissions, or
+    Roles are a generic way of categorizing users to apply permissions, or
     some other label, to those users. A user can belong to any number of
-    groups.
+    roles.
     """
 
     name = models.CharField(_("name"), max_length=50, unique=True)
@@ -96,17 +75,13 @@ class UserGroup(AbstractInfoModel):
         verbose_name=_("permissions"),
         blank=True,
     )
-    is_system_managed = models.BooleanField(
-        _("System Managed"),
-        default=False,
-        help_text="Managed by system",
-    )
+    is_system_managed = models.BooleanField(_("System Managed"), default=False)
 
     class Meta:
-        verbose_name = _("user group")
-        verbose_name_plural = _("user groups")
+        verbose_name = _("user role")
+        verbose_name_plural = _("user roles")
 
-    def __str__(self):
+    def __str__(self) -> str:
         return self.name
 
 
@@ -133,11 +108,11 @@ class UserManager(BaseUserManager):
     def create_system_user(self, username, email, password, **extra_fields):
         user = self.create_user(username, email, password, **extra_fields)
         try:
-            user_group = UserGroup.objects.get(codename="SYSTEM-VENDOR")
+            user_group = UserRole.objects.get(codename="SYSTEM-VENDOR")
             user.groups.add(user_group)
-        except UserGroup.DoesNotExist as err:
+        except UserRole.DoesNotExist as err:
             user_group = "System User"
-            raise UserGroupNotFound(user_group) from err
+            raise UserRoleNotFound(user_group) from err
         return user
 
     def create_superuser(self, username, email=None, password=None, **extra_fields):
@@ -152,22 +127,22 @@ class UserManager(BaseUserManager):
 
         user = self._create_user(username, email, password, **extra_fields)
         try:
-            user_group = UserGroup.objects.get(codename="SYSTEM-VENDOR")
+            user_group = UserRole.objects.get(codename="SYSTEM-VENDOR")
             user.groups.add(user_group)
-        except UserGroup.DoesNotExist as err:
+        except UserRole.DoesNotExist as err:
             user_group = "System Vendor"
-            raise UserGroupNotFound(user_group) from err
+            raise UserRoleNotFound(user_group) from err
         user.save()
         return user
 
-    def create_website_user(self, username, email=None, password=None, **extra_fields):
+    def create_public_user(self, username, email=None, password=None, **extra_fields):
         user = self._create_user(username, email, password, **extra_fields)
         try:
-            user_group = UserGroup.objects.get(codename="WEBSITE-USER")
+            user_group = UserRole.objects.get(codename="PUBLIC-USER")
             user.groups.add(user_group)
-        except UserGroup.DoesNotExist as err:
-            user_group = "Website User"
-            raise UserGroupNotFound(user_group) from err
+        except UserRole.DoesNotExist as err:
+            user_group = "Public User"
+            raise UserRoleNotFound(user_group) from err
         user.save()
         return user
 
@@ -197,10 +172,7 @@ class User(AbstractBaseUser, PermissionsMixin):
     email = models.EmailField(_("email address"), unique=True, blank=True)
     phone_no = models.CharField(_("phone number"), max_length=15, blank=True)
     photo = models.ImageField(
-        validators=[validate_image],
-        blank=True,
-        null=True,
-        default="",
+        validators=[validate_image], blank=True, null=True, default="",
     )
     is_superuser = models.BooleanField(
         _("superuser status"),
@@ -220,14 +192,14 @@ class User(AbstractBaseUser, PermissionsMixin):
         default=True,
         help_text=_(
             "Designates whether this user should be treated as active. "
-            "Unselect this instead of deleting accounts.",
+            "Select this for deactivating accounts.",
         ),
     )
     is_archived = models.BooleanField(
         _("archived"),
         default=False,
         help_text=_(
-            "Designates whether this user should be treated as delected. "
+            "Designates whether this user should be treated as deleted. "
             "Unselect this instead of deleting users.",
         ),
     )
@@ -237,10 +209,10 @@ class User(AbstractBaseUser, PermissionsMixin):
         max_length=30,
         blank=True,
         default="BY-CREDENTIALS",
-        choices=AUTH_PROVIDERS,
+        choices=ThirdPartyApps.choices(),
     )
     groups = models.ManyToManyField(
-        UserGroup,
+        UserRole,
         verbose_name=_("user groups"),
         blank=True,
         help_text=_(
@@ -260,15 +232,11 @@ class User(AbstractBaseUser, PermissionsMixin):
     )
 
     date_joined = models.DateTimeField(
-        _("date joined"),
-        default=timezone.now,
-        editable=False,
+        _("date joined"), default=timezone.now, editable=False
     )
     updated_at = models.DateTimeField(_("date updated"), auto_now=True)
     created_by = models.ForeignKey(
-        settings.AUTH_USER_MODEL,
-        on_delete=models.PROTECT,
-        null=True,
+        settings.AUTH_USER_MODEL, on_delete=models.PROTECT, null=True,
     )
     objects = UserManager()
 
@@ -285,14 +253,14 @@ class User(AbstractBaseUser, PermissionsMixin):
         super().clean()
         self.email = self.__class__.objects.normalize_email(self.email)
 
-    def __str__(self):
+    def __str__(self) -> str:
         return str(self.email)
 
-    def get_upload_path(self, upload_path, filename):
+    def get_upload_path(self, upload_path: str, filename: str) -> str:
         return f"{upload_path}/{filename}"
 
     @property
-    def get_full_name(self):
+    def get_full_name(self) -> str:
         """
         Return the first_name plus the last_name, with a space in between.
         """
@@ -304,40 +272,10 @@ class User(AbstractBaseUser, PermissionsMixin):
             full_name = ""
         return full_name.strip()
 
-    def is_website_user(self):
-        return self.groups.filter(codename="WEBSITE-USER").exists()
+    def is_public_user(self):
+        return self.groups.filter(codename="PUBLIC-USER").exists()
 
     @property
     def tokens(self):
         refresh = RefreshToken.for_user(self)
         return {"refresh": str(refresh), "access": str(refresh.access_token)}
-
-
-class UserForgetPasswordRequest(models.Model):
-    """User Forget Password Requests"""
-
-    user = models.ForeignKey(User, on_delete=models.CASCADE)
-    token = models.CharField(max_length=256)
-    created_at = models.DateTimeField()
-    is_archived = models.BooleanField(default=False)
-
-    class Meta:
-        ordering = ["-id"]
-
-    def __str__(self):
-        return f"User Id: {self.user.id!s} + '-' + {self.token}"
-
-
-class UserAccountVerification(models.Model):
-    """User Account Verification"""
-
-    user = models.ForeignKey(User, on_delete=models.CASCADE)
-    token = models.CharField(max_length=256)
-    created_at = models.DateTimeField()
-    is_archived = models.BooleanField(default=False)
-
-    class Meta:
-        ordering = ["-id"]
-
-    def __str__(self):
-        return f"User Id: {self.user.id!s} + '-' + {self.token}"

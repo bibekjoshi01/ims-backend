@@ -4,8 +4,3 @@ GENDER_CHOICES = (
     ("OTHER", "Other"),
     ("NA", "Rather not to say"),
 )
-
-AUTH_PROVIDERS = (
-    ("BY-CREDENTIALS", "By Credentials"),
-    ("GOOGLE", "Google"),
-)

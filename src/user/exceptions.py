@@ -16,7 +16,7 @@ class IsSuperuserError(ValueError):
         super().__init__("Superuser must have is_superuser=True.")
 
 
-class UserGroupNotFound(APIException):
+class UserRoleNotFound(APIException):
     status_code = 400
     default_code = "usergroup_not_found"
 
