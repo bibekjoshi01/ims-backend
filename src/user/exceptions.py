@@ -18,14 +18,14 @@ class IsSuperuserError(ValueError):
 
 class UserRoleNotFound(APIException):
     status_code = 400
-    default_code = "usergroup_not_found"
+    default_code = "user_role_not_found"
 
-    def __init__(self, user_group):
+    def __init__(self, user_role):
         message = (
-            f"UserGroup '{user_group}' not found. Please contact the administrator.",
+            f"UserRole '{user_role}' not found. Please contact the administrator.",
         )
 
         self.detail = {
             "error": [message],
         }
-        self.user_group = user_group
+        self.user_role = user_role

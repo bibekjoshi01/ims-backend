@@ -1,9 +1,4 @@
-import requests
-from requests.exceptions import RequestException
 from typing import Dict
-
-from src.core.constants import GOOGLE_CLIENT_ID
-
 
 class AppleOAuth:
     """

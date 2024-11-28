@@ -260,7 +260,7 @@ class User(AbstractBaseUser, PermissionsMixin):
         return f"{upload_path}/{filename}"
 
     @property
-    def get_full_name(self) -> str:
+    def full_name(self) -> str:
         """
         Return the first_name plus the last_name, with a space in between.
         """

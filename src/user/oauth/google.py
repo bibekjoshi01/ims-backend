@@ -1,8 +1,10 @@
+# Third Party Imports
 import requests
 from requests.exceptions import RequestException
-from typing import Dict
 
-from src.core.constants import GOOGLE_CLIENT_ID
+# Custom Imports
+from django.conf import settings
+from .constants import UserInfo
 
 
 class GoogleOAuth:
@@ -14,7 +16,7 @@ class GoogleOAuth:
     USER_INFO_API = "https://www.googleapis.com/oauth2/v3/userinfo"
 
     @classmethod
-    def validate(cls, auth_token: str) -> Dict[str, str | int]:
+    def validate(cls, auth_token: str) -> UserInfo | Dict:
         """
         Validates an authentication token and retrieves user information.
 
@@ -41,7 +43,7 @@ class GoogleOAuth:
             token_info = token_response.json()
 
             # Ensure the token is valid for this client
-            if token_info.get("aud") != GOOGLE_CLIENT_ID:
+            if token_info.get("aud") != settings.GOOGLE_CLIENT_ID:
                 return {"type": "error", "message": "Invalid Google Client ID"}
 
             # Retrieve user information

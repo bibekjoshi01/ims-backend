@@ -229,7 +229,6 @@ REST_FRAMEWORK = {
     "DEFAULT_PARSER_CLASSES": [
         "src.libs.parser.CustomNestedParser",
         "djangorestframework_camel_case.parser.CamelCaseFormParser",
-        # "djangorestframework_camel_case.parser.CamelCaseMultiPartParser",
         "djangorestframework_camel_case.parser.CamelCaseJSONParser",
     ],
     "JSON_UNDERSCOREIZE": {
@@ -240,6 +239,9 @@ REST_FRAMEWORK = {
     ],
     "DEFAULT_SCHEMA_CLASS": "drf_spectacular.openapi.AutoSchema",
     "EXCEPTION_HANDLER": "src.libs.exception_handler.custom_exception_handler",
+    'DEFAULT_THROTTLE_RATES': {
+        'anon': '5/minute',
+    }
 }
 
 NESTED_FORM_PARSER = {"OPTIONS": {"allow_empty": True, "allow_blank": True}}
