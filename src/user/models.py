@@ -51,11 +51,7 @@ class UserPermission(AbstractInfoModel):
     class Meta:
         verbose_name = _("permission")
         verbose_name_plural = _("permissions")
-        ordering = [
-            "permission_category__main_module",
-            "permission_category",
-            "id",
-        ]
+        ordering = ["permission_category", "id"]
 
     def __str__(self) -> str:
         return f"{self.permission_category} : {self.name}"
@@ -130,8 +126,9 @@ class UserManager(BaseUserManager):
             user_group = UserRole.objects.get(codename="SYSTEM-VENDOR")
             user.groups.add(user_group)
         except UserRole.DoesNotExist as err:
-            user_group = "System Vendor"
-            raise UserRoleNotFound(user_group) from err
+            pass
+            # user_group = "System Vendor"
+            # raise UserRoleNotFound(user_group) from err
         user.save()
         return user
 

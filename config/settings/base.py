@@ -300,11 +300,23 @@ CELERY_WORKER_SEND_TASK_EVENTS = True
 CELERY_TASK_SEND_SENT_EVENT = True
 
 
-# SOCIAL MEDIA
+# OAUTH
 # ------------------------------------------------------------------------------
-SOCIAL_SECRET = env("SOCIAL_SECRET")
-GOOGLE_CLIENT_ID = env("GOOGLE_CLIENT_ID")
-GOOGLE_CLIENT_SECRET = env("GOOGLE_CLIENT_SECRET")
+OAUTH_PROVIDERS = {
+    "google": {
+        "client_id": "197523093421-7dd93s0jup4ulbfovkn2krvvun0k7lph.apps.googleusercontent.com",
+        "client_secret": "your-google-client-secret",
+    },
+    "facebook": {
+        "client_id": "your-facebook-client-id",
+        "client_secret": "your-facebook-client-secret",
+    },
+    "apple": {
+        "client_id": "your-apple-client-id",
+        "client_secret": "your-apple-client-secret",
+    },
+}
+SOCIAL_SECRET = "test@9085jfJdh"
 
 CELERY_TASK_EAGER_PROPAGATES = True
 

@@ -1,6 +1,6 @@
 [
   {
-    "model": "user.UserGroup",
+    "model": "user.UserRole",
     "pk": 1,
     "fields": {
       "name": "System Vendor",
@@ -15,7 +15,7 @@
     }
   },
   {
-    "model": "user.UserGroup",
+    "model": "user.UserRole",
     "pk": 2,
     "fields": {
       "name": "System User",
@@ -30,7 +30,7 @@
     }
   },
   {
-    "model": "user.UserGroup",
+    "model": "user.UserRole",
     "pk": 3,
     "fields": {
       "name": "Public User",

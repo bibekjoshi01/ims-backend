@@ -25,7 +25,5 @@ class UserRoleNotFound(APIException):
             f"UserRole '{user_role}' not found. Please contact the administrator.",
         )
 
-        self.detail = {
-            "error": [message],
-        }
+        self.detail = {"error": message}
         self.user_role = user_role

@@ -1,6 +1,6 @@
 from rest_framework.permissions import SAFE_METHODS
 
-from src.user.models import UserGroup
+from src.user.models import UserRole
 
 
 def get_user_permissions(request):
@@ -11,7 +11,7 @@ def get_user_permissions(request):
     if user.is_anonymous:
         return user_permissions
 
-    groups = UserGroup.objects.filter(user_group=user)
+    groups = UserRole.objects.filter(user=user)
 
     if groups is not None:
         for group in groups:

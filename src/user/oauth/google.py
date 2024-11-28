@@ -1,13 +1,19 @@
+# Standard Library Imports
+from typing import Dict
+
+# Django Imports
+from django.core.exceptions import ValidationError
+
 # Third Party Imports
 import requests
 from requests.exceptions import RequestException
 
 # Custom Imports
-from django.conf import settings
+from .base import OAuthProvider
 from .constants import UserInfo
 
 
-class GoogleOAuth:
+class GoogleOAuth(OAuthProvider):
     """
     Google OAuth provider class for validating authentication tokens
     and retrieving user information.
@@ -16,7 +22,7 @@ class GoogleOAuth:
     USER_INFO_API = "https://www.googleapis.com/oauth2/v3/userinfo"
 
     @classmethod
-    def validate(cls, auth_token: str) -> UserInfo | Dict:
+    def validate(cls, auth_token: str = None) -> UserInfo | Dict:
         """
         Validates an authentication token and retrieves user information.
 
@@ -34,6 +40,11 @@ class GoogleOAuth:
         if not cls.TOKEN_INFO_API or not cls.USER_INFO_API:
             raise NotImplementedError("Subclasses must define token_info_api and user_info_api.")
 
+        if not auth_token:
+            raise ValidationError("Please provide auth token.")
+
+        google_settings = cls._get_provider_settings("google")
+
         try:
             # Validate the token with the provider's token API
             token_response = requests.get(
@@ -43,8 +54,8 @@ class GoogleOAuth:
             token_info = token_response.json()
 
             # Ensure the token is valid for this client
-            if token_info.get("aud") != settings.GOOGLE_CLIENT_ID:
-                return {"type": "error", "message": "Invalid Google Client ID"}
+            if token_info.get("aud") != google_settings["client_id"]:
+                raise ValueError("Invalid token: Audience does not match client_id.")
 
             # Retrieve user information
             user_response = requests.get(
@@ -56,6 +67,7 @@ class GoogleOAuth:
             # Format and return user info
             return {
                 "type": "success",
+                "provider": "GOOGLE",
                 "first_name": user_info.get("given_name", ""),
                 "last_name": user_info.get("family_name", ""),
                 "full_name": user_info.get("name", ""),
@@ -64,8 +76,6 @@ class GoogleOAuth:
             }
 
         except RequestException as err:
-            return {"type": "error", "message": f"API request failed: {err}"}
-        except KeyError as err:
-            return {"type": "error", "message": f"Missing field in response: {err}"}
+            raise ValueError(f"Failed to fetch user information from Google API: {err}")
         except Exception as err:
-            return {"type": "error", "message": f"Unexpected error: {err}"}
+            raise ValueError(f"Unexpected error occurred: {err}")

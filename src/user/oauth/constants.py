@@ -13,6 +13,11 @@ class AuthProviders(Enum):
     def choices(cls):
         return [(key.value, _(key.name.capitalize())) for key in cls]
 
+    @classmethod
+    def is_valid_provider(cls, provider: str) -> bool:
+        """Checks if the given provider is valid in the enum"""
+        return provider in cls._value2member_map_
+
 
 class UserInfo(TypedDict):
     type: str

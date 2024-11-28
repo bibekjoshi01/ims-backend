@@ -3,6 +3,7 @@ from typing import Dict, Union
 
 # Django Core Imports
 from django.conf import settings
+from django.utils import timezone
 
 # Rest Framework Imports
 from rest_framework import serializers
@@ -30,10 +31,10 @@ class PublicUserSignInSerializer(serializers.Serializer):
 
             if not user.is_email_verified:
                 user.is_email_verified = True
-                user.save()
 
         except User.DoesNotExist:
             user = User.objects.create_public_user(
+                auth_provider=user_info.get("provider"),
                 username=user_info.get("email").split("@")[0],  # Generate username from email
                 email=user_info.get("email"),
                 password=settings.SOCIAL_SECRET,
@@ -41,6 +42,11 @@ class PublicUserSignInSerializer(serializers.Serializer):
                 first_name=user_info.get("first_name"),
                 last_name=user_info.get("last_name")
             )
+
+            user.created_by = user
+
+        user.last_login = timezone.now()
+        user.save()
 
         return {
             "uuid": user.uuid,
