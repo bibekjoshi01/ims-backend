@@ -307,7 +307,7 @@ OAUTH_PROVIDERS = {
         "client_id": "197523093421-7dd93s0jup4ulbfovkn2krvvun0k7lph.apps.googleusercontent.com",
         "client_secret": "your-google-client-secret",
     },
-    "facebook": {
+    "linkedin": {
         "client_id": "your-facebook-client-id",
         "client_secret": "your-facebook-client-secret",
     },

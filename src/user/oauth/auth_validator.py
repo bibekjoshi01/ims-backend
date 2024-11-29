@@ -4,7 +4,7 @@ from rest_framework.exceptions import APIException
 # Custom Imports
 from .constants import AuthProviders, UserInfo
 from .messages import ERROR_MESSAGES
-from . import GoogleOAuth, AppleOAuth
+from . import GoogleOAuth, AppleOAuth, LinkedInOAuth, MicrosoftOAuth
 
 
 class AuthTokenValidator:
@@ -14,7 +14,9 @@ class AuthTokenValidator:
 
     provider_class_map = {
         "GOOGLE": GoogleOAuth,
-        "APPLE": AppleOAuth
+        "APPLE": AppleOAuth,
+        "MICROSOFT": MicrosoftOAuth,
+        "LINKEDIN": LinkedInOAuth,
     }
 
     @staticmethod
