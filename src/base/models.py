@@ -1,3 +1,5 @@
+from uuid import uuid4
+
 from django.db import models
 from django.utils import timezone
 from django.utils.translation import gettext_lazy as _
@@ -6,6 +8,13 @@ from django.utils.translation import gettext_lazy as _
 class AbstractInfoModel(models.Model):
     """Abstract Created Info Model"""
 
+    uuid = models.UUIDField(
+        _("uuid"),
+        default=uuid4,
+        editable=False,
+        unique=True,
+        help_text=_("Represents unique uuid."),
+    )
     created_at = models.DateTimeField(
         _("created date"),
         default=timezone.now,
@@ -33,14 +42,20 @@ class AbstractInfoModel(models.Model):
     class Meta:
         abstract = True
 
-    @staticmethod
-    def get_upload_path(upload_path: str, filename: str) -> str:
+    def get_upload_path(self, upload_path, filename):
         return f"{upload_path}/{filename}"
 
 
-class PublicAbstractInfoModel(models.Model):
+class AbstractInfoPublicModel(models.Model):
     """Abstract Created Info Model For Public Models"""
 
+    uuid = models.UUIDField(
+        _("uuid"),
+        default=uuid4,
+        editable=False,
+        unique=True,
+        help_text=_("Represents unique uuid."),
+    )
     created_at = models.DateTimeField(
         _("created date"),
         default=timezone.now,
@@ -59,7 +74,7 @@ class PublicAbstractInfoModel(models.Model):
         _("archived"),
         default=False,
         help_text=_(
-            "Designates whether this object should be treated as deleted. "
+            "Designates whether this object should be treated as delected. "
             "Unselect this instead of deleting instances.",
         ),
     )
@@ -67,6 +82,5 @@ class PublicAbstractInfoModel(models.Model):
     class Meta:
         abstract = True
 
-    @staticmethod
-    def get_upload_path(upload_path: str, filename: str) -> str:
+    def get_upload_path(self, upload_path, filename):
         return f"{upload_path}/{filename}"

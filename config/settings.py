@@ -1,20 +1,26 @@
-# ruff: noqa: ERA001, E501
-"""Base settings to build other settings files upon."""
+# ruff: noqa: ERA001, E501, S105
 
 from datetime import timedelta
 from pathlib import Path
 
 import environ
 
-BASE_DIR = Path(__file__).resolve(strict=True).parent.parent.parent
+BASE_DIR = Path(__file__).resolve(strict=True).parent.parent
 APPS_DIR = BASE_DIR / "src"
 env = environ.Env()
 environ.Env.read_env(str(BASE_DIR / ".env"))
 
+# GENERAL
+# ------------------------------------------------------------------------------
+DEBUG = True
+SECRET_KEY = env(
+    "DJANGO_SECRET_KEY",
+    default="sydPDD94R0UBhmbBTsXrQ4QDskUY3cPo6cmaa9YorUYNsbzgJqDgnEONnuGpxQ4x",
+)
+ALLOWED_HOSTS = env.list("DJANGO_ALLOWED_HOSTS", default=["*"])
 
 CORS_ALLOW_ALL_ORIGINS = env.bool("CORS_ALLOW_ALL_ORIGINS")
 CORS_ALLOWED_ORGINS = env.list("CORS_ALLOWED_ORIGINS")
-
 
 # APPS
 # ------------------------------------------------------------------------------
@@ -28,19 +34,17 @@ DJANGO_APPS = [
 ]
 
 THIRD_PARTY_APPS = [
-    "django_celery_beat",
     "corsheaders",
     "rest_framework",
     "django_filters",
     "drf_spectacular",
     "rest_framework_simplejwt.token_blacklist",
     "mptt",
+    "django_celery_results",
+    "django_celery_beat",
 ]
 
-LOCAL_APPS = [
-    "src.user",
-    "src.blog",
-]
+LOCAL_APPS = ["src.user", "src.core", "src.blog"]
 
 INSTALLED_APPS = DJANGO_APPS + THIRD_PARTY_APPS + LOCAL_APPS
 
@@ -49,8 +53,8 @@ INSTALLED_APPS = DJANGO_APPS + THIRD_PARTY_APPS + LOCAL_APPS
 MIDDLEWARE = [
     "django.middleware.security.SecurityMiddleware",
     "corsheaders.middleware.CorsMiddleware",
-    "whitenoise.middleware.WhiteNoiseMiddleware",
     "django.contrib.sessions.middleware.SessionMiddleware",
+    "django.middleware.locale.LocaleMiddleware",
     "django.middleware.common.CommonMiddleware",
     "django.middleware.csrf.CsrfViewMiddleware",
     "django.contrib.auth.middleware.AuthenticationMiddleware",
@@ -63,8 +67,8 @@ ROOT_URLCONF = "config.urls"
 # ADMIN
 # ------------------------------------------------------------------------------
 ADMIN_URL = "admin/"
-ADMINS = [("""Neeket Bhandari""", "neeket@gmail.com")]
-MANAGERS = [("""Bibek Joshi""", "bibekjoshi34@gmail.com")]
+ADMINS = [("""Amit Kumar""", "amtkumar2053@gmail.com")]
+MANAGERS = [("""Bibek Joshi""", "bibekzocybz@gmail.com")]
 
 
 # TEMPLATES
@@ -111,15 +115,6 @@ DATABASES["default"]["ATOMIC_REQUESTS"] = True
 # EMAIL CONFIGURATION
 # ------------------------------------------------------------------------------
 EMAIL_BACKEND = "django.core.mail.backends.smtp.EmailBackend"
-EMAIL_HOST = env("EMAIL_HOST")
-EMAIL_USE_TLS = env.bool("EMAIL_USE_TLS")
-# EMAIL_USE_SSL = env.bool("EMAIL_USE_SSL")
-EMAIL_PORT = env("EMAIL_PORT")
-EMAIL_HOST_USER = env("EMAIL_HOST_USER")
-EMAIL_HOST_PASSWORD = env("EMAIL_HOST_PASSWORD")
-DEFAULT_FROM_EMAIL = env("DEFAULT_FROM_EMAIL")
-SERVER_EMAIL = env("SERVER_EMAIL")
-EMAIL_TIMEOUT = 5
 
 
 # PASSWORDS
@@ -138,7 +133,7 @@ AUTH_PASSWORD_VALIDATORS = [
     {"NAME": "django.contrib.auth.password_validation.CommonPasswordValidator"},
     {"NAME": "django.contrib.auth.password_validation.NumericPasswordValidator"},
 ]
-
+ENCRYPTION_KEY = "UvWTfhGVR2iVUI15zKqF8t54cDu0B_pzyicdearnTDI="
 
 # FIXTURES
 # ------------------------------------------------------------------------------
@@ -170,6 +165,14 @@ SITE_ID = 1
 USE_I18N = True
 USE_TZ = True
 
+LANGUAGES = [
+    ("en", "English"),
+    ("np", "Nepali"),
+]
+
+LOCALE_PATHS = [
+    BASE_DIR / "locale",
+]
 
 # STATIC
 # ------------------------------------------------------------------------------
@@ -183,7 +186,7 @@ STATICFILES_FINDERS = [
 
 # MEDIA
 # ------------------------------------------------------------------------------
-MEDIA_ROOT = str(APPS_DIR / "media")
+MEDIA_ROOT = str(BASE_DIR / "media")
 MEDIA_URL = "/media/"
 
 
@@ -214,8 +217,8 @@ LOGGING = {
 # -------------------------------------------------------------------------------
 REST_FRAMEWORK = {
     "DEFAULT_AUTHENTICATION_CLASSES": (
-        "rest_framework.authentication.SessionAuthentication",
         "rest_framework_simplejwt.authentication.JWTAuthentication",
+        "rest_framework.authentication.SessionAuthentication",
     ),
     "DEFAULT_PERMISSION_CLASSES": (
         "rest_framework.permissions.IsAuthenticatedOrReadOnly",
@@ -239,9 +242,6 @@ REST_FRAMEWORK = {
     ],
     "DEFAULT_SCHEMA_CLASS": "drf_spectacular.openapi.AutoSchema",
     "EXCEPTION_HANDLER": "src.libs.exception_handler.custom_exception_handler",
-    'DEFAULT_THROTTLE_RATES': {
-        'anon': '5/minute',
-    }
 }
 
 NESTED_FORM_PARSER = {"OPTIONS": {"allow_empty": True, "allow_blank": True}}
@@ -250,8 +250,8 @@ CORS_URLS_REGEX = r"^/api/.*$"
 
 SPECTACULAR_SETTINGS = {
     "SCHEMA_COMPONENT_SPLIT_UNDERSCORES": False,
-    "TITLE": "Blog API",
-    "DESCRIPTION": "Documentation of API endpoints of Blog App",
+    "TITLE": "Blog Backend API",
+    "DESCRIPTION": "Documentation of API endpoints of Blog Backend",
     "VERSION": "1.0.0",
     "SERVE_INCLUDE_SCHEMA": False,
     "POSTPROCESSING_HOOKS": [
@@ -260,21 +260,33 @@ SPECTACULAR_SETTINGS = {
     ],
     "SERVE_PERMISSIONS": ["rest_framework.permissions.IsAuthenticated"],
     "SCHEMA_PATH_PREFIX": "/api/v1/admin",
+    "SWAGGER_UI_SETTINGS": {
+        "defaultModelsExpandDepth": -1,
+    },
 }
 
 SIMPLE_JWT = {
-    "ACCESS_TOKEN_LIFETIME": timedelta(days=1),
-    "REFRESH_TOKEN_LIFETIME": timedelta(days=7),
+    "ACCESS_TOKEN_LIFETIME": timedelta(days=int(env("ACCESS_TOKEN_TIME", default=7))),
+    "REFRESH_TOKEN_LIFETIME": timedelta(
+        days=int(env("REFRESH_TOKEN_TIME", default=10)),
+    ),
     "ROTATE_REFRESH_TOKEN": False,
     "BLACKLIST_AFTER_ROTATION": False,
 }
 
+
+# SOCIAL MEDIA
+# ------------------------------------------------------------------------------
+SOCIAL_SECRET = env("SOCIAL_SECRET")
+
+
 # Constants
 # -------------------------------------------------------------------------------
-MAX_UPLOAD_SIZE = 2097152
-BLOG_MEDIA_MAX_UPLOAD_SIZE = 2097152
+MAX_UPLOAD_SIZE = int(env("MAX_UPLOAD_SIZE"))
+BLOG_MEDIA_MAX_UPLOAD_SIZE = int(env("BLOG_MEDIA_MAX_UPLOAD_SIZE"))
+WEBSITE_MEDIA_MAX_UPLOAD_SIZE = int(env("WEBSITE_MEDIA_MAX_UPLOAD_SIZE"))
 FRONTEND_BASE_URL = env("FRONTEND_BASE_URL")
-AUTH_LINK_EXP_TIME = 10
+AUTH_LINK_EXP_TIME = int(env("AUTH_LINK_EXP_TIME"))
 
 
 # Celery
@@ -288,37 +300,21 @@ if USE_TZ:
 CELERY_BROKER_URL = f"redis://{REDIS_HOST}:{REDIS_PORT}/{REDIS_DB}"
 CELERY_RESULT_BACKEND = CELERY_BROKER_URL
 CELERY_ACCEPT_CONTENT = ["application/json"]
-CELERY_RESULT_EXTENDED = True
-CELERY_RESULT_BACKEND_ALWAYS_RETRY = True
-CELERY_RESULT_BACKEND_MAX_RETRIES = 10
 CELERY_TASK_SERIALIZER = "json"
 CELERY_RESULT_SERIALIZER = "json"
 CELERY_TASK_TIME_LIMIT = 5 * 60
 CELERY_TASK_SOFT_TIME_LIMIT = 60
+# Beat settings for periodic tasks
 CELERY_BEAT_SCHEDULER = "django_celery_beat.schedulers:DatabaseScheduler"
+# Events for monitoring
 CELERY_WORKER_SEND_TASK_EVENTS = True
 CELERY_TASK_SEND_SENT_EVENT = True
-
-
-# OAUTH
-# ------------------------------------------------------------------------------
-OAUTH_PROVIDERS = {
-    "google": {
-        "client_id": "197523093421-7dd93s0jup4ulbfovkn2krvvun0k7lph.apps.googleusercontent.com",
-        "client_secret": "your-google-client-secret",
-    },
-    "linkedin": {
-        "client_id": "your-facebook-client-id",
-        "client_secret": "your-facebook-client-secret",
-    },
-    "apple": {
-        "client_id": "your-apple-client-id",
-        "client_secret": "your-apple-client-secret",
-    },
-}
-SOCIAL_SECRET = "test@9085jfJdh"
-
+CELERY_RESULT_EXTENDED = True
 CELERY_TASK_EAGER_PROPAGATES = True
+# Retry on backend result retrieval
+CELERY_RESULT_BACKEND_ALWAYS_RETRY = True
+CELERY_RESULT_BACKEND_MAX_RETRIES = 10
+
 
 CHANNEL_LAYERS = {
     "default": {

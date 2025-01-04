@@ -1,6 +1,6 @@
 [
   {
-    "model": "user.UserPermission",
+    "model": "user.Permission",
     "pk": 1,
     "fields": {
       "name": "View User Group/Role",
@@ -14,7 +14,7 @@
     }
   },
   {
-    "model": "user.UserPermission",
+    "model": "user.Permission",
     "pk": 2,
     "fields": {
       "name": "Add User Group/Role & Permission",
@@ -28,7 +28,7 @@
     }
   },
   {
-    "model": "user.UserPermission",
+    "model": "user.Permission",
     "pk": 3,
     "fields": {
       "name": "Edit User Group/Role & Permission",
@@ -42,7 +42,7 @@
     }
   },
   {
-    "model": "user.UserPermission",
+    "model": "user.Permission",
     "pk": 4,
     "fields": {
       "name": "Delete User Group/Role & Permission",
@@ -56,7 +56,7 @@
     }
   },
   {
-    "model": "user.UserPermission",
+    "model": "user.Permission",
     "pk": 5,
     "fields": {
       "name": "View User",
@@ -70,7 +70,7 @@
     }
   },
   {
-    "model": "user.UserPermission",
+    "model": "user.Permission",
     "pk": 6,
     "fields": {
       "name": "Add User",
@@ -84,7 +84,7 @@
     }
   },
   {
-    "model": "user.UserPermission",
+    "model": "user.Permission",
     "pk": 7,
     "fields": {
       "name": "Edit User",
@@ -98,12 +98,236 @@
     }
   },
   {
-    "model": "user.UserPermission",
+    "model": "user.Permission",
     "pk": 8,
     "fields": {
       "name": "Delete User",
       "codename": "delete_user",
       "permission_category": 2,
+      "is_active": true,
+      "is_archived": false,
+      "created_at": "2024-05-19T05:07:22.123456Z",
+      "updated_at": "2024-05-19T05:07:22.123456Z",
+      "created_by": 1
+    }
+  },
+  {
+    "model": "user.Permission",
+    "pk": 9,
+    "fields": {
+      "name": "View Organization Setup",
+      "codename": "view_organization_setup",
+      "permission_category": 3,
+      "is_active": true,
+      "is_archived": false,
+      "created_at": "2024-05-19T05:07:22.123456Z",
+      "updated_at": "2024-05-19T05:07:22.123456Z",
+      "created_by": 1
+    }
+  },
+  {
+    "model": "user.Permission",
+    "pk": 10,
+    "fields": {
+      "name": "Add Organization Setup",
+      "codename": "add_organization_setup",
+      "permission_category": 3,
+      "is_active": true,
+      "is_archived": false,
+      "created_at": "2024-05-19T05:07:22.123456Z",
+      "updated_at": "2024-05-19T05:07:22.123456Z",
+      "created_by": 1
+    }
+  },
+  {
+    "model": "user.Permission",
+    "pk": 11,
+    "fields": {
+      "name": "Edit Organization Setup",
+      "codename": "edit_organization_setup",
+      "permission_category": 3,
+      "is_active": true,
+      "is_archived": false,
+      "created_at": "2024-05-19T05:07:22.123456Z",
+      "updated_at": "2024-05-19T05:07:22.123456Z",
+      "created_by": 1
+    }
+  },
+  {
+    "model": "user.Permission",
+    "pk": 12,
+    "fields": {
+      "name": "Delete Organization Setup",
+      "codename": "delete_organization_setup",
+      "permission_category": 3,
+      "is_active": true,
+      "is_archived": false,
+      "created_at": "2024-05-19T05:07:22.123456Z",
+      "updated_at": "2024-05-19T05:07:22.123456Z",
+      "created_by": 1
+    }
+  },
+  {
+    "model": "user.Permission",
+    "pk": 13,
+    "fields": {
+      "name": "View Country",
+      "codename": "view_country",
+      "permission_category": 4,
+      "is_active": true,
+      "is_archived": false,
+      "created_at": "2024-05-19T05:07:22.124456Z",
+      "updated_at": "2024-05-19T05:07:22.123456Z",
+      "created_by": 1
+    }
+  },
+  {
+    "model": "user.Permission",
+    "pk": 14,
+    "fields": {
+      "name": "Add Country",
+      "codename": "add_country",
+      "permission_category": 4,
+      "is_active": true,
+      "is_archived": false,
+      "created_at": "2024-05-19T05:07:22.123456Z",
+      "updated_at": "2024-05-19T05:07:22.123456Z",
+      "created_by": 1
+    }
+  },
+  {
+    "model": "user.Permission",
+    "pk": 15,
+    "fields": {
+      "name": "Edit Country",
+      "codename": "edit_country",
+      "permission_category": 4,
+      "is_active": true,
+      "is_archived": false,
+      "created_at": "2024-05-19T05:07:22.123456Z",
+      "updated_at": "2024-05-19T05:07:22.123456Z",
+      "created_by": 1
+    }
+  },
+  {
+    "model": "user.Permission",
+    "pk": 16,
+    "fields": {
+      "name": "Delete Country",
+      "codename": "delete_country",
+      "permission_category": 4,
+      "is_active": true,
+      "is_archived": false,
+      "created_at": "2024-05-19T05:07:22.123456Z",
+      "updated_at": "2024-05-19T05:07:22.123456Z",
+      "created_by": 1
+    }
+  },
+  {
+    "model": "user.Permission",
+    "pk": 17,
+    "fields": {
+      "name": "View Third Party Credential",
+      "codename": "view_third_party_creds",
+      "permission_category": 5,
+      "is_active": true,
+      "is_archived": false,
+      "created_at": "2024-05-19T05:07:22.124456Z",
+      "updated_at": "2024-05-19T05:07:22.123456Z",
+      "created_by": 1
+    }
+  },
+  {
+    "model": "user.Permission",
+    "pk": 18,
+    "fields": {
+      "name": "Add Third Party Credential",
+      "codename": "add_third_party_creds",
+      "permission_category": 5,
+      "is_active": true,
+      "is_archived": false,
+      "created_at": "2024-05-19T05:07:22.123456Z",
+      "updated_at": "2024-05-19T05:07:22.123456Z",
+      "created_by": 1
+    }
+  },
+  {
+    "model": "user.Permission",
+    "pk": 19,
+    "fields": {
+      "name": "Edit Third Party Credential",
+      "codename": "edit_third_party_creds",
+      "permission_category": 5,
+      "is_active": true,
+      "is_archived": false,
+      "created_at": "2024-05-19T05:07:22.123456Z",
+      "updated_at": "2024-05-19T05:07:22.123456Z",
+      "created_by": 1
+    }
+  },
+  {
+    "model": "user.Permission",
+    "pk": 20,
+    "fields": {
+      "name": "Delete Third Party Credential",
+      "codename": "delete_third_party_creds",
+      "permission_category": 5,
+      "is_active": true,
+      "is_archived": false,
+      "created_at": "2024-05-19T05:07:22.123456Z",
+      "updated_at": "2024-05-19T05:07:22.123456Z",
+      "created_by": 1
+    }
+  },
+  {
+    "model": "user.Permission",
+    "pk": 21,
+    "fields": {
+      "name": "View Email Config",
+      "codename": "view_email_config",
+      "permission_category": 6,
+      "is_active": true,
+      "is_archived": false,
+      "created_at": "2024-05-19T05:07:22.124456Z",
+      "updated_at": "2024-05-19T05:07:22.123456Z",
+      "created_by": 1
+    }
+  },
+  {
+    "model": "user.Permission",
+    "pk": 22,
+    "fields": {
+      "name": "Add Email Config",
+      "codename": "add_email_config",
+      "permission_category": 6,
+      "is_active": true,
+      "is_archived": false,
+      "created_at": "2024-05-19T05:07:22.123456Z",
+      "updated_at": "2024-05-19T05:07:22.123456Z",
+      "created_by": 1
+    }
+  },
+  {
+    "model": "user.Permission",
+    "pk": 23,
+    "fields": {
+      "name": "Edit Email Config",
+      "codename": "edit_email_config",
+      "permission_category": 6,
+      "is_active": true,
+      "is_archived": false,
+      "created_at": "2024-05-19T05:07:22.123456Z",
+      "updated_at": "2024-05-19T05:07:22.123456Z",
+      "created_by": 1
+    }
+  },
+  {
+    "model": "user.Permission",
+    "pk": 24,
+    "fields": {
+      "name": "Delete Email Config",
+      "codename": "delete_email_config",
+      "permission_category": 6,
       "is_active": true,
       "is_archived": false,
       "created_at": "2024-05-19T05:07:22.123456Z",

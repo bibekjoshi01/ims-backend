@@ -1,13 +1,17 @@
 from django.contrib import admin
 
 from .models import (
+    MainModule,
     PermissionCategory,
+    Role,
     User,
-    UserRole,
-    UserPermission
+    UserAccountVerification,
+    UserForgetPasswordRequest,
 )
 
 admin.site.register(User)
-admin.site.register(UserRole)
-admin.site.register(UserPermission)
+admin.site.register(Role)
 admin.site.register(PermissionCategory)
+admin.site.register(MainModule)
+admin.site.register(UserForgetPasswordRequest)
+admin.site.register(UserAccountVerification)

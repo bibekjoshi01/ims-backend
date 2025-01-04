@@ -1,6 +1,6 @@
 from rest_framework import serializers
 
-from src.user.models import MainModule, PermissionCategory, UserGroup, UserPermission
+from src.user.models import MainModule, Permission, PermissionCategory, Role
 
 
 class MainModuleSerializer(serializers.ModelSerializer):
@@ -12,7 +12,8 @@ class MainModuleSerializer(serializers.ModelSerializer):
 
 class UserPermissionCategorySerializer(serializers.ModelSerializer):
     main_module_name = serializers.ReadOnlyField(
-        source="main_module.name", allow_null=True,
+        source="main_module.name",
+        allow_null=True,
     )
 
     class Meta:
@@ -31,7 +32,7 @@ class UserPermissionSerializer(serializers.ModelSerializer):
     )
 
     class Meta:
-        model = UserPermission
+        model = Permission
         fields = [
             "id",
             "name",
@@ -45,7 +46,7 @@ class UserPermissionSerializer(serializers.ModelSerializer):
         read_only_fields = ["created_by", "created_at"]
 
 
-class UserGroupForUserSerializer(serializers.ModelSerializer):
+class RoleForUserSerializer(serializers.ModelSerializer):
     class Meta:
-        model = UserGroup
-        fields = ["id", "name", "codename", "is_active"]
+        model = Role
+        fields = ["id", "name", "codename"]

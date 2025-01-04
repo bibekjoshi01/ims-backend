@@ -1,4 +1,4 @@
-exclude: '^docs/|/migrations/|devcontainer.json'
+exclude: "^docs/|/migrations/|devcontainer.json"
 default_stages: [commit]
 
 default_language_version:
@@ -6,7 +6,7 @@ default_language_version:
 
 repos:
   - repo: https://github.com/pre-commit/pre-commit-hooks
-    rev: v4.6.0
+    rev: v2.3.0
     hooks:
       - id: trailing-whitespace
       - id: end-of-file-fixer
@@ -20,11 +20,10 @@ repos:
       - id: check-docstring-first
       - id: detect-private-key
 
-  - repo: https://github.com/adamchainz/django-upgrade
-    rev: '1.16.0'
+  - repo: https://github.com/psf/black
+    rev: 22.10.0
     hooks:
-      - id: django-upgrade
-        args: ['--target-version', '4.2']
+      - id: black
 
   # Run the Ruff linter.
   - repo: https://github.com/astral-sh/ruff-pre-commit
@@ -33,12 +32,6 @@ repos:
       - id: ruff
         args: [--fix, --exit-non-zero-on-fix]
 
-  # Linting and formatting for Django projects
-  - repo: https://github.com/Riverside-Healthcare/djLint
-    rev: v1.34.1
-    hooks:
-      - id: djlint-reformat-django
-      - id: djlint-django
 
 # sets up .pre-commit-ci.yaml to ensure pre-commit dependencies stay up to date
 ci:

@@ -1,25 +1,15 @@
 from rest_framework.permissions import SAFE_METHODS
 
-from src.user.models import UserRole
-
 
 def get_user_permissions(request):
-    permissions = set()
     user_permissions = []
 
     user = request.user
     if user.is_anonymous:
         return user_permissions
 
-    groups = UserRole.objects.filter(user=user)
-
-    if groups is not None:
-        for group in groups:
-            group_permissions = group.permissions.values_list("codename", flat=True)
-            permissions.update(set(group_permissions))
-        user_permissions = list(permissions)
-
-    return user_permissions
+    # get all roles
+    return user.get_all_permissions()
 
 
 def validate_permissions(request, user_permissions_dict):

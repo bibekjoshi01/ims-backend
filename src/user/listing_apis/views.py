@@ -1,5 +1,4 @@
 import django_filters
-from django.db.models import Q
 from django_filters.rest_framework import (
     DateFromToRangeFilter,
     DjangoFilterBackend,
@@ -8,13 +7,13 @@ from django_filters.rest_framework import (
 from rest_framework.filters import OrderingFilter, SearchFilter
 from rest_framework.generics import ListAPIView
 
-from src.libs.pagination import CustomLimitOffsetPagination
-from src.user.models import MainModule, PermissionCategory, UserGroup, UserPermission
-from src.user.permissions import UserGroupSetupPermission, UserSetupPermission
+from src.libs.pagination import CustomLimitOffsetPagination, CustomPageNumberPagination
+from src.user.models import MainModule, Permission, PermissionCategory, Role
+from src.user.permissions import RoleSetupPermission, UserSetupPermission
 
 from .serializers import (
     MainModuleSerializer,
-    UserGroupForUserSerializer,
+    RoleForUserSerializer,
     UserPermissionCategorySerializer,
     UserPermissionSerializer,
 )
@@ -29,11 +28,11 @@ class FilterForMainModule(FilterSet):
         fields = ["id", "date", "name"]
 
 
-class MainModuleForUserGroupsView(ListAPIView):
+class MainModuleForRoleView(ListAPIView):
     """Main Module List API View"""
 
-    permission_classes = [UserGroupSetupPermission]
-    queryset = MainModule.objects.filter(is_active=True, is_archived=False)
+    permission_classes = [RoleSetupPermission]
+    queryset = MainModule.objects.filter(is_active=True)
     serializer_class = MainModuleSerializer
     filterset_class = FilterForMainModule
     filter_backends = [SearchFilter, OrderingFilter, DjangoFilterBackend]
@@ -53,7 +52,7 @@ class FilterForUserPermission(FilterSet):
     )
 
     class Meta:
-        model = UserPermission
+        model = Permission
         fields = [
             "id",
             "date",
@@ -64,12 +63,12 @@ class FilterForUserPermission(FilterSet):
         ]
 
 
-class UserPermissionForUserGroupsView(ListAPIView):
+class UserPermissionForRoleView(ListAPIView):
     """User Permissions List View"""
 
-    pagination_class = CustomLimitOffsetPagination
-    permission_classes = [UserGroupSetupPermission]
-    queryset = UserPermission.objects.filter(is_active=True, is_archived=False)
+    permission_classes = [RoleSetupPermission]
+    pagination_class = CustomPageNumberPagination
+    queryset = Permission.objects.filter(is_active=True, is_archived=False)
     serializer_class = UserPermissionSerializer
     filter_backends = [SearchFilter, OrderingFilter, DjangoFilterBackend]
     filterset_class = FilterForUserPermission
@@ -90,11 +89,11 @@ class FilterForUserPermissionCategory(FilterSet):
         fields = ["id", "date", "name", "main_module"]
 
 
-class UserPermissionCategoryForUserGroupsView(ListAPIView):
+class UserPermissionCategoryForRoleView(ListAPIView):
     """User Permission Category List View"""
 
     pagination_class = CustomLimitOffsetPagination
-    permission_classes = [UserGroupSetupPermission]
+    permission_classes = [RoleSetupPermission]
     queryset = PermissionCategory.objects.filter(is_active=True, is_archived=False)
     serializer_class = UserPermissionCategorySerializer
     filter_backends = [SearchFilter, OrderingFilter, DjangoFilterBackend]
@@ -104,14 +103,12 @@ class UserPermissionCategoryForUserGroupsView(ListAPIView):
     http_method_names = ["get", "head", "options"]
 
 
-class UserGroupsForUserView(ListAPIView):
+class RoleForUserView(ListAPIView):
     permission_classes = [UserSetupPermission]
-    queryset = UserGroup.objects.filter(
-        Q(is_active=True) | ~Q(is_archived=True) | ~Q(is_system_managed=True),
-    )
-    serializer_class = UserGroupForUserSerializer
+    queryset = Role.objects.filter(is_active=True, is_system_managed=False)
+    serializer_class = RoleForUserSerializer
     filter_backends = [SearchFilter, OrderingFilter, DjangoFilterBackend]
-    filter_fields = ["id", "name", "codename", "is_active"]
-    search_fields = ["id", "name", "codename", "is_active"]
+    filter_fields = ["id", "name", "codename"]
+    search_fields = ["id", "name", "codename"]
     ordering_fields = ["id", "name"]
     ordering = ["name"]

@@ -1,7 +1,7 @@
 from rest_framework import serializers
 from rest_framework.serializers import ModelSerializer
 
-from .models import AbstractInfoModel, PublicAbstractInfoModel
+from .models import AbstractInfoModel, AbstractInfoPublicModel
 
 
 class AbstractInfoRetrieveSerializer(ModelSerializer):
@@ -23,11 +23,10 @@ class AbstractInfoRetrieveSerializer(ModelSerializer):
         self,
         obj,
     ) -> str:
-        return obj.created_by.get_full_name
+        return obj.created_by.get_full_name()
 
 
 class PublicAbstractInfoRetrieveSerializer(ModelSerializer):
-
     class Meta:
-        model = PublicAbstractInfoModel
+        model = AbstractInfoPublicModel
         fields = ["created_at", "updated_at", "is_active"]

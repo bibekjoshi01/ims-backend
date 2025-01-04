@@ -1,19 +1,19 @@
-from enum import Enum
-from django.utils.translation import gettext_lazy as _
+from src.base.constants import BaseEnum
 
-class ThirdPartyApps(Enum):
-    GOOGLE = "GOOGLE"
-    MICROSOFT = "MICROSOFT"
+
+class SocialMedias(BaseEnum):
+    FACEBOOK = "FACEBOOK"
+    TWITTER = "TWITTER"
     LINKEDIN = "LINKEDIN"
-    APPLE = "APPLE"
-
-    @classmethod
-    def choices(cls):
-        return [(key.value, _(key.name.capitalize())) for key in cls]
-
-MAX_PUBLIC_POST_TAG_LIMIT = 4
-MAX_PUBLIC_POST_CATEGORY_LIMIT = 2
-
-GOOGLE_CLIENT_ID = "197523093421-7dd93s0jup4ulbfovkn2krvvun0k7lph.apps.googleusercontent.com"
-
-
+    INSTAGRAM = "INSTAGRAM"
+    YOUTUBE = "YOUTUBE"
+    PINTEREST = "PINTEREST"
+    SNAPCHAT = "SNAPCHAT"
+    TIKTOK = "TIKTOK"
+    REDDIT = "REDDIT"
+    DISCORD = "DISCORD"
+    TELEGRAM = "TELEGRAM"
+    WHATSAPP = "WHATSAPP"
+    SKYPE = "SKYPE"
+    VIBER = "VIBER"
+    OTHER = "OTHER"

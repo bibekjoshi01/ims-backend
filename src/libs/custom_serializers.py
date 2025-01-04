@@ -1,15 +1,23 @@
+from uuid import UUID
+
+from django.utils.translation import gettext_lazy as _
 from rest_framework import serializers
 
-from src.magazine.models import Magazine
 
+class ModelUUIDField(serializers.UUIDField):
+    """Custom field to handle UUID input for Model"""
 
-# Magazine UUID field
-class MagazineUUIDSerializerField(serializers.UUIDField):
     def to_internal_value(self, data):
+        # Convert the incoming UUID to a Model instance
         try:
-            return Magazine.objects.get(uuid=data, is_active=True, is_archived=False)
-        except Magazine.DoesNotExist as err:
-            error_message = "Invalid magazine UUID"
+            uuid_val = UUID(data)  # Validate UUID format
+            return self.model.objects.get(
+                uuid=uuid_val,
+                is_archived=False,
+                is_active=True,
+            )
+        except (ValueError, AttributeError, self.model.DoesNotExist) as err:
+            error_message = _("Invalid %s") % self.model.__name__
             raise serializers.ValidationError(error_message) from err
 
 

@@ -3,9 +3,5 @@
 -r base.txt
 
 gunicorn==22.0.0
-psycopg[c]==3.1.18
+uvicorn[standard]==0.29.0
 sentry-sdk==2.0.1
-
-# Django
-# ------------------------------------------------------------------------------
-django-anymail==10.3

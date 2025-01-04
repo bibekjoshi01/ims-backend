@@ -162,9 +162,6 @@ typings/
 # Local History for devcontainer
 .devcontainer/bash_history
 
-
-
-
 ### Windows template
 # Windows thumbnail cache files
 Thumbs.db
@@ -273,6 +270,7 @@ dump.rdb
 
 ### Project template
 src/media/
+/media/
 
 .pytest_cache/
 .ipython/
