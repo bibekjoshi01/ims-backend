@@ -8,9 +8,12 @@ from django.core.exceptions import ValidationError
 import requests
 from requests.exceptions import RequestException
 
+
 # Custom Imports
 from .base import OAuthProvider
-from .constants import UserInfo
+from .constants import UserInfo, AuthProviders
+from .messages import ERROR_MESSAGES
+from .loggers import auth_logger as logger
 
 
 class GoogleOAuth(OAuthProvider):
@@ -18,6 +21,7 @@ class GoogleOAuth(OAuthProvider):
     Google OAuth provider class for validating authentication tokens
     and retrieving user information.
     """
+
     TOKEN_INFO_API = "https://oauth2.googleapis.com/tokeninfo"
     USER_INFO_API = "https://www.googleapis.com/oauth2/v3/userinfo"
 
@@ -38,7 +42,9 @@ class GoogleOAuth(OAuthProvider):
             KeyError: If the expected fields are missing in the API response.
         """
         if not cls.TOKEN_INFO_API or not cls.USER_INFO_API:
-            raise NotImplementedError("Subclasses must define token_info_api and user_info_api.")
+            raise NotImplementedError(
+                "Subclasses must define token_info_api and user_info_api."
+            )
 
         if not auth_token:
             raise ValidationError("Please provide auth token.")
@@ -67,7 +73,7 @@ class GoogleOAuth(OAuthProvider):
             # Format and return user info
             return {
                 "type": "success",
-                "provider": "GOOGLE",
+                "provider": AuthProviders.GOOGLE,
                 "first_name": user_info.get("given_name", ""),
                 "last_name": user_info.get("family_name", ""),
                 "full_name": user_info.get("name", ""),
@@ -76,6 +82,8 @@ class GoogleOAuth(OAuthProvider):
             }
 
         except RequestException as err:
-            raise ValueError(f"Failed to fetch user information from Google API: {err}")
+            logger.error(f"Failed to fetch user information from Google API: {err}")
+            raise ValueError(ERROR_MESSAGES["request_failed"])
         except Exception as err:
+            logger.error(f"Unexpected error occurred: {err}")
             raise ValueError(f"Unexpected error occurred: {err}")

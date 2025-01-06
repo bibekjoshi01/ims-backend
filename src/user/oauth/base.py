@@ -1,5 +1,6 @@
 from typing import Dict
 from django.conf import settings
+from . loggers import auth_logger as logger
 
 
 class OAuthProvider:
@@ -22,10 +23,12 @@ class OAuthProvider:
         provider_settings = settings.OAUTH_PROVIDERS.get(provider_name, {})
 
         if not provider_settings:
+            logger.error(f"{provider_name.capitalize()} OAuth settings are not configured in settings.OAUTH_PROVIDERS.")
             raise ValueError(
                 f"{provider_name.capitalize()} OAuth settings are not configured in settings.OAUTH_PROVIDERS.")
 
         if not provider_settings.get("client_id") or not provider_settings.get("client_secret"):
+            logger.error(f"{provider_name.capitalize()} OAuth settings must include 'client_id' and 'client_secret'.")
             raise ValueError(
                 f"{provider_name.capitalize()} OAuth settings must include 'client_id' and 'client_secret'."
             )
