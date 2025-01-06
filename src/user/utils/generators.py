@@ -10,11 +10,17 @@ def generate_role_codename(user_group_name):
 
 
 def generate_unique_user_username(user_type: str, email: str | None) -> str:
+    """
+    Generate a unique username for a user based on the user type.
+    User Types: system_user, public_user
+    email: Email address of the user (optional)
+    """
+
     type_temp = user_type
     if type_temp == "system_user":
         title = "SU"
-    elif type_temp == "website_user":
-        title = "WU"
+    elif type_temp == "public_user":
+        title = "PU"
     else:
         title = "NA"
 

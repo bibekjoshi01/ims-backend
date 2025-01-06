@@ -9,9 +9,9 @@ router = DefaultRouter(trailing_slash=False)
 
 urlpatterns = [
     path(
-        "users/signin",
+        "users/oauth",
         PublicUserSignInAPIView.as_view(),
-        name="public_user_signup",
+        name="public_user_oauth",
     ),
     path("", include(router.urls)),
 ]

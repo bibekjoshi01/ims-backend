@@ -11,6 +11,8 @@ from rest_framework import serializers
 # Custom Imports
 from src.user.oauth import AuthTokenValidator, AuthProviders
 from src.user.models import User
+from src.user.utils import generate_unique_user_username
+from src.user.utils.generators import generate_strong_password
 from .messages import ERROR_MESSAGES
 
 
@@ -27,7 +29,9 @@ class PublicUserSignInSerializer(serializers.Serializer):
 
             # Check if account status is active
             if not user.is_active:
-                raise serializers.ValidationError({"message": ERROR_MESSAGES["account_disabled"]})
+                raise serializers.ValidationError(
+                    {"message": ERROR_MESSAGES["account_disabled"]}
+                )
 
             if not user.is_email_verified:
                 user.is_email_verified = True
@@ -35,12 +39,14 @@ class PublicUserSignInSerializer(serializers.Serializer):
         except User.DoesNotExist:
             user = User.objects.create_public_user(
                 auth_provider=user_info.get("provider"),
-                username=user_info.get("email").split("@")[0],  # Generate username from email
+                username=generate_unique_user_username(
+                    user_type="public_user", email=user_info.get("email")
+                ),  # Generate username from email
                 email=user_info.get("email"),
-                password=settings.SOCIAL_SECRET,
+                password=generate_strong_password(),
                 photo=user_info.get("photo"),
                 first_name=user_info.get("first_name"),
-                last_name=user_info.get("last_name")
+                last_name=user_info.get("last_name"),
             )
 
             user.created_by = user
@@ -51,7 +57,7 @@ class PublicUserSignInSerializer(serializers.Serializer):
         return {
             "uuid": user.uuid,
             "tokens": user.tokens,
-            "full_name": user.full_name
+            "full_name": user.get_full_name(),
         }
 
     def validate(self, attrs) -> Dict[str, Union[str, int]]:

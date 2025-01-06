@@ -1,7 +1,7 @@
 from rest_framework.permissions import BasePermission
 
 
-class WebsiteUserBasePermission(BasePermission):
+class PublicUserBasePermission(BasePermission):
     def has_permission(self, request, view):
         if (
             request.user.is_anonymous

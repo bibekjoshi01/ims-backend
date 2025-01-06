@@ -8,6 +8,7 @@ class AuthProviders(Enum):
     MICROSOFT = "MICROSOFT"
     LINKEDIN = "LINKEDIN"
     APPLE = "APPLE"
+    DEFAULT = "DEFAULT" # for custom (e.g. using email)
 
     @classmethod
     def choices(cls):

@@ -9,8 +9,9 @@ from django.utils.translation import gettext_lazy as _
 from rest_framework_simplejwt.tokens import RefreshToken
 
 from src.base.models import AbstractInfoModel
+from src.user.oauth import AuthProviders
 
-from .constants import SYSTEM_USER_ROLE, AuthProviders
+from .constants import PUBLIC_USER_ROLE, SYSTEM_USER_ROLE
 from .exceptions import RoleNotFound
 from .validators import validate_image
 
@@ -164,6 +165,25 @@ class UserManager(BaseUserManager):
             raise RoleNotFound(role) from err
         return user
 
+    def create_public_user(
+        self,
+        username,
+        email,
+        password,
+        context=None,
+        **extra_fields,
+    ):
+        user: User = self.create_user(username, email, password, **extra_fields)
+
+        try:
+            role = Role.objects.get(codename=PUBLIC_USER_ROLE)
+            user.roles.add(role)
+            user.save()
+        except Role.DoesNotExist as err:
+            role = "Public User"
+            raise RoleNotFound(role) from err
+        return user
+
 
 class User(AbstractUser):
     """
@@ -207,7 +227,7 @@ class User(AbstractUser):
     auth_provider = models.CharField(
         max_length=30,
         blank=True,
-        default=AuthProviders.BY_EMAIL.value,
+        default=AuthProviders.DEFAULT.value,
         choices=AuthProviders.choices(),
     )
     subscribed_newsletter = models.BooleanField(default=False)

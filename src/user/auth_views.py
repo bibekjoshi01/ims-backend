@@ -34,7 +34,7 @@ from .messages import (
     VERIFICATION_EMAIL_SENT,
 )
 from .models import User, UserAccountVerification
-from .responses import UserLoginResponseSerializer
+from .schemas import UserLoginResponseSerializer
 
 
 class UserTokenRefreshView(TokenRefreshView):
