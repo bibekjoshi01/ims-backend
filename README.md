@@ -1,4 +1,4 @@
-# Blog Backend Project
+# Information Management System
 
 **Formatting and Linting Code**
 

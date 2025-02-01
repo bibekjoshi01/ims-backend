@@ -151,6 +151,7 @@ ignore = [
           # Deactivated because it can make the code slow:
           # https://github.com/astral-sh/ruff/issues/7871
 "PLR0913",
+"F401"
 ]
 # Allow fix for all enabled rules (when `--fix`) is provided.
 fixable = ["ALL"]
