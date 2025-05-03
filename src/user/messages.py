@@ -14,7 +14,7 @@ USER_CREATED = _("User registered successfully.")
 USER_UPDATED = _("User updated successfully.")
 USER_ERRORS = {
     "USERNAME_EXISTS": _("This username is already taken."),
-    "EMAIL_EXISTS": _("An account with this email address already exists."),
+    "EMAIL_EXISTS": _("An USER with this email address already exists."),
     "PHONE_EXISTS": _("A user with this phone number already exists."),
     "MISSING_ROLES": _("Please select at least one user ROLE."),
 }

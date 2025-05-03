@@ -42,11 +42,16 @@ class AbstractInfoModel(models.Model):
     class Meta:
         abstract = True
 
+    def save(self, *args, **kwargs):
+        if self.is_archived and self.is_active:
+            self.is_active = False
+        super().save(*args, **kwargs)
+
     def get_upload_path(self, upload_path, filename):
         return f"{upload_path}/{filename}"
 
 
-class AbstractInfoPublicModel(models.Model):
+class PublicAbstractInfoModel(models.Model):
     """Abstract Created Info Model For Public Models"""
 
     uuid = models.UUIDField(
@@ -81,6 +86,11 @@ class AbstractInfoPublicModel(models.Model):
 
     class Meta:
         abstract = True
+
+    def save(self, *args, **kwargs):
+        if self.is_archived and self.is_active:
+            self.is_active = False
+        super().save(*args, **kwargs)
 
     def get_upload_path(self, upload_path, filename):
         return f"{upload_path}/{filename}"

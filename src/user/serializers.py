@@ -1,10 +1,11 @@
-from django.contrib.auth.password_validation import validate_password
+# Django Imports
 from django.utils import timezone
+from django.contrib.auth.password_validation import validate_password
 from rest_framework import serializers
 
+# Project Imports
 from src.base.serializers import AbstractInfoRetrieveSerializer
 from src.libs.get_context import get_user_by_context
-
 from .messages import (
     USER_CREATED,
     USER_ERRORS,
@@ -16,6 +17,7 @@ from .messages import (
 from .models import Permission, Role, User
 from .utils.generators import generate_role_codename, generate_unique_user_username
 from .validators import validate_image
+
 
 # User Role Serializers
 
@@ -29,7 +31,7 @@ class GetPermissionForRoleSerializer(serializers.ModelSerializer):
 class RoleListSerializer(serializers.ModelSerializer):
     class Meta:
         model = Role
-        fields = ["id", "name", "codename", "is_active"]
+        fields = ["id", "name", "codename", "is_active", "created_at"]
 
 
 class RoleRetrieveSerializer(AbstractInfoRetrieveSerializer):
@@ -58,7 +60,7 @@ class RoleCreateSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Role
-        fields = ["name", "permissions"]
+        fields = ["name", "permissions", "is_active"]
 
     def validate_name(self, name):
         name = name.title()
@@ -140,7 +142,7 @@ class RolePatchSerializer(serializers.ModelSerializer):
 class GetUserRolesForUserListSerializer(serializers.ModelSerializer):
     class Meta:
         model = Role
-        fields = ["id", "name"]
+        fields = ["id", "name", "codename"]
 
 
 class UserListSerializer(serializers.ModelSerializer):
@@ -149,6 +151,7 @@ class UserListSerializer(serializers.ModelSerializer):
     class Meta:
         model = User
         exclude = [
+            "uuid",
             "password",
             "is_superuser",
             "is_staff",
@@ -219,6 +222,7 @@ class UserRegisterSerializer(serializers.ModelSerializer):
             "photo",
             "phone_no",
             "roles",
+            "is_active"
         ]
 
     def validate(self, attrs):
@@ -251,8 +255,7 @@ class UserRegisterSerializer(serializers.ModelSerializer):
 
         if not username:
             username = generate_unique_user_username(
-                user_type="system_user",
-                email=email,
+                user_type="system_user", email=email
             )
 
         created_by = self.context["request"].user

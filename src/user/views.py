@@ -1,7 +1,10 @@
+# Django Imports
 import django_filters
 from django.shortcuts import get_object_or_404
 from django.utils import timezone
 from django_filters.filterset import FilterSet
+
+# Rest Framework Imports
 from django_filters.rest_framework import DjangoFilterBackend
 from rest_framework import status
 from rest_framework.filters import OrderingFilter, SearchFilter
@@ -9,9 +12,9 @@ from rest_framework.response import Response
 from rest_framework.views import APIView
 from rest_framework.viewsets import ModelViewSet
 
+# Project Imports
 from src.libs.utils import set_binary_files_null_if_empty
 from src.user.constants import SYSTEM_USER_ROLE
-
 from .messages import (
     USER_ARCHIVED,
     USER_NOT_FOUND,
@@ -21,7 +24,7 @@ from .messages import (
 from .models import Role, User
 from .permissions import RoleSetupPermission, UserSetupPermission
 from .serializers import (
-    RoleCreateSerializer,  # User Serializers
+    RoleCreateSerializer,
     RoleListSerializer,
     RolePatchSerializer,
     RoleRetrieveSerializer,
@@ -34,7 +37,7 @@ from .serializers import (
 # User Role Setup
 
 
-class RoleFilter(FilterSet):
+class FilterForRoleViewset(FilterSet):
     """Filters For User Role"""
 
     date = django_filters.DateFromToRangeFilter(field_name="created_at")
@@ -48,13 +51,13 @@ class RoleFilter(FilterSet):
 
 class RoleViewSet(ModelViewSet):
     """
-    ViewSet for managing CRUD operations for Role model.
+    ViewSet for managing CRUD operations for Role.
     """
 
     permission_classes = [RoleSetupPermission]
     queryset = Role.objects.filter(is_archived=False, is_system_managed=False)
     serializer_class = RoleListSerializer
-    filterset_class = RoleFilter
+    filterset_class = FilterForRoleViewset
     filter_backends = (SearchFilter, OrderingFilter, DjangoFilterBackend)
     search_fields = ["name", "codename"]
     ordering = ["-created_at"]
@@ -82,7 +85,9 @@ class RoleArchiveView(APIView):
 
     def patch(self, request, role_id):
         try:
-            user_group = Role.objects.get(id=role_id, is_archived=False)
+            user_group = Role.objects.get(
+                id=role_id, is_archived=False, is_system_managed=False
+            )
         except Role.DoesNotExist:
             return Response(
                 {"detail": USER_ROLE_NOT_FOUND},
@@ -90,12 +95,10 @@ class RoleArchiveView(APIView):
             )
 
         user_group.is_archived = True
-        user_group.is_active = False
         user_group.updated_at = timezone.now()
         user_group.save()
         return Response(
-            {"message": USER_ROLE_ARCHIVED},
-            status=status.HTTP_204_NO_CONTENT,
+            {"message": USER_ROLE_ARCHIVED}, status=status.HTTP_204_NO_CONTENT
         )
 
 
@@ -115,7 +118,7 @@ class FilterForUserViewSet(FilterSet):
 
 class UserViewSet(ModelViewSet):
     """
-    ViewSet for managing CRUD operations for User model.
+    ViewSet for managing CRUD operations for User.
     """
 
     permission_classes = [UserSetupPermission]
@@ -180,7 +183,6 @@ class UserArchiveView(APIView):
             )
 
         user.is_archived = True
-        user.is_active = False
         user.updated_at = timezone.now()
         user.save()
         return Response({"message": USER_ARCHIVED}, status=status.HTTP_204_NO_CONTENT)

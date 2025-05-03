@@ -28,61 +28,62 @@ router.register("users", UserViewSet, basename="users")
 router.register("roles", RoleViewSet, basename="roles")
 
 urlpatterns = [
-    # User Authencation
+    # User Auth
     # ---------------------------------------------------------------------------------
-    path("users/token/refresh", UserTokenRefreshView.as_view(), name="token_refresh"),
-    path("users/login", UserLoginView.as_view(), name="user_login"),
-    path("users/logout", UserLogoutView.as_view(), name="user_logout"),
+    path("account/login", UserLoginView.as_view(), name="user-login"),
+    path("account/logout", UserLogoutView.as_view(), name="user-logout"),
+    path("account/token/refresh", UserTokenRefreshView.as_view(), name="token-refresh"),
     path(
-        "users/account/verify",
+        "account/verify",
         UserVerifyAccountAPIView.as_view(),
-        name="verify_account",
+        name="verify-account",
     ),
-    path("users/profile", UserProfileView.as_view(), name="user_profile"),
+    path("account/profile", UserProfileView.as_view(), name="user-profile"),
     path(
-        "users/profile/update",
+        "account/profile/update",
         UserProfileUpdateView.as_view(),
-        name="user_profile_update",
+        name="user-profile-update",
     ),
     path(
-        "users/account/delete",
+        "account/delete",
         UserDeleteAccountView.as_view(),
-        name="user_delete_account",
+        name="user-delete-account",
     ),
     path(
-        "users/change-password",
+        "account/change-password",
         UserChangePasswordView.as_view(),
-        name="user_change_password",
+        name="user-change-password",
     ),
     path(
-        "users/forget-password-request",
+        "account/forget-password-request",
         UserForgetPasswordRequestView.as_view(),
-        name="user_forget_password_request",
+        name="user-forget-password-request",
     ),
     path(
-        "users/verify-otp",
+        "account/verify-otp",
         UserVerifyOTPAPIView.as_view(),
-        name="user_verify_otp",
+        name="user-verify-otp",
     ),
     path(
-        "users/forget-password",
+        "account/forget-password",
         UserForgetPasswordView.as_view(),
-        name="user_forget_password",
+        name="user-forget-password",
     ),
     # User/Roles Setup
     # ----------------------------------------------------------------------------------
     path(
         "roles/<int:role_id>/archive",
         RoleArchiveView.as_view(),
-        name="user_role_archive",
+        name="user-role-archive",
     ),
-    path("users/<int:user_id>/archive", UserArchiveView.as_view(), name="user_archive"),
+    path("users/<int:user_id>/archive", UserArchiveView.as_view(), name="user-archive"),
     # Listing APIs
-    path("users/roles", RoleForUserView.as_view(), name="user_roles"),
+    # ----------------------------------------------------------------------------------
+    path("users/roles", RoleForUserView.as_view(), name="user-roles"),
     path(
         "roles/main-modules",
         MainModuleForRoleView.as_view(),
-        name="main_modules",
+        name="main-modules",
     ),
     path(
         "roles/permissions",
@@ -92,7 +93,7 @@ urlpatterns = [
     path(
         "roles/permission-categories",
         UserPermissionCategoryForRoleView.as_view(),
-        name="permission_categories",
+        name="permission-categories",
     ),
     path("", include(router.urls)),
 ]
