@@ -34,7 +34,7 @@ class ItemCategory(AbstractInfoModel):
         null=True,
         help_text=_("Optional icon representing the category."),
     )
-    
+
     class Meta:
         ordering = ["name"]
         verbose_name = _("Item Category")
@@ -50,27 +50,39 @@ class Item(AbstractInfoModel):
     """
 
     name = models.CharField(
+        _("Name"),
         max_length=150,
         help_text=_("Represents Item name."),
     )
+    sku = models.CharField(
+        _("Stock Keeping Unit"),
+        max_length=255,
+        unique=True,
+        help_text=_(
+            "The stock keeping unit (unique identifier for inventory management)."
+        ),
+    )
     category = models.ForeignKey(
+        _("Category"),
         ItemCategory,
         on_delete=models.PROTECT,
         related_name="items",
         help_text=_("Category to which this item belongs."),
     )
     description = models.TextField(
+        _("Description"),
         blank=True,
         null=True,
         help_text=_("Detailed product description."),
     )
     image = models.ImageField(
-        upload_to="items/",
+        _("Image"),
+        upload_to="catalog/items/",
         blank=True,
         null=True,
         help_text=_("Main product image."),
     )
-    
+
     class Meta:
         ordering = ["name"]
         verbose_name = _("Item")
