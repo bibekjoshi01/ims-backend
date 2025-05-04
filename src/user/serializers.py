@@ -180,7 +180,7 @@ class UserRetrieveSerializer(serializers.ModelSerializer):
             "is_archived",
             "auth_provider",
             "subscribed_newsletter",
-            "roles",
+            "groups",
         ]
 
     def get_roles(self, obj) -> list:
