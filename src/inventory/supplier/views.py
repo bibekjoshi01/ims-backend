@@ -30,21 +30,15 @@ class FilterForInvSupplier(FilterSet):
     phone_no = django_filters.CharFilter(
         field_name="user__phone_no", lookup_expr="iexact", label="Phone No"
     )
-    mobile_no = django_filters.CharFilter(
-        field_name="user__mobile_no", lookup_expr="iexact", label="Mobile No"
-    )
-    pan_no = django_filters.CharFilter(
-        field_name="user__pan_no", lookup_expr="iexact", label="Pan/Vat No"
-    )
 
     class Meta:
         model = InvSupplier
-        fields = ["id", "name", "email", "phone_no", "mobile_no", "pan_no"]
+        fields = ["id", "name", "email", "phone_no"]
 
 
 class InvSupplierViewSet(ModelViewSet):
     permission_classes = [InvSupplierPermission]
-    queryset = InvSupplier.objects.all()
+    queryset = InvSupplier.objects.filter(is_archived=False)
     filterset_class = FilterForInvSupplier
     filter_backends = (SearchFilter, OrderingFilter, DjangoFilterBackend)
     search_fields = [

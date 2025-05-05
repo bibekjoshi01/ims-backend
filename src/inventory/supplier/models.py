@@ -14,8 +14,6 @@ class InvSupplier(AbstractInfoModel):
         related_name="inv_supplier",
         verbose_name=_("User"),
         help_text=_("Link to the user account of the supplier (optional)."),
-        null=True,
-        blank=True,
     )
     opening_balance = models.DecimalField(
         max_digits=12,
