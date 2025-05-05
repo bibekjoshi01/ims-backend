@@ -9,7 +9,6 @@ from django.utils.translation import gettext_lazy as _
 from rest_framework_simplejwt.tokens import RefreshToken
 
 from src.base.models import AbstractInfoModel
-from src.user.oauth import AuthProviders
 
 from .constants import PUBLIC_USER_ROLE, SYSTEM_USER_ROLE
 from .exceptions import RoleNotFound
@@ -224,13 +223,6 @@ class User(AbstractUser):
     )
     is_email_verified = models.BooleanField(default=False)
     is_phone_verified = models.BooleanField(default=False)
-    auth_provider = models.CharField(
-        max_length=30,
-        blank=True,
-        default=AuthProviders.DEFAULT.value,
-        choices=AuthProviders.choices(),
-    )
-    subscribed_newsletter = models.BooleanField(default=False)
     updated_at = models.DateTimeField(_("date updated"), auto_now=True)
     created_by = models.ForeignKey(
         settings.AUTH_USER_MODEL,

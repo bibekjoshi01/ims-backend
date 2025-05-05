@@ -157,8 +157,6 @@ class UserListSerializer(serializers.ModelSerializer):
             "is_staff",
             "user_permissions",
             "is_archived",
-            "auth_provider",
-            "subscribed_newsletter",
             "groups",
             "roles",
             "permissions",
@@ -178,8 +176,6 @@ class UserRetrieveSerializer(serializers.ModelSerializer):
             "is_staff",
             "user_permissions",
             "is_archived",
-            "auth_provider",
-            "subscribed_newsletter",
             "groups",
         ]
 
