@@ -222,12 +222,12 @@ class UserRegisterSerializer(serializers.ModelSerializer):
             "photo",
             "phone_no",
             "roles",
-            "is_active"
+            "is_active",
         ]
 
     def validate(self, attrs):
         if attrs["username"]:
-            if User.objects.filter(email=attrs["username"]).exists():
+            if User.objects.filter(username=attrs["username"]).exists():
                 raise serializers.ValidationError(
                     {"username": USER_ERRORS["USERNAME_EXISTS"]},
                 )
@@ -315,16 +315,18 @@ class UserPatchSerializer(serializers.ModelSerializer):
             "is_active",
         ]
 
-    def validate_phone_no(self, phone_no):
-        if phone_no:
+    def validate(self, attrs):
+        if attrs["phone_no"]:
             if (
-                User.objects.filter(phone_no__iexact=phone_no)
-                .exclude(pk=self.instance.id)
+                User.objects.filter(phone_no=attrs["phone_no"])
+                .exclude(pk=self.instance.pk)
                 .exists()
             ):
-                raise serializers.ValidationError(USER_ERRORS["PHONE_EXISTS"])
+                raise serializers.ValidationError(
+                    {"phone_no": USER_ERRORS["PHONE_EXISTS"]},
+                )
 
-        return phone_no
+        return attrs
 
     def update(self, instance: User, validated_data):
         photo = validated_data.get("photo", None)
