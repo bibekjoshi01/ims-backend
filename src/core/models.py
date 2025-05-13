@@ -189,3 +189,47 @@ class EmailConfig(AbstractInfoModel):
     class Meta:
         verbose_name = _("Email Configuration")
         verbose_name_plural = _("Email Configurations")
+
+
+class AdditionalChargeType(AbstractInfoModel):
+    """Model to represent different types of additional charges."""
+
+    name = models.CharField(
+        max_length=50,
+        verbose_name=_("Name"),
+        help_text=_("Unique name for the additional charge type (max 50 characters)."),
+    )
+
+    class Meta:
+        verbose_name = _("Additional Charge Type")
+        verbose_name_plural = _("Additional Charge Types")
+        ordering = ["-id"]
+
+    def __str__(self):
+        return f"{self.name}"
+
+
+class PaymentMethod(AbstractInfoModel):
+    """Represents different payment methods available."""
+
+    name = models.CharField(
+        max_length=50,
+        unique=True,
+        verbose_name=_("Name"),
+        help_text=_("Unique name of the payment method (max 50 characters)."),
+    )
+    icon = models.ImageField(
+        upload_to="payment-methods",
+        blank=True,
+        null=True,
+        verbose_name=_("Icon"),
+        help_text=_("Recommended image size: 300x300px."),
+    )
+
+    class Meta:
+        verbose_name = _("Payment Method")
+        verbose_name_plural = _("Payment Methods")
+        ordering = ["-id"]
+
+    def __str__(self):
+        return f"{self.name}"
