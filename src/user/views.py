@@ -6,10 +6,9 @@ from django_filters.filterset import FilterSet
 
 # Rest Framework Imports
 from django_filters.rest_framework import DjangoFilterBackend
+from rest_framework import generics
 from rest_framework import status
 from rest_framework.filters import OrderingFilter, SearchFilter
-from rest_framework.response import Response
-from rest_framework.views import APIView
 from rest_framework.viewsets import ModelViewSet
 
 # Project Imports
@@ -78,28 +77,24 @@ class RoleViewSet(ModelViewSet):
         return serializer_class
 
 
-class RoleArchiveView(APIView):
+class RoleArchiveView(generics.DestroyAPIView):
     """User Role Archive View"""
 
     permission_classes = [RoleSetupPermission]
+    lookup_url_kwarg = "role_id"
+    lookup_field = "id"
+    queryset = Role.objects.filter(is_archived=False, is_system_managed=False)
 
-    def patch(self, request, role_id):
-        try:
-            user_group = Role.objects.get(
-                id=role_id, is_archived=False, is_system_managed=False
-            )
-        except Role.DoesNotExist:
-            return Response(
-                {"detail": USER_ROLE_NOT_FOUND},
-                status=status.HTTP_404_NOT_FOUND,
-            )
+    def perform_destroy(self, instance):
+        instance.is_archived = True
+        instance.updated_at = timezone.now()
+        instance.save()
 
-        user_group.is_archived = True
-        user_group.updated_at = timezone.now()
-        user_group.save()
-        return Response(
-            {"message": USER_ROLE_ARCHIVED}, status=status.HTTP_204_NO_CONTENT
-        )
+    def destroy(self, request, *args, **kwargs):
+        response = super().destroy(request, *args, **kwargs)
+        response.data = {"message": USER_ROLE_ARCHIVED}
+        response.status_code = status.HTTP_204_NO_CONTENT
+        return response
 
 
 # User Setup
@@ -168,21 +163,21 @@ class UserViewSet(ModelViewSet):
         return super().update(request, *args, **kwargs)
 
 
-class UserArchiveView(APIView):
+class UserArchiveView(generics.DestroyAPIView):
     """User Archive View"""
 
     permission_classes = [UserSetupPermission]
+    lookup_url_kwarg = "user_id"
+    lookup_field = "id"
+    queryset = User.objects.filter(is_archived=False)
 
-    def patch(self, request, user_id):
-        try:
-            user = User.objects.get(id=user_id, is_archived=False)
-        except User.DoesNotExist:
-            return Response(
-                {"detail": USER_NOT_FOUND},
-                status=status.HTTP_404_NOT_FOUND,
-            )
+    def perform_destroy(self, instance):
+        instance.is_archived = True
+        instance.updated_at = timezone.now()
+        instance.save()
 
-        user.is_archived = True
-        user.updated_at = timezone.now()
-        user.save()
-        return Response({"message": USER_ARCHIVED}, status=status.HTTP_204_NO_CONTENT)
+    def destroy(self, request, *args, **kwargs):
+        response = super().destroy(request, *args, **kwargs)
+        response.data = {"message": USER_ARCHIVED}
+        response.status_code = status.HTTP_204_NO_CONTENT
+        return response
