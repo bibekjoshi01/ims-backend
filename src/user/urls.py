@@ -30,14 +30,29 @@ router.register("roles", RoleViewSet, basename="roles")
 urlpatterns = [
     # User Auth
     # ---------------------------------------------------------------------------------
-    path("account/login", UserLoginView.as_view(), name="user-login"),
-    path("account/logout", UserLogoutView.as_view(), name="user-logout"),
-    path("account/token/refresh", UserTokenRefreshView.as_view(), name="token-refresh"),
+    path("auth/login", UserLoginView.as_view(), name="user-login"),
+    path("auth/logout", UserLogoutView.as_view(), name="user-logout"),
+    path("auth/token/refresh", UserTokenRefreshView.as_view(), name="token-refresh"),
     path(
-        "account/verify",
+        "auth/verify",
         UserVerifyAccountAPIView.as_view(),
         name="verify-account",
     ),
+    path(
+        "auth/forget-password-request",
+        UserForgetPasswordRequestView.as_view(),
+        name="user-forget-password-request",
+    ),
+    path(
+        "auth/verify-otp",
+        UserVerifyOTPAPIView.as_view(),
+        name="user-verify-otp",
+    ),
+    path(
+        "auth/forget-password",
+        UserForgetPasswordView.as_view(),
+        name="user-forget-password",
+    ),  
     path("account/profile", UserProfileView.as_view(), name="user-profile"),
     path(
         "account/profile/update",
@@ -53,21 +68,6 @@ urlpatterns = [
         "account/change-password",
         UserChangePasswordView.as_view(),
         name="user-change-password",
-    ),
-    path(
-        "account/forget-password-request",
-        UserForgetPasswordRequestView.as_view(),
-        name="user-forget-password-request",
-    ),
-    path(
-        "account/verify-otp",
-        UserVerifyOTPAPIView.as_view(),
-        name="user-verify-otp",
-    ),
-    path(
-        "account/forget-password",
-        UserForgetPasswordView.as_view(),
-        name="user-forget-password",
     ),
     # User/Roles Setup
     # ----------------------------------------------------------------------------------
