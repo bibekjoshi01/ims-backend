@@ -12,7 +12,6 @@ from .auth_views import (
     UserProfileView,
     UserTokenRefreshView,
     UserVerifyAccountAPIView,
-    UserVerifyOTPAPIView,
 )
 from .listing_apis.views import (
     MainModuleForRoleView,
@@ -42,11 +41,6 @@ urlpatterns = [
         "auth/forget-password-request",
         UserForgetPasswordRequestView.as_view(),
         name="user-forget-password-request",
-    ),
-    path(
-        "auth/verify-otp",
-        UserVerifyOTPAPIView.as_view(),
-        name="user-verify-otp",
     ),
     path(
         "auth/forget-password",

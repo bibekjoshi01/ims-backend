@@ -14,15 +14,15 @@ from src.user.utils.verification import send_user_forget_password_email
 from src.user.validators import validate_image
 
 from .messages import (
+    ACCOUNT_ALREADY_VERIFIED,
     ACCOUNT_DISABLED,
     ACCOUNT_NOT_FOUND,
-    ALREADY_VERIFIED,
     INVALID_CREDENTIALS,
-    INVALID_OTP,
+    INVALID_LINK,
     INVALID_PASSWORD,
+    LINK_EXPIRED,
     LOGIN_SUCCESS,
     OLD_PASSWORD_INCORRECT,
-    OTP_EXPIRED,
     PASSWORDS_NOT_MATCH,
     SAME_OLD_NEW_PASSWORD,
 )
@@ -33,7 +33,7 @@ from .models import (
     UserAccountVerification,
     UserForgetPasswordRequest,
 )
-from .utils.generators import generate_secure_otp
+from .utils.generators import generate_secure_token
 
 
 class UserPermissionsSerializer(serializers.ModelSerializer):
@@ -347,57 +347,27 @@ class UserForgetPasswordRequestSerializer(serializers.Serializer):
             if forget_password_requests:
                 forget_password_requests.update(is_archived=True)
 
-            # Get new OTP
-            otp = generate_secure_otp()
+            # Get new Token
+            token = generate_secure_token()
             UserForgetPasswordRequest.objects.create(
                 user=user,
-                token=otp,
+                token=token,
                 created_at=timezone.now(),
             )
             # Send the email to the user
             send_user_forget_password_email(
                 recipient_email=validated_data["email"],
-                otp=otp,
+                token=token,
                 request=self.context["request"],
             )
 
         return validated_data
 
 
-class UserVerifyOTPSerializer(serializers.Serializer):
-    """User OTP Verification Serializer"""
-
-    otp = serializers.CharField(max_length=6, required=True, write_only=True)
-    email = serializers.EmailField(required=True, write_only=True)
-    message = serializers.CharField(read_only=True)
-
-    def validate(self, attrs):
-        otp = attrs.get("otp")
-        email = attrs.get("email")
-
-        try:
-            forget_password_request = UserForgetPasswordRequest.objects.get(
-                token=otp,
-                is_archived=False,
-                user__email=email,
-            )
-            now = timezone.now()
-            delta = now - forget_password_request.created_at
-            if delta > timedelta(minutes=settings.AUTH_LINK_EXP_TIME):
-                raise serializers.ValidationError({"otp": OTP_EXPIRED})
-        except UserForgetPasswordRequest.DoesNotExist as err:
-            raise serializers.ValidationError({"otp": INVALID_OTP}) from err
-
-        return attrs
-
-    def create(self, validated_data):
-        return ...
-
-
 class UserForgetPasswordSerializer(serializers.Serializer):
     """User Forget Password Serializer"""
 
-    otp = serializers.CharField(max_length=64, required=True, write_only=True)
+    token = serializers.CharField(max_length=64, required=True, write_only=True)
     new_password = serializers.CharField(
         max_length=32,
         required=True,
@@ -412,13 +382,13 @@ class UserForgetPasswordSerializer(serializers.Serializer):
     message = serializers.CharField(read_only=True)
 
     def validate(self, attrs):
-        otp = attrs.get("otp")
+        token = attrs.get("token")
         new_password = attrs.get("new_password")
         confirm_password = attrs.get("confirm_password")
 
         try:
             forget_password_request = UserForgetPasswordRequest.objects.get(
-                token=otp,
+                token=token,
                 is_archived=False,
             )
             attrs["forget_password_request"] = forget_password_request
@@ -427,9 +397,9 @@ class UserForgetPasswordSerializer(serializers.Serializer):
             if delta > timedelta(minutes=settings.AUTH_LINK_EXP_TIME):
                 forget_password_request.is_archived = True
                 forget_password_request.save()
-                raise serializers.ValidationError({"otp": OTP_EXPIRED})
+                raise serializers.ValidationError({"error": LINK_EXPIRED})
         except UserForgetPasswordRequest.DoesNotExist as err:
-            raise serializers.ValidationError({"otp": INVALID_OTP}) from err
+            raise serializers.ValidationError({"error": INVALID_LINK}) from err
 
         attrs["user"] = forget_password_request.user
         old_password = attrs["user"].password
@@ -462,14 +432,14 @@ class UserForgetPasswordSerializer(serializers.Serializer):
 class UserVerifyAccountSerializer(serializers.Serializer):
     """User Verify Account Serializer"""
 
-    otp = serializers.CharField(max_length=256, required=True)
+    token = serializers.CharField(max_length=256, required=True)
 
     def validate(self, attrs):
-        otp = attrs.get("otp")
+        token = attrs.get("token")
 
         try:
             verification_request = UserAccountVerification.objects.get(
-                token=otp,
+                token=token,
                 is_archived=False,
             )
             now = timezone.now()
@@ -478,15 +448,15 @@ class UserVerifyAccountSerializer(serializers.Serializer):
             if verification_request.user.is_email_verified:
                 verification_request.is_archived = True
                 verification_request.save()
-                raise serializers.ValidationError({"email": ALREADY_VERIFIED})
+                raise serializers.ValidationError({"error": ACCOUNT_ALREADY_VERIFIED})
 
             if delta > timedelta(minutes=settings.AUTH_LINK_EXP_TIME):
                 verification_request.is_archived = True
                 verification_request.save()
-                raise serializers.ValidationError({"otp": OTP_EXPIRED})
+                raise serializers.ValidationError({"error": LINK_EXPIRED})
 
         except UserAccountVerification.DoesNotExist as err:
-            raise serializers.ValidationError({"otp": INVALID_OTP}) from err
+            raise serializers.ValidationError({"error": INVALID_LINK}) from err
 
         attrs["verification_request"] = verification_request
 

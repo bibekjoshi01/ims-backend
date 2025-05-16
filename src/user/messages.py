@@ -38,15 +38,15 @@ VERIFICATION_EMAIL_SENT = _(
     "A verification email has been sent to {email}. It is valid for 10 minutes."
 )
 ACCOUNT_VERIFIED = _("Your Account Verified Successfully.")
-OTP_VERIFIED = _("OTP Verified Successfully.")
+OTP_VERIFIED = _("Link Verified Successfully.")
 ACCOUNT_NOT_FOUND = _("Account with email {email} do not exists.")
-PASSWORD_RESET_OTP_SENT = _(
-    "A otp has been sent to {email}. It is valid for 10 minutes."
+PASSWORD_RESET_LINK_SENT = _(
+    "A link has been sent to {email}. It is valid for 10 minutes."
 )
 PASSWORD_CHANGED = _("Password changed successfully.")
 OLD_PASSWORD_INCORRECT = _("Incorrect old password.")
 PASSWORDS_NOT_MATCH = _("New password and confirm password do not match.")
 SAME_OLD_NEW_PASSWORD = _("New password must be different from old password.")
-OTP_EXPIRED = _("OTP has expired. Please try again.")
-INVALID_OTP = _("Invalid otp. Please try again.")
-ALREADY_VERIFIED = _("Account already verified. Please log in.")
+LINK_EXPIRED = _("Link has expired. Please try again.")
+INVALID_LINK = _("Invalid link. Please try again.")
+ACCOUNT_ALREADY_VERIFIED = _("Account already verified. Please log in.")

@@ -56,3 +56,10 @@ def generate_strong_password():
 def generate_secure_otp():
     """Generates a cryptographically secure 6-digit One-Time Password (OTP)."""
     return "".join(secrets.choice("0123456789") for _ in range(6))
+
+
+def generate_secure_token(length: int = 32) -> str:
+    """Generates a cryptographically secure URL-safe token."""
+    # token_urlsafe(n) returns a string with ~1.3 * n length
+    # So to get a token around 32 characters, use 24 bytes
+    return secrets.token_urlsafe(length)

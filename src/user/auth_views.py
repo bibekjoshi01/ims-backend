@@ -10,7 +10,7 @@ from rest_framework_simplejwt.exceptions import InvalidToken
 from rest_framework_simplejwt.views import TokenRefreshView
 
 from src.user.throttling import ForgetPasswordThrottle, LoginThrottle
-from src.user.utils.generators import generate_secure_otp
+from src.user.utils.generators import generate_secure_token
 from src.user.utils.verification import send_user_account_verification_email
 
 from .auth_serializers import (
@@ -22,14 +22,12 @@ from .auth_serializers import (
     UserProfileSerializer,
     UserProfileUpdateSerializer,
     UserVerifyAccountSerializer,
-    UserVerifyOTPSerializer,
 )
 from .messages import (
     ACCOUNT_VERIFIED,
     LOGOUT_SUCCESS,
-    OTP_VERIFIED,
     PASSWORD_CHANGED,
-    PASSWORD_RESET_OTP_SENT,
+    PASSWORD_RESET_LINK_SENT,
     PROFILE_UPDATED,
     VERIFICATION_EMAIL_SENT,
 )
@@ -74,17 +72,17 @@ class UserLoginView(APIView):
                 verification_request.update(is_archived=True)
 
             user = User.objects.get(id=user_id)
-            otp = generate_secure_otp()
+            token = generate_secure_token()
             UserAccountVerification.objects.create(
                 user=user,
-                token=otp,
+                token=token,
                 created_at=timezone.now(),
             )
 
-            # send OTP to the user's email
+            # send Link to the user's email
             send_user_account_verification_email(
                 recipient_email=data["email"],
-                otp=otp,
+                token=token,
                 request=request,
             )
 
@@ -125,24 +123,8 @@ class UserVerifyAccountAPIView(APIView):
             context={"request": request},
         )
         if serializer.is_valid(raise_exception=True):
-            return Response({"message": ACCOUNT_VERIFIED}, status=status.HTTP_200_OK)
-        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
-
-
-class UserVerifyOTPAPIView(APIView):
-    """User Verify OTP View"""
-
-    permission_classes = [AllowAny]
-    serializer_class = UserVerifyOTPSerializer
-
-    def post(self, request):
-        serializer = self.serializer_class(
-            data=request.data,
-            context={"request": request},
-        )
-        if serializer.is_valid(raise_exception=True):
             serializer.save()
-            return Response({"message": OTP_VERIFIED}, status=status.HTTP_200_OK)
+            return Response({"message": ACCOUNT_VERIFIED}, status=status.HTTP_200_OK)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
 
@@ -233,7 +215,7 @@ class UserForgetPasswordRequestView(APIView):
             validated_data = serializer.validated_data
             email = validated_data["email"]
             serializer.save()
-            response_message = PASSWORD_RESET_OTP_SENT.format(email=email)
+            response_message = PASSWORD_RESET_LINK_SENT.format(email=email)
             return Response({"message": response_message}, status=status.HTTP_200_OK)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
