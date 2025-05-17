@@ -236,7 +236,7 @@ class UserChangePasswordSerializer(serializers.Serializer):
     message = serializers.CharField(read_only=True)
 
     def validate(self, attrs):
-        user = get_user_by_context(self.context)
+        user: User = get_user_by_context(self.context)
         old_password = attrs.get("old_password")
         new_password = attrs.get("new_password")
         confirm_password = attrs.get("confirm_password")
