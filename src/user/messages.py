@@ -28,7 +28,6 @@ USER_ROLE_ERRORS = {
     "ROLE_NAME": _("User role with name {name} already exists."),
 }
 
-# VERIFICATION_(
 # flake8: noqa
 INVALID_PASSWORD = _("Incorrect password. Please try again.")
 ACCOUNT_DISABLED = _(

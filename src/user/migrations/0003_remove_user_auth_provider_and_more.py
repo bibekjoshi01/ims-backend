@@ -6,16 +6,16 @@ from django.db import migrations
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('user', '0002_user_unique_email_active_user'),
+        ("user", "0002_user_unique_email_active_user"),
     ]
 
     operations = [
         migrations.RemoveField(
-            model_name='user',
-            name='auth_provider',
+            model_name="user",
+            name="auth_provider",
         ),
         migrations.RemoveField(
-            model_name='user',
-            name='subscribed_newsletter',
+            model_name="user",
+            name="subscribed_newsletter",
         ),
     ]

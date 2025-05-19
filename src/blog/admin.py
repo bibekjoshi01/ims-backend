@@ -1,6 +1,6 @@
 from django.contrib import admin
 
-from .models import PostCategory, PostTag, PostComment, Post
+from .models import Post, PostCategory, PostComment, PostTag
 
 admin.site.register(PostCategory)
 admin.site.register(PostTag)

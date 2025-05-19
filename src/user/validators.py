@@ -3,7 +3,7 @@ from django.utils.translation import gettext_lazy as _
 from rest_framework.serializers import ValidationError
 
 
-def validate_image(image):
+def validate_user_image(image):
     """
     Validates the size of the image file.
 

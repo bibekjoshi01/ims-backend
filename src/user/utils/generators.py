@@ -1,6 +1,7 @@
 import secrets
 import string
 
+from src.user.constants import PUBLIC_USER_ROLE, SYSTEM_USER_ROLE
 from src.user.models import User
 
 
@@ -17,12 +18,12 @@ def generate_unique_user_username(user_type: str, email: str | None) -> str:
     """
 
     type_temp = user_type
-    if type_temp == "system_user":
+    if type_temp == SYSTEM_USER_ROLE:
         title = "SU"
-    elif type_temp == "public_user":
+    elif type_temp == PUBLIC_USER_ROLE:
         title = "PU"
     else:
-        title = "NA"
+        title = "UU"
 
     """Generate a unique username of 15 characters long."""
     chars = string.digits
@@ -36,6 +37,7 @@ def generate_unique_user_username(user_type: str, email: str | None) -> str:
     # Check if the generated username already exists
     if User.objects.filter(username=username).exists():
         generate_unique_user_username(user_type, email=email)
+
     return username
 
 

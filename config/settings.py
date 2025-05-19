@@ -251,8 +251,8 @@ CORS_URLS_REGEX = r"^/api/.*$"
 
 SPECTACULAR_SETTINGS = {
     "SCHEMA_COMPONENT_SPLIT_UNDERSCORES": False,
-    "TITLE": "Blog Backend API",
-    "DESCRIPTION": "Documentation of API endpoints of Blog Backend",
+    "TITLE": "IMS Backend API",
+    "DESCRIPTION": "Documentation of API endpoints of IMS Backend",
     "VERSION": "1.0.0",
     "SERVE_INCLUDE_SCHEMA": False,
     "POSTPROCESSING_HOOKS": [
@@ -284,14 +284,12 @@ OAUTH_PROVIDERS = {
     "google": {
         "client_secret": env("GOOGLE_CLIENT_SECRET"),
         "client_id": env("GOOGLE_CLIENT_ID"),
-    }
+    },
 }
 
 # Constants
 # -------------------------------------------------------------------------------
-MAX_UPLOAD_SIZE = int(env("MAX_UPLOAD_SIZE"))
-BLOG_MEDIA_MAX_UPLOAD_SIZE = int(env("BLOG_MEDIA_MAX_UPLOAD_SIZE"))
-WEBSITE_MEDIA_MAX_UPLOAD_SIZE = int(env("WEBSITE_MEDIA_MAX_UPLOAD_SIZE"))
+IMAGE_MAX_UPLOAD_SIZE = int(env("MAX_UPLOAD_SIZE"))
 FRONTEND_BASE_URL = env("FRONTEND_BASE_URL")
 AUTH_LINK_EXP_TIME = int(env("AUTH_LINK_EXP_TIME"))
 

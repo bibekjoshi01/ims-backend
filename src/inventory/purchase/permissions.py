@@ -21,7 +21,7 @@ class PurchaseReturnPermission(BasePermission):
             "SAFE_METHODS": "view_inv_purchase_return",
             "POST": "add_inv_purchase_return",
             "PATCH": "edit_inv_purchase_return",
-            "PATCH": "edit_inv_purchase_return",
+            "DELETE": "delete_inv_purchase_return",
         }
 
         return validate_permissions(request, user_permissions_dict)

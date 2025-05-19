@@ -1,34 +1,38 @@
 import django_filters
 from django.db import transaction
 from django_filters import FilterSet
+from django_filters.rest_framework import DjangoFilterBackend
+from rest_framework.filters import OrderingFilter, SearchFilter
 
 # Rest Framework Imports
 from rest_framework.viewsets import ModelViewSet
-from django_filters.rest_framework import DjangoFilterBackend
-from rest_framework.filters import OrderingFilter, SearchFilter
-from django_filters.rest_framework import DjangoFilterBackend
-from rest_framework.filters import OrderingFilter, SearchFilter
 
 # Project Imports
 from .models import InvSupplier
 from .permissions import InvSupplierPermission
 from .serializers import (
-    InvSupplierListSerializer,
-    InvSupplierRetrieveSerializer,
-    InvSupplierPatchSerializer,
     InvSupplierCreateSerializer,
+    InvSupplierListSerializer,
+    InvSupplierPatchSerializer,
+    InvSupplierRetrieveSerializer,
 )
 
 
 class FilterForInvSupplier(FilterSet):
     name = django_filters.CharFilter(
-        field_name="user__first_name", lookup_expr="iexact", label="Full Name"
+        field_name="user__first_name",
+        lookup_expr="iexact",
+        label="Full Name",
     )
     email = django_filters.CharFilter(
-        field_name="user__email", lookup_expr="iexact", label="Email"
+        field_name="user__email",
+        lookup_expr="iexact",
+        label="Email",
     )
     phone_no = django_filters.CharFilter(
-        field_name="user__phone_no", lookup_expr="iexact", label="Phone No"
+        field_name="user__phone_no",
+        lookup_expr="iexact",
+        label="Phone No",
     )
 
     class Meta:

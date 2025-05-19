@@ -7,6 +7,7 @@ from django_filters.rest_framework import (
 from rest_framework.filters import OrderingFilter, SearchFilter
 from rest_framework.generics import ListAPIView
 
+# Project Imports
 from src.libs.pagination import CustomLimitOffsetPagination, CustomPageNumberPagination
 from src.user.models import MainModule, Permission, PermissionCategory, Role
 from src.user.permissions import RoleSetupPermission, UserSetupPermission
@@ -21,7 +22,6 @@ from .serializers import (
 
 class FilterForMainModule(FilterSet):
     date = DateFromToRangeFilter(field_name="created_at")
-    name = django_filters.CharFilter(lookup_expr="iexact")
 
     class Meta:
         model = MainModule
@@ -43,7 +43,6 @@ class MainModuleForRoleView(ListAPIView):
 
 class FilterForUserPermission(FilterSet):
     date = DateFromToRangeFilter(field_name="created_at")
-    name = django_filters.CharFilter(lookup_expr="iexact")
     codename = django_filters.CharFilter()
     permission_category = django_filters.NumberFilter(field_name="permission_category")
     main_module = django_filters.NumberFilter(
@@ -68,7 +67,7 @@ class UserPermissionForRoleView(ListAPIView):
 
     permission_classes = [RoleSetupPermission]
     pagination_class = CustomPageNumberPagination
-    queryset = Permission.objects.filter(is_active=True, is_archived=False)
+    queryset = Permission.objects.filter(is_active=True)
     serializer_class = UserPermissionSerializer
     filter_backends = [SearchFilter, OrderingFilter, DjangoFilterBackend]
     filterset_class = FilterForUserPermission
@@ -80,13 +79,11 @@ class UserPermissionForRoleView(ListAPIView):
 
 class FilterForUserPermissionCategory(FilterSet):
     date = DateFromToRangeFilter(field_name="created_at")
-    name = django_filters.CharFilter(lookup_expr="iexact")
-    codename = django_filters.CharFilter()
     main_module = django_filters.NumberFilter(field_name="main_module")
 
     class Meta:
         model = PermissionCategory
-        fields = ["id", "date", "name", "main_module"]
+        fields = ["id", "date", "name", "codenamemain_module"]
 
 
 class UserPermissionCategoryForRoleView(ListAPIView):
@@ -94,7 +91,7 @@ class UserPermissionCategoryForRoleView(ListAPIView):
 
     pagination_class = CustomLimitOffsetPagination
     permission_classes = [RoleSetupPermission]
-    queryset = PermissionCategory.objects.filter(is_active=True, is_archived=False)
+    queryset = PermissionCategory.objects.filter(is_active=True)
     serializer_class = UserPermissionCategorySerializer
     filter_backends = [SearchFilter, OrderingFilter, DjangoFilterBackend]
     filterset_class = FilterForUserPermissionCategory
@@ -109,6 +106,6 @@ class RoleForUserView(ListAPIView):
     serializer_class = RoleForUserSerializer
     filter_backends = [SearchFilter, OrderingFilter, DjangoFilterBackend]
     filter_fields = ["id", "name", "codename"]
-    search_fields = ["id", "name", "codename"]
+    search_fields = ["id", "name"]
     ordering_fields = ["id", "name"]
     ordering = ["name"]

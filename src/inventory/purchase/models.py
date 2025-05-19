@@ -1,17 +1,17 @@
 # Django Imports
-from django.db import models
 from django.core.validators import MinValueValidator
+from django.db import models
 from django.utils.translation import gettext_lazy as _
+
+from src.base.models import AbstractInfoModel
 
 # Project Imports
 from src.blog.models import User
-from src.base.models import AbstractInfoModel
 from src.core.models import AdditionalChargeType, PaymentMethod
+from src.inventory.catalog.models import Item, ItemCategory
 from src.libs.validators import validate_file_extension
-from src.inventory.catalog.models import ItemCategory, Item
-from .validators import validate_purchase_attachment_size
-from .constants import PurchaseType, PayType
-from .managers import InvPurchaseMainManager
+
+from .constants import PayType, PurchaseType
 
 
 class InvPurchaseMain(AbstractInfoModel):
@@ -101,7 +101,7 @@ class InvPurchaseMain(AbstractInfoModel):
         null=True,
         verbose_name=_("Reference Purchase"),
         help_text=_(
-            "Reference to the original purchase in case of returns or corrections."
+            "Reference to the original purchase in case of returns or corrections.",
         ),
     )
     remarks = models.CharField(
@@ -109,8 +109,6 @@ class InvPurchaseMain(AbstractInfoModel):
         blank=True,
         verbose_name=_("Remarks"),
     )
-
-    objects = InvPurchaseMainManager()
 
     class Meta:
         verbose_name = _("Purchase")
@@ -289,7 +287,6 @@ class InvPurchaseAttachment(AbstractInfoModel):
     title = models.CharField(
         max_length=100,
         blank=True,
-        null=True,
         verbose_name=_("Attachment Title"),
     )
     purchase_main = models.ForeignKey(
@@ -299,7 +296,7 @@ class InvPurchaseAttachment(AbstractInfoModel):
         verbose_name=_("Purchase Main"),
     )
     attachment = models.FileField(
-        validators=[validate_purchase_attachment_size, validate_file_extension],
+        validators=[validate_file_extension],
         verbose_name=_("Attachment File"),
     )
 

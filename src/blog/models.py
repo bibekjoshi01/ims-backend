@@ -1,15 +1,15 @@
 from uuid import uuid4
 
-from django.db import models
 from django.contrib.auth import get_user_model
+from django.db import models
 from django.utils.translation import gettext_lazy as _
-
 from mptt.managers import TreeManager
-from mptt.models import TreeForeignKey, MPTTModel
+from mptt.models import MPTTModel, TreeForeignKey
 
-from .validators import validate_blog_media
 from src.base.models import AbstractInfoModel
-from .constants import CommentStatus, PostStatus, PostFormat, PostVisibility
+
+from .constants import CommentStatus, PostFormat, PostStatus, PostVisibility
+from .validators import validate_blog_media
 
 User = get_user_model()
 
@@ -18,6 +18,7 @@ class Post(AbstractInfoModel):
     """
     Represents a post for a blog.
     """
+
     id: int
     uuid = models.UUIDField(default=uuid4, editable=False, unique=True)
     title = models.CharField(
@@ -25,14 +26,16 @@ class Post(AbstractInfoModel):
         max_length=255,
         help_text=_("Title of the post."),
     )
-    cover_image = models.ImageField(null=True, help_text=_(
-        "Cover image of blog post, Use a ratio of 4:3 for best results."
-    ))
+    cover_image = models.ImageField(
+        null=True,
+        help_text=_("Cover image of blog post, Use a ratio of 4:3 for best results."),
+    )
     slug = models.SlugField(
         unique=True,
         max_length=255,
         help_text=_(
-            "URL-friendly version of the title. Lowercase with letters, numbers, and hyphens."
+            "URL-friendly version of the title. "
+            "Lowercase with letters, numbers, and hyphens.",
         ),
     )
     status = models.CharField(
@@ -45,7 +48,7 @@ class Post(AbstractInfoModel):
         choices=PostFormat.choices(),
         max_length=15,
         help_text=_(
-            "Post format which designates how the theme will display the post."
+            "Post format which designates how the theme will display the post.",
         ),
     )
     visibility = models.CharField(
@@ -55,7 +58,7 @@ class Post(AbstractInfoModel):
             "Determines who can see this post. "
             "Public posts are visible to everyone, "
             "private posts are only visible to the author, "
-            "and password-protected posts require a password to access."
+            "and password-protected posts require a password to access.",
         ),
     )
     content = models.TextField(
@@ -139,7 +142,10 @@ class Post(AbstractInfoModel):
         )
 
     def get_prev_post(self):
-        return Post.objects.filter(id__lt=self.id, status=PostStatus.PUBLISHED.value).first()
+        return Post.objects.filter(
+            id__lt=self.id,
+            status=PostStatus.PUBLISHED.value,
+        ).first()
 
 
 class PostCategory(MPTTModel, AbstractInfoModel):
@@ -147,6 +153,7 @@ class PostCategory(MPTTModel, AbstractInfoModel):
     Represents a category for organizing blog posts.
     Categories can be nested to form a hierarchy.
     """
+
     id: int
     uuid = models.UUIDField(default=uuid4, editable=False, unique=True)
     name = models.CharField(
@@ -159,7 +166,8 @@ class PostCategory(MPTTModel, AbstractInfoModel):
         max_length=55,
         unique=True,
         help_text=_(
-            "URL-friendly version of the name. Lowercase with letters, numbers, and hyphens."
+            "URL-friendly version of the name."
+            "Lowercase with letters, numbers, and hyphens.",
         ),
     )
     description = models.TextField(
@@ -204,6 +212,7 @@ class PostTag(AbstractInfoModel):
     Represents a tag for labeling blog posts.
     Tags are non-hierarchical keywords.
     """
+
     id: int
     uuid = models.UUIDField(default=uuid4, editable=False, unique=True)
     name = models.CharField(
@@ -216,7 +225,8 @@ class PostTag(AbstractInfoModel):
         max_length=55,
         unique=True,
         help_text=_(
-            "URL-friendly version of the name. Lowercase with letters, numbers, and hyphens."
+            "URL-friendly version of the name."
+            "Lowercase with letters, numbers, and hyphens.",
         ),
     )
     description = models.TextField(
@@ -310,7 +320,9 @@ class PostComment(MPTTModel, AbstractInfoModel):
         help_text=_("Indicates if the comment has been edited."),
     )
     is_seen = models.BooleanField(
-        _("Is seen"), default=False, help_text="Is comment seen by admin."
+        _("Is seen"),
+        default=False,
+        help_text="Is comment seen by admin.",
     )
     seen_by = models.ForeignKey(
         User,

@@ -11,7 +11,7 @@ from src.libs.get_context import get_user_by_context
 from src.libs.messages import UNKNOWN_ERROR
 from src.user.constants import SYSTEM_USER_ROLE
 from src.user.utils.verification import send_user_forget_password_email
-from src.user.validators import validate_image
+from src.user.validators import validate_user_image
 
 from .messages import (
     ACCOUNT_ALREADY_VERIFIED,
@@ -261,7 +261,7 @@ class UserProfileUpdateSerializer(serializers.ModelSerializer):
     photo = serializers.ImageField(
         allow_null=True,
         required=False,
-        validators=[validate_image],
+        validators=[validate_user_image],
     )
     phone_no = serializers.CharField(
         max_length=10,
@@ -281,7 +281,7 @@ class UserProfileUpdateSerializer(serializers.ModelSerializer):
 
     def update(self, instance: User, validated_data):
         photo = validated_data.get("photo", None)
-        
+
         # Update user details
         instance.first_name = (
             validated_data.get("first_name", instance.first_name).strip().title()

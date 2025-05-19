@@ -2,28 +2,32 @@ from django_filters.rest_framework import DjangoFilterBackend
 from rest_framework.filters import OrderingFilter, SearchFilter
 from rest_framework.viewsets import ModelViewSet
 
-from src.blog.models import PostCategory, Post, PostTag
+from src.blog.models import Post, PostCategory, PostTag
 from src.blog.permissions import (
+    BlogPostPermission,
     PostCategoryPermission,
     PostTagPermission,
-    BlogPostPermission,
 )
 
+from .filters import (
+    FilterForPostCategoryViewSet,
+    FilterForPostTagViewSet,
+    FilterForPostViewSet,
+)
 from .serializers import (
     PostCategoryCreateSerializer,
-    PostCategoryListSerializer,
     PostCategoryDetailSerializer,
+    PostCategoryListSerializer,
     PostCategoryUpdateSerializer,
+    PostCreateSerializer,
+    PostDetailSerializer,
+    PostListSerializer,
     PostTagCreateSerializer,
     PostTagDetailSerializer,
     PostTagListSerializer,
     PostTagUpdateSerializer,
-    PostCreateSerializer,
-    PostDetailSerializer,
-    PostListSerializer,
-    PostUpdateSerializer
+    PostUpdateSerializer,
 )
-from .filters import FilterForPostCategoryViewSet, FilterForPostTagViewSet, FilterForPostViewSet
 
 
 class PostCategoryViewSet(ModelViewSet):

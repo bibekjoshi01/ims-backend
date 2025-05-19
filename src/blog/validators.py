@@ -4,7 +4,7 @@ from django.core.exceptions import ValidationError
 
 def validate_blog_media(image):
     file_size = image.size
-    limit_byte_size = settings.BLOG_MEDIA_MAX_UPLOAD_SIZE
+    limit_byte_size = settings.IMAGE_MAX_UPLOAD_SIZE
     if file_size > limit_byte_size:
         # converting into kb
         f = limit_byte_size / 1024

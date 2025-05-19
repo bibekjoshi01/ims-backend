@@ -3,23 +3,18 @@ import django_filters
 from django.shortcuts import get_object_or_404
 from django.utils import timezone
 from django_filters.filterset import FilterSet
+from django_filters.rest_framework import DjangoFilterBackend
 
 # Rest Framework Imports
-from django_filters.rest_framework import DjangoFilterBackend
-from rest_framework import generics
-from rest_framework import status
+from rest_framework import generics, status
 from rest_framework.filters import OrderingFilter, SearchFilter
 from rest_framework.viewsets import ModelViewSet
 
 # Project Imports
 from src.libs.utils import set_binary_files_null_if_empty
 from src.user.constants import SYSTEM_USER_ROLE
-from .messages import (
-    USER_ARCHIVED,
-    USER_NOT_FOUND,
-    USER_ROLE_ARCHIVED,
-    USER_ROLE_NOT_FOUND,
-)
+
+from .messages import USER_ARCHIVED, USER_ROLE_ARCHIVED
 from .models import Role, User
 from .permissions import RoleSetupPermission, UserSetupPermission
 from .serializers import (
@@ -169,11 +164,20 @@ class UserArchiveView(generics.DestroyAPIView):
     permission_classes = [UserSetupPermission]
     lookup_url_kwarg = "user_id"
     lookup_field = "id"
-    queryset = User.objects.filter(is_archived=False)
+
+    def get_queryset(self):
+        system_user_role = get_object_or_404(Role, codename=SYSTEM_USER_ROLE)
+        return User.objects.filter(
+            is_superuser=False,
+            is_staff=False,
+            roles__id=system_user_role.id,
+            is_archived=False,
+        )
 
     def perform_destroy(self, instance):
         instance.is_archived = True
         instance.updated_at = timezone.now()
+
         instance.save()
 
     def destroy(self, request, *args, **kwargs):

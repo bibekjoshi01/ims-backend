@@ -59,7 +59,7 @@ class Item(AbstractInfoModel):
         max_length=255,
         unique=True,
         help_text=_(
-            "The stock keeping unit (unique identifier for inventory management)."
+            "The stock keeping unit (unique identifier for inventory management).",
         ),
     )
     category = models.ForeignKey(
@@ -72,7 +72,6 @@ class Item(AbstractInfoModel):
     description = models.TextField(
         _("Description"),
         blank=True,
-        null=True,
         help_text=_("Detailed product description."),
     )
     image = models.ImageField(

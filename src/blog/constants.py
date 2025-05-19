@@ -1,5 +1,7 @@
 from enum import Enum
+
 from django.utils.translation import gettext_lazy as _
+
 
 # Blog Post Status
 class PostStatus(Enum):
@@ -12,15 +14,17 @@ class PostStatus(Enum):
     def choices(cls):
         return [(key.value, _(key.name.capitalize())) for key in cls]
 
+
 # Blog Post Visibility
 class PostVisibility(Enum):
     PUBLIC = "PUBLIC"
     PRIVATE = "PRIVATE"
-    PASSWORD_PROTECTED = "PASSWORD-PROTECTED"
+    PASSWORD_PROTECTED = "PASSWORD-PROTECTED"  # noqa: S105
 
     @classmethod
     def choices(cls):
         return [(key.value, _(key.name.replace("_", " ").capitalize())) for key in cls]
+
 
 # Blog Post Format
 class PostFormat(Enum):
@@ -34,6 +38,7 @@ class PostFormat(Enum):
     @classmethod
     def choices(cls):
         return [(key.value, _(key.name.capitalize())) for key in cls]
+
 
 # Blog Comment Status
 class CommentStatus(Enum):

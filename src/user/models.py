@@ -4,15 +4,18 @@ from django.conf import settings
 from django.contrib.auth.base_user import BaseUserManager
 from django.contrib.auth.hashers import make_password
 from django.contrib.auth.models import AbstractUser
+
+# Django Imports
 from django.db import models
 from django.utils.translation import gettext_lazy as _
 from rest_framework_simplejwt.tokens import RefreshToken
 
+# Project Imports
 from src.base.models import AbstractInfoModel
 
 from .constants import PUBLIC_USER_ROLE, SYSTEM_USER_ROLE
 from .exceptions import RoleNotFound
-from .validators import validate_image
+from .validators import validate_user_image
 
 
 class MainModule(AbstractInfoModel):
@@ -56,7 +59,7 @@ class PermissionCategory(AbstractInfoModel):
 class Permission(AbstractInfoModel):
     """
     The permissions system provides a way to assign permissions to specific
-    users and groups of users.
+    users and roles of users.
     """
 
     name = models.CharField(_("name"), max_length=100)
@@ -196,7 +199,7 @@ class User(AbstractUser):
 
     phone_no = models.CharField(_("phone number"), max_length=15, blank=True)
     photo = models.ImageField(
-        validators=[validate_image],
+        validators=[validate_user_image],
         blank=True,
         null=True,
         default="",
@@ -228,6 +231,12 @@ class User(AbstractUser):
         settings.AUTH_USER_MODEL,
         on_delete=models.PROTECT,
         null=True,
+    )
+    updated_by = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        null=True,
+        on_delete=models.PROTECT,
+        related_name="editor_user",
     )
 
     objects = UserManager()

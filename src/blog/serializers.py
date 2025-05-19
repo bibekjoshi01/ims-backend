@@ -1,20 +1,26 @@
-from typing import List, Dict, Union, Any
-from drf_spectacular.utils import extend_schema_field
+from typing import Any
 
-from django.utils import timezone
-from rest_framework import serializers
 from django.contrib.auth import get_user_model
+from django.utils import timezone
+from drf_spectacular.utils import extend_schema_field
+from rest_framework import serializers
 
 from src.base.serializers import AbstractInfoRetrieveSerializer
 from src.blog.constants import PostStatus
 from src.blog.messages import (
-    CATEGORY_NAME_EXISTS, CATEGORY_CREATED_SUCCESS, CATEGORY_UPDATED_SUCCESS, 
-    POST_SLUG_EXISTS, POST_UPDATED_SUCCESS, POST_CREATED_SUCCESS, TAG_CREATED_SUCCESS, TAG_NAME_EXISTS, 
-    TAG_UPDATED_SUCCESS
+    CATEGORY_CREATED_SUCCESS,
+    CATEGORY_NAME_EXISTS,
+    CATEGORY_UPDATED_SUCCESS,
+    POST_CREATED_SUCCESS,
+    POST_SLUG_EXISTS,
+    POST_UPDATED_SUCCESS,
+    TAG_CREATED_SUCCESS,
+    TAG_NAME_EXISTS,
+    TAG_UPDATED_SUCCESS,
 )
+from src.blog.models import Post, PostCategory, PostTag
 from src.blog.schemas import sub_category_schema
 from src.libs.get_context import get_user_by_context
-from src.blog.models import PostCategory, PostTag, Post
 
 User = get_user_model()
 
@@ -31,7 +37,7 @@ class PostCategoryListSerializer(serializers.ModelSerializer):
         fields = ["id", "name", "description", "slug", "post_count", "sub_categories"]
 
     @extend_schema_field(sub_category_schema)
-    def get_sub_categories(self, obj: PostCategory) -> List[Dict]:
+    def get_sub_categories(self, obj: PostCategory) -> list[dict]:
         if obj.is_leaf_node():
             return []
         serializer = self.__class__(obj.get_children(), many=True)
@@ -67,8 +73,8 @@ class PostCategoryCreateSerializer(serializers.ModelSerializer):
             **validated_data,
         )
 
-    def to_representation(self, instance: PostCategory) -> Dict[str, Union[str, int]]:
-        data = super(PostCategoryCreateSerializer, self).to_representation(instance)
+    def to_representation(self, instance: PostCategory) -> dict[str, str | int]:
+        data = super().to_representation(instance)
         data["type"] = "success"
         data["message"] = CATEGORY_CREATED_SUCCESS
         data["id"] = instance.id
@@ -80,7 +86,7 @@ class PostCategoryUpdateSerializer(serializers.ModelSerializer):
         model = PostCategory
         fields = ["name", "slug", "description", "parent", "is_active"]
 
-    def update(self, instance: PostCategory, validated_data: Dict) -> PostCategory:
+    def update(self, instance: PostCategory, validated_data: dict) -> PostCategory:
         for key, value in validated_data.items():
             setattr(instance, key, value)
 
@@ -88,7 +94,7 @@ class PostCategoryUpdateSerializer(serializers.ModelSerializer):
 
         return instance
 
-    def to_representation(self, instance: PostCategory) -> Dict:
+    def to_representation(self, instance: PostCategory) -> dict:
         return {
             "type": "success",
             "message": CATEGORY_UPDATED_SUCCESS,
@@ -144,7 +150,7 @@ class PostTagCreateSerializer(serializers.ModelSerializer):
             **validated_data,
         )
 
-    def to_representation(self, instance: PostTag) -> Dict[str, Union[str, int]]:
+    def to_representation(self, instance: PostTag) -> dict[str, str | int]:
         return {
             "type": "success",
             "message": TAG_CREATED_SUCCESS,
@@ -157,7 +163,7 @@ class PostTagUpdateSerializer(serializers.ModelSerializer):
         model = PostTag
         fields = ["name", "description", "is_active"]
 
-    def update(self, instance: PostTag, validated_data: Dict[str, Union[str, int]]):
+    def update(self, instance: PostTag, validated_data: dict[str, str | int]):
         for key, value in validated_data.items():
             setattr(instance, key, value)
 
@@ -165,7 +171,7 @@ class PostTagUpdateSerializer(serializers.ModelSerializer):
 
         return instance
 
-    def to_representation(self, instance: PostTag) -> dict[str, Union[str, int]]:
+    def to_representation(self, instance: PostTag) -> dict[str, str | int]:
         return {
             "type": "success",
             "message": TAG_UPDATED_SUCCESS,
@@ -194,7 +200,7 @@ class PostListSerializer(serializers.ModelSerializer):
             "total_comments",
         ]
 
-    def to_representation(self, instance: Post) -> Dict[str, Union[int, str]]:
+    def to_representation(self, instance: Post) -> dict[str, int | str]:
         data = super().to_representation(instance)
 
         if instance.status == PostStatus.PUBLISHED.value:
@@ -238,7 +244,7 @@ class PostDetailSerializer(serializers.ModelSerializer):
             "author_full_name",
         ]
 
-    def to_representation(self, instance: Post) -> dict[str, Union[str, int]]:
+    def to_representation(self, instance: Post) -> dict[str, str | int]:
         data = super().to_representation(instance)
 
         if instance.status == "PUBLISHED":
@@ -251,14 +257,15 @@ class PostDetailSerializer(serializers.ModelSerializer):
 
 class PostCreateSerializer(serializers.ModelSerializer):
     author = serializers.PrimaryKeyRelatedField(
-        queryset=User.objects.filter(is_archived=False, is_active=True)
+        queryset=User.objects.filter(is_archived=False, is_active=True),
     )
     categories = serializers.PrimaryKeyRelatedField(
         queryset=PostCategory.objects.filter(is_archived=False, is_active=True),
         many=True,
     )
     tags = serializers.PrimaryKeyRelatedField(
-        queryset=PostTag.objects.filter(is_archived=False, is_active=True), many=True
+        queryset=PostTag.objects.filter(is_archived=False, is_active=True),
+        many=True,
     )
 
     class Meta:
@@ -284,7 +291,7 @@ class PostCreateSerializer(serializers.ModelSerializer):
             raise serializers.ValidationError(POST_SLUG_EXISTS.format(slug=slug))
         return slug
 
-    def create(self, validated_data: Dict[str, Any]) -> Post:
+    def create(self, validated_data: dict[str, Any]) -> Post:
         created_by = get_user_by_context(self.context)
 
         # Extracting nested data
@@ -309,7 +316,7 @@ class PostCreateSerializer(serializers.ModelSerializer):
 
         return post
 
-    def to_representation(self, instance: Post) -> Dict[str, Union[str, int]]:
+    def to_representation(self, instance: Post) -> dict[str, str | int]:
         return {
             "type": "success",
             "message": POST_CREATED_SUCCESS,
@@ -330,7 +337,7 @@ class PostUpdateSerializer(serializers.ModelSerializer):
 
         return instance
 
-    def to_representation(self, instance: Post) -> dict[str, Union[str, int]]:
+    def to_representation(self, instance: Post) -> dict[str, str | int]:
         return {
             "type": "success",
             "message": POST_UPDATED_SUCCESS,

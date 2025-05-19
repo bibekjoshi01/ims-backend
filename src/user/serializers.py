@@ -1,11 +1,12 @@
 # Django Imports
-from django.utils import timezone
 from django.contrib.auth.password_validation import validate_password
 from rest_framework import serializers
 
 # Project Imports
 from src.base.serializers import AbstractInfoRetrieveSerializer
 from src.libs.get_context import get_user_by_context
+from src.user.constants import SYSTEM_USER_ROLE
+
 from .messages import (
     USER_CREATED,
     USER_ERRORS,
@@ -16,8 +17,7 @@ from .messages import (
 )
 from .models import Permission, Role, User
 from .utils.generators import generate_role_codename, generate_unique_user_username
-from .validators import validate_image
-
+from .validators import validate_user_image
 
 # User Role Serializers
 
@@ -114,10 +114,11 @@ class RolePatchSerializer(serializers.ModelSerializer):
             raise serializers.ValidationError(
                 USER_ROLE_ERRORS["ROLE_NAME"].format(name=name),
             )
-        
+
         return name
 
-    def update(self, instance, validated_data):
+    def update(self, instance: Role, validated_data):
+        current_user = get_user_by_context(self.context)
         name = validated_data.get("name", instance.name)
         # Get the permissions
         permissions = validated_data.get("permissions", [])
@@ -127,6 +128,7 @@ class RolePatchSerializer(serializers.ModelSerializer):
         instance.name = validated_data.get("name", instance.name).title()
         instance.codename = validated_data.get("codename", instance.codename)
         instance.is_active = validated_data.get("is_active", instance.is_active)
+        instance.updated_by = current_user
         instance.permissions.set(permissions)
         instance.save()
 
@@ -198,7 +200,7 @@ class UserRegisterSerializer(serializers.ModelSerializer):
     photo = serializers.ImageField(
         allow_null=True,
         required=False,
-        validators=[validate_image],
+        validators=[validate_user_image],
     )
     roles = serializers.PrimaryKeyRelatedField(
         queryset=Role.objects.filter(is_active=True, is_system_managed=False),
@@ -251,14 +253,15 @@ class UserRegisterSerializer(serializers.ModelSerializer):
 
         if not username:
             username = generate_unique_user_username(
-                user_type="system_user", email=email
+                user_type=SYSTEM_USER_ROLE,
+                email=email,
             )
 
         created_by = self.context["request"].user
 
         user_instance = User.objects.create_system_user(
-            first_name=validated_data["first_name"].title(),
-            last_name=validated_data["last_name"].title(),
+            first_name=validated_data["first_name"].title().strip(),
+            last_name=validated_data["last_name"].title().strip(),
             phone_no=validated_data["phone_no"],
             password=validated_data["password"],
             email=email,
@@ -292,7 +295,7 @@ class UserPatchSerializer(serializers.ModelSerializer):
     photo = serializers.ImageField(
         allow_null=True,
         required=False,
-        validators=[validate_image],
+        validators=[validate_user_image],
     )
     phone_no = serializers.CharField(max_length=10, required=False, allow_blank=True)
     roles = serializers.PrimaryKeyRelatedField(
@@ -325,6 +328,7 @@ class UserPatchSerializer(serializers.ModelSerializer):
         return attrs
 
     def update(self, instance: User, validated_data):
+        current_user = get_user_by_context(self.context)
         photo = validated_data.get("photo", None)
 
         instance.first_name = validated_data.get(
@@ -335,7 +339,7 @@ class UserPatchSerializer(serializers.ModelSerializer):
         instance.is_active = validated_data.get("is_active", instance.is_active)
 
         instance.phone_no = validated_data.get("phone_no", instance.phone_no)
-        instance.updated_at = timezone.now()
+        instance.updated_by = current_user
 
         if "photo" in validated_data:
             if photo is not None:

@@ -5,11 +5,11 @@ from .auth_views import (
     UserChangePasswordView,
     UserDeleteAccountView,
     UserForgetPasswordRequestView,
-    UserResetPasswordView,
     UserLoginView,
     UserLogoutView,
     UserProfileUpdateView,
     UserProfileView,
+    UserResetPasswordView,
     UserTokenRefreshView,
     UserVerifyAccountAPIView,
 )
@@ -46,7 +46,7 @@ urlpatterns = [
         "auth/reset-password",
         UserResetPasswordView.as_view(),
         name="user-reset-password",
-    ),  
+    ),
     path("account/profile", UserProfileView.as_view(), name="user-profile"),
     path(
         "account/profile/update",

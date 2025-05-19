@@ -21,7 +21,17 @@ class AbstractInfoModel(models.Model):
         editable=False,
     )
     updated_at = models.DateTimeField(_("date updated"), auto_now=True)
-    created_by = models.ForeignKey("user.User", on_delete=models.PROTECT)
+    created_by = models.ForeignKey(
+        "user.User",
+        on_delete=models.PROTECT,
+        related_name="%(class)s_created_by",
+    )
+    updated_by = models.ForeignKey(
+        "user.User",
+        null=True,
+        on_delete=models.PROTECT,
+        related_name="%(class)s_updated_by",
+    )
     is_active = models.BooleanField(
         _("active"),
         default=True,
@@ -90,6 +100,8 @@ class PublicAbstractInfoModel(models.Model):
     def save(self, *args, **kwargs):
         if self.is_archived and self.is_active:
             self.is_active = False
+
+        self.updated_at = timezone.now()
         super().save(*args, **kwargs)
 
     def get_upload_path(self, upload_path, filename):

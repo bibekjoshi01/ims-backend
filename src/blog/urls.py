@@ -1,7 +1,7 @@
 from django.urls import path
 from rest_framework import routers
 
-from .views import PostViewSet, PostCategoryViewSet, PostTagViewSet
+from .views import PostCategoryViewSet, PostTagViewSet, PostViewSet
 
 router = routers.DefaultRouter(trailing_slash=False)
 
@@ -10,7 +10,6 @@ router.register("tags", PostTagViewSet, basename="blog_post_tag")
 router.register("posts", PostViewSet, basename="blog_post")
 
 # listing apis
-list_urls = [
-]
+list_urls = []
 
 urlpatterns = [*list_urls, *router.urls]

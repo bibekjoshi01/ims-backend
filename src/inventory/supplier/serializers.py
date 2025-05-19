@@ -1,16 +1,17 @@
-from rest_framework import serializers
 from django.contrib.auth import get_user_model
+from rest_framework import serializers
 
 from src.base.serializers import AbstractInfoRetrieveSerializer
 from src.libs.get_context import get_user_by_context
+from src.user.utils.generators import (
+    generate_strong_password,
+    generate_unique_user_username,
+)
+
 from .messages import (
     SUPPLIER_CREATE_SUCCESS,
     SUPPLIER_EMAIL_ALREADY_EXISTS,
     SUPPLIER_UPDATE_SUCCESS,
-)
-from src.user.utils.generators import (
-    generate_strong_password,
-    generate_unique_user_username,
 )
 from .models import InvSupplier
 
@@ -18,7 +19,6 @@ User = get_user_model()
 
 
 class UserDetailListSerializer(serializers.ModelSerializer):
-
     class Meta:
         model = User
         fields = ["id", "first_name", "last_name", "phone_no", "email", "username"]
@@ -81,15 +81,13 @@ class InvSupplierCreateSerializer(serializers.ModelSerializer):
             created_by=created_by,
         )
 
-        suppliler = InvSupplier.objects.create(
+        return InvSupplier.objects.create(
             user=user_instance,
             opening_balance=validated_data.get("opening_balance", 0.0),
             remarks=validated_data.get("remarks", ""),
             is_active=validated_data.get("is_active", True),
             created_by=created_by,
         )
-
-        return suppliler
 
     def to_representation(self, instance):
         return {"id": instance.id, "message": SUPPLIER_CREATE_SUCCESS}
@@ -118,22 +116,25 @@ class InvSupplierPatchSerializer(serializers.ModelSerializer):
                 .exists()
             ):
                 raise serializers.ValidationError(
-                    {"email": SUPPLIER_EMAIL_ALREADY_EXISTS}
+                    {"email": SUPPLIER_EMAIL_ALREADY_EXISTS},
                 )
 
             user_instance.first_name = user_details_data.get(
-                "full_name", user_instance.first_name
+                "full_name",
+                user_instance.first_name,
             )
             user_instance.email = user_details_data.get("email", user_instance.email)
             user_instance.photo = user_details_data.get("photo", user_instance.photo)
             user_instance.phone_no = user_details_data.get(
-                "phone_no", user_instance.phone_no
+                "phone_no",
+                user_instance.phone_no,
             )
             user_instance.save()
 
         instance.is_active = validated_data.get("is_active", instance.is_active)
         instance.opening_balance = validated_data.get(
-            "opening_balance", instance.opening_balance
+            "opening_balance",
+            instance.opening_balance,
         )
         instance.remarks = validated_data.get("remarks", instance.remarks)
         instance.save()

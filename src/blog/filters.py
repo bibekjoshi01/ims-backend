@@ -1,5 +1,6 @@
 from django_filters.filterset import FilterSet
-from .models import PostTag, PostCategory, Post
+
+from .models import Post, PostCategory, PostTag
 
 
 class FilterForPostCategoryViewSet(FilterSet):

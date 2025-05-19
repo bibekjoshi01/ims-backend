@@ -16,11 +16,11 @@ from src.user.utils.verification import send_user_account_verification_email
 from .auth_serializers import (
     UserChangePasswordSerializer,
     UserForgetPasswordRequestSerializer,
-    UserResetPasswordSerializer,
     UserLoginSerializer,
     UserLogoutSerializer,
     UserProfileSerializer,
     UserProfileUpdateSerializer,
+    UserResetPasswordSerializer,
     UserVerifyAccountSerializer,
 )
 from .messages import (

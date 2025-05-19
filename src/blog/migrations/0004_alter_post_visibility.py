@@ -6,13 +6,21 @@ from django.db import migrations, models
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('blog', '0003_alter_postcomment_seen_by'),
+        ("blog", "0003_alter_postcomment_seen_by"),
     ]
 
     operations = [
         migrations.AlterField(
-            model_name='post',
-            name='visibility',
-            field=models.CharField(choices=[('PUBLIC', 'Public'), ('PRIVATE', 'Private'), ('PASSWORD-PROTECTED', 'Password protected')], help_text='Determines who can see this post. Public posts are visible to everyone, private posts are only visible to the author, and password-protected posts require a password to access.', max_length=20),
+            model_name="post",
+            name="visibility",
+            field=models.CharField(
+                choices=[
+                    ("PUBLIC", "Public"),
+                    ("PRIVATE", "Private"),
+                    ("PASSWORD-PROTECTED", "Password protected"),
+                ],
+                help_text="Determines who can see this post. Public posts are visible to everyone, private posts are only visible to the author, and password-protected posts require a password to access.",
+                max_length=20,
+            ),
         ),
     ]
