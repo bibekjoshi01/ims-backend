@@ -95,7 +95,6 @@ class RoleCreateSerializer(serializers.ModelSerializer):
 
 
 class RolePatchSerializer(serializers.ModelSerializer):
-    remarks = serializers.CharField(max_length=50, required=True, write_only=True)
     permissions = serializers.ListField(
         child=serializers.PrimaryKeyRelatedField(
             queryset=Permission.objects.filter(is_active=True, is_archived=False),
@@ -106,7 +105,7 @@ class RolePatchSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Role
-        fields = ["name", "permissions", "is_active", "remarks"]
+        fields = ["name", "permissions", "is_active"]
 
     def validate_name(self, name):
         name = name.title()
@@ -115,6 +114,7 @@ class RolePatchSerializer(serializers.ModelSerializer):
             raise serializers.ValidationError(
                 USER_ROLE_ERRORS["ROLE_NAME"].format(name=name),
             )
+        
         return name
 
     def update(self, instance, validated_data):

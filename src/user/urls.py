@@ -5,7 +5,7 @@ from .auth_views import (
     UserChangePasswordView,
     UserDeleteAccountView,
     UserForgetPasswordRequestView,
-    UserForgetPasswordView,
+    UserResetPasswordView,
     UserLoginView,
     UserLogoutView,
     UserProfileUpdateView,
@@ -43,9 +43,9 @@ urlpatterns = [
         name="user-forget-password-request",
     ),
     path(
-        "auth/forget-password",
-        UserForgetPasswordView.as_view(),
-        name="user-forget-password",
+        "auth/reset-password",
+        UserResetPasswordView.as_view(),
+        name="user-reset-password",
     ),  
     path("account/profile", UserProfileView.as_view(), name="user-profile"),
     path(

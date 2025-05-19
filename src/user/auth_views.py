@@ -16,7 +16,7 @@ from src.user.utils.verification import send_user_account_verification_email
 from .auth_serializers import (
     UserChangePasswordSerializer,
     UserForgetPasswordRequestSerializer,
-    UserForgetPasswordSerializer,
+    UserResetPasswordSerializer,
     UserLoginSerializer,
     UserLogoutSerializer,
     UserProfileSerializer,
@@ -220,11 +220,11 @@ class UserForgetPasswordRequestView(APIView):
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
 
-class UserForgetPasswordView(APIView):
-    """User Forget Password View"""
+class UserResetPasswordView(APIView):
+    """User Reset Password View"""
 
     permission_classes = [AllowAny]
-    serializer_class = UserForgetPasswordSerializer
+    serializer_class = UserResetPasswordSerializer
 
     def post(self, request):
         serializer = self.serializer_class(

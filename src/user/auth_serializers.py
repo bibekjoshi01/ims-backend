@@ -201,12 +201,9 @@ class UserProfileSerializer(serializers.ModelSerializer):
             "full_name",
             "phone_no",
             "email",
-            "is_superuser",
             "date_joined",
             "last_login",
-            "is_active",
             "is_email_verified",
-            "is_phone_verified",
             "roles",
         ]
 
@@ -284,7 +281,7 @@ class UserProfileUpdateSerializer(serializers.ModelSerializer):
 
     def update(self, instance: User, validated_data):
         photo = validated_data.get("photo", None)
-
+        
         # Update user details
         instance.first_name = (
             validated_data.get("first_name", instance.first_name).strip().title()
@@ -299,7 +296,7 @@ class UserProfileUpdateSerializer(serializers.ModelSerializer):
         if "photo" in validated_data:
             if photo is not None:
                 upload_path = instance.get_upload_path(
-                    upload_path="instance/photos",
+                    upload_path="user/photos",
                     filename=photo.name,
                 )
                 instance.photo.delete(save=False)  # Remove the old file
@@ -364,8 +361,8 @@ class UserForgetPasswordRequestSerializer(serializers.Serializer):
         return validated_data
 
 
-class UserForgetPasswordSerializer(serializers.Serializer):
-    """User Forget Password Serializer"""
+class UserResetPasswordSerializer(serializers.Serializer):
+    """User Reset Password Serializer"""
 
     token = serializers.CharField(max_length=64, required=True, write_only=True)
     new_password = serializers.CharField(
