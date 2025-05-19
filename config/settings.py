@@ -289,7 +289,7 @@ OAUTH_PROVIDERS = {
 
 # Constants
 # -------------------------------------------------------------------------------
-IMAGE_MAX_UPLOAD_SIZE = int(env("MAX_UPLOAD_SIZE"))
+IMAGE_MAX_UPLOAD_SIZE = int(env("IMAGE_MAX_UPLOAD_SIZE"))
 FRONTEND_BASE_URL = env("FRONTEND_BASE_URL")
 AUTH_LINK_EXP_TIME = int(env("AUTH_LINK_EXP_TIME"))
 
