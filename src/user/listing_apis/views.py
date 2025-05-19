@@ -83,7 +83,7 @@ class FilterForUserPermissionCategory(FilterSet):
 
     class Meta:
         model = PermissionCategory
-        fields = ["id", "date", "name", "codenamemain_module"]
+        fields = ["id", "date", "name", "codename", "main_module"]
 
 
 class UserPermissionCategoryForRoleView(ListAPIView):
