@@ -120,7 +120,7 @@ class Migration(migrations.Migration):
                         default="",
                         null=True,
                         upload_to="",
-                        validators=[src.user.validators.validate_image],
+                        validators=[src.user.validators.validate_user_image],
                     ),
                 ),
                 (
