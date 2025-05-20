@@ -33,7 +33,10 @@ class AbstractInfoRetrieveSerializer(ModelSerializer):
         self,
         obj,
     ) -> str:
-        return obj.updated_by.get_full_name()
+        if obj.updated_by:
+            return obj.updated_by.get_full_name()
+
+        return ""
 
 
 class PublicAbstractInfoRetrieveSerializer(ModelSerializer):
