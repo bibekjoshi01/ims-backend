@@ -20,7 +20,7 @@ def validate_user_image(image):
           a ValidationError is raised with an appropriate error message.
     """
     file_size = image.size
-    limit_byte_size = settings.MAX_UPLOAD_SIZE
+    limit_byte_size = settings.IMAGE_MAX_UPLOAD_SIZE
     if file_size > limit_byte_size:
         # converting into kb
         f = limit_byte_size / 1024

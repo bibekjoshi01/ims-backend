@@ -19,7 +19,6 @@ class ItemCategory(AbstractInfoModel):
     code = models.CharField(
         _("Category Code"),
         max_length=20,
-        unique=True,
         db_index=True,
         help_text=_("Unique code for identifying the category."),
     )
@@ -57,7 +56,7 @@ class Item(AbstractInfoModel):
     sku = models.CharField(
         _("Stock Keeping Unit"),
         max_length=255,
-        unique=True,
+        blank=True,
         help_text=_(
             "The stock keeping unit (unique identifier for inventory management).",
         ),
@@ -77,9 +76,14 @@ class Item(AbstractInfoModel):
     image = models.ImageField(
         _("Image"),
         upload_to="catalog/items/",
-        blank=True,
         null=True,
         help_text=_("Main product image."),
+    )
+    selling_price = models.DecimalField(
+        max_digits=12,
+        decimal_places=2,
+        default=0.0,
+        help_text=_("Selling price without taxes"),
     )
 
     class Meta:
