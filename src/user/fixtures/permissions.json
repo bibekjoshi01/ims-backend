@@ -3,8 +3,8 @@
     "model": "user.Permission",
     "pk": 1,
     "fields": {
-      "name": "View User Group/Role",
-      "codename": "view_user_group",
+      "name": "View User Role",
+      "codename": "view_user_role",
       "permission_category": 1,
       "is_active": true,
       "is_archived": false,
@@ -17,8 +17,8 @@
     "model": "user.Permission",
     "pk": 2,
     "fields": {
-      "name": "Add User Group/Role & Permission",
-      "codename": "add_user_group",
+      "name": "Add User Role & Permission",
+      "codename": "add_user_role",
       "permission_category": 1,
       "is_active": true,
       "is_archived": false,
@@ -31,8 +31,8 @@
     "model": "user.Permission",
     "pk": 3,
     "fields": {
-      "name": "Edit User Group/Role & Permission",
-      "codename": "edit_user_group",
+      "name": "Edit User Role & Permission",
+      "codename": "edit_user_role",
       "permission_category": 1,
       "is_active": true,
       "is_archived": false,
@@ -45,8 +45,8 @@
     "model": "user.Permission",
     "pk": 4,
     "fields": {
-      "name": "Delete User Group/Role & Permission",
-      "codename": "delete_user_group",
+      "name": "Delete User Role & Permission",
+      "codename": "delete_user_role",
       "permission_category": 1,
       "is_active": true,
       "is_archived": false,

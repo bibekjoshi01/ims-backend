@@ -8,7 +8,6 @@ def get_user_permissions(request):
     if user.is_anonymous:
         return user_permissions
 
-    # get all roles
     return user.get_all_permissions()
 
 
@@ -22,15 +21,15 @@ def validate_permissions(request, user_permissions_dict):
     if request.user.is_superuser:
         return True
 
-    user_permissions = get_user_permissions(request)
-
     method = request.method
     if method in SAFE_METHODS:
         method = "SAFE_METHODS"
 
-    method_permission = user_permissions_dict.get(method, None)
+    user_permissions = get_user_permissions(request)
+    required_permission = user_permissions_dict.get(method, None)
 
-    if method_permission and method_permission in user_permissions:
+    codename_list = [perm.codename for perm in user_permissions]
+    if required_permission and required_permission in codename_list:
         return True
 
     return False
