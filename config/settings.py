@@ -45,7 +45,14 @@ THIRD_PARTY_APPS = [
     "django_celery_beat",
 ]
 
-LOCAL_APPS = ["src.user", "src.core", "src.blog", "src.supplier", "src.customer"]
+LOCAL_APPS = [
+    "src.user",
+    "src.core",
+    "src.blog",
+    "src.supplier",
+    "src.customer",
+    "src.inventory.catalog",
+]
 
 INSTALLED_APPS = DJANGO_APPS + THIRD_PARTY_APPS + LOCAL_APPS
 
