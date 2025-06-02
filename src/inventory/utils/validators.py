@@ -25,8 +25,9 @@ def validate_percentage(value):
 
 def validate_amount(value):
     if value < 0:
-        message = _("Amount should be greater than or equal to 0.")
-        raise serializers.ValidationError({"error": message})
+        raise serializers.ValidationError(
+            _("Amount should be greater than or equal to 0."),
+        )
     return value
 
 

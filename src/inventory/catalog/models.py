@@ -6,6 +6,33 @@ from django.utils.translation import gettext_lazy as _
 from src.base.models import AbstractInfoModel
 
 
+class ProductUnit(AbstractInfoModel):
+    """
+    Represents a unit of measurement used for products,
+    """
+
+    name = models.CharField(
+        max_length=50,
+        unique=True,
+        verbose_name=_("Unit Name"),
+        help_text=_("Full name of the unit, e.g., Kilogram, Piece."),
+    )
+    short_form = models.CharField(
+        max_length=20,
+        unique=True,
+        verbose_name=_("Short Form"),
+        help_text=_("Abbreviated form, e.g., kg, pcs."),
+    )
+
+    class Meta:
+        verbose_name = _("Product Unit")
+        verbose_name_plural = _("Product Units")
+        ordering = ["name"]
+
+    def __str__(self):
+        return f"{self.name} ({self.short_form})"
+
+
 class ProductCategory(AbstractInfoModel):
     """
     Represents an category for organizing inventory products.
@@ -64,9 +91,15 @@ class Product(AbstractInfoModel):
     category = models.ForeignKey(
         ProductCategory,
         on_delete=models.PROTECT,
-        related_name="products",
+        related_name="category_products",
         verbose_name=_("Category"),
         help_text=_("Category to which this product belongs."),
+    )
+    unit = models.ForeignKey(
+        ProductUnit,
+        on_delete=models.PROTECT,
+        verbose_name=_("Unit"),
+        help_text=_("Unit in which this product is calculated."),
     )
     description = models.TextField(
         _("Description"),
@@ -85,6 +118,17 @@ class Product(AbstractInfoModel):
         decimal_places=2,
         default=0.0,
         help_text=_("Selling price without taxes."),
+    )
+    stock_alert_qty = models.PositiveIntegerField(
+        _("Stock Alert Quantity"),
+        default=100,
+        help_text=_("Quantity for Low Stock Alert"),
+    )
+    barcode = models.CharField(
+        _("Barcode Code"),
+        max_length=255,
+        blank=True,
+        help_text=_("Optional barcode or EAN for scanning."),
     )
 
     class Meta:
