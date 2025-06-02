@@ -1,6 +1,7 @@
 from django.conf import settings
 from django.core.validators import FileExtensionValidator
 from django.utils.translation import gettext_lazy as _
+from rest_framework import serializers
 from rest_framework.exceptions import ValidationError
 
 
@@ -36,3 +37,59 @@ def validate_media_size(value):
         f = f / 1024
         error_message = f"Max size of file is {f} MB"
         raise ValidationError(error_message)
+
+
+def validate_unique_fields(
+    model,
+    attrs,
+    fields,
+    instance=None,
+    field_transform_map=None,  # Optional: normalize like lower/strip
+    error_messages=None,
+):
+    """
+    Generic validator for checking uniqueness of one or more fields.
+
+    Args:
+        model (models.Model): The model to query.
+        attrs (dict): The incoming validated_data or attrs.
+        fields (list): List of field names to validate.
+        instance (models.Model, optional): Current instance (exclude from check).
+        field_transform_map (dict): Optional field transformations.
+            Example: {'email': lambda x: x.lower().strip()}
+        error_messages (dict): Optional custom error messages per field.
+            Example: {'email': 'Email already exists.'}
+    """
+
+    field_transform_map = field_transform_map or {}
+    error_messages = error_messages or {}
+
+    filters = {}
+    for field in fields:
+        value = attrs.get(field)
+        if value is None:
+            continue
+
+        transform = field_transform_map.get(field)
+        if transform:
+            value = transform(value)
+            attrs[field] = value  # set normalized value back to attrs
+
+        filters[field] = value
+
+        # Validate individual field
+        if value:
+            qs = model.objects.filter(**{field: value}).exclude(is_archived=True)
+            if instance:
+                qs = qs.exclude(id=instance.id)
+            if qs.exists():
+                raise serializers.ValidationError(
+                    {
+                        field: error_messages.get(
+                            field,
+                            f"{field.capitalize()} must be unique.",
+                        ),
+                    },
+                )
+
+    return attrs
