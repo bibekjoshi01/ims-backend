@@ -25,7 +25,16 @@ from .serializers import (
 class FilterForSupplier(FilterSet):
     class Meta:
         model = Supplier
-        fields = ["id", "name", "email", "phone_no", "alt_phone_no", "country"]
+        fields = [
+            "id",
+            "name",
+            "email",
+            "phone_no",
+            "alt_phone_no",
+            "country",
+            "is_active",
+            "website",
+        ]
 
 
 class SupplierViewSet(ModelViewSet):
@@ -33,8 +42,8 @@ class SupplierViewSet(ModelViewSet):
     queryset = Supplier.objects.filter(is_archived=False)
     filterset_class = FilterForSupplier
     filter_backends = (SearchFilter, OrderingFilter, DjangoFilterBackend)
-    search_fields = ["name", "email", "phone_no"]
-    ordering_fields = ["id", "name", "email", "is_active"]
+    search_fields = ["name", "email", "contact_person", "phone_no", "alt_phone_no"]
+    ordering_fields = ["id", "name", "contact_person", "email"]
     ordering = ["-id"]
     http_method_names = ["get", "options", "head", "post", "patch", "delete"]
 

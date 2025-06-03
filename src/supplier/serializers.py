@@ -76,6 +76,7 @@ class SupplierCreateSerializer(serializers.ModelSerializer):
             attrs=attrs,
             fields=["name", "email", "phone_no", "alt_phone_no", "website"],
             field_transform_map={
+                "name": lambda x: x.strip(),
                 "email": lambda x: x.lower().strip(),
                 "phone_no": lambda x: x.strip(),
                 "alt_phone_no": lambda x: x.strip(),
@@ -124,6 +125,7 @@ class SupplierPatchSerializer(serializers.ModelSerializer):
             fields=["name", "email", "phone_no", "alt_phone_no", "website"],
             instance=self.instance,
             field_transform_map={
+                "name": lambda x: x.strip(),
                 "email": lambda x: x.lower().strip(),
                 "phone_no": lambda x: x.strip(),
                 "alt_phone_no": lambda x: x.strip(),
