@@ -10,7 +10,7 @@ from .views import ProductCategoryViewSet, ProductViewSet
 router = DefaultRouter(trailing_slash=False)
 
 
-router.register("categories", ProductCategoryViewSet, basename="category")
+router.register("categories", ProductCategoryViewSet, basename="product-category")
 router.register("products", ProductViewSet, basename="product")
 
 urlpatterns = [

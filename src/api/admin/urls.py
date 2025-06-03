@@ -7,5 +7,5 @@ urlpatterns = [
     path("blog-app/", include("src.blog.urls")),
     path("supplier-mod/", include("src.supplier.urls")),
     path("customer-mod/", include("src.customer.urls")),
-    path("catalog-mod/", include("src.inventory.catalog.urls")),
+    path("inventory/catalog-mod/", include("src.inventory.catalog.urls")),
 ]
