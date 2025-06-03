@@ -41,10 +41,9 @@ class ProductCategoryCreateSerializer(serializers.ModelSerializer):
         return validate_unique_fields(
             model=ProductCategory,
             attrs=attrs,
-            fields=["name", "code"],
+            fields=["code"],
             field_transform_map={
-                "name": lambda x: x.lower().strip(),
-                "code": lambda x: x.strip(),
+                "name": lambda x: x.strip(),
             },
         )
 
@@ -69,9 +68,8 @@ class ProductCategoryPatchSerializer(serializers.ModelSerializer):
             model=ProductCategory,
             attrs=attrs,
             instance=self.instance,
-            fields=["name", "code"],
+            fields=["code"],
             field_transform_map={
-                "name": lambda x: x.lower().strip(),
                 "code": lambda x: x.strip(),
             },
         )
