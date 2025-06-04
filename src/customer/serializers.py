@@ -11,7 +11,7 @@ from .messages import (
     CUSTOMER_PHONE_ALREADY_EXISTS,
     CUSTOMER_UPDATE_SUCCESS,
 )
-from .models import Customer
+from .models import Customer, CustomerAddress
 
 
 class CustomerListSerializer(serializers.ModelSerializer):
@@ -30,7 +30,15 @@ class CustomerListSerializer(serializers.ModelSerializer):
         ]
 
 
+class CustomerAddressListSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = CustomerAddress
+        fields = ["id", "label", "address"]
+
+
 class CustomerRetrieveSerializer(AbstractInfoRetrieveSerializer):
+    addresses = CustomerAddressListSerializer(many=True)
+
     class Meta(AbstractInfoRetrieveSerializer.Meta):
         model = Customer
         custom_fields = [
@@ -44,12 +52,21 @@ class CustomerRetrieveSerializer(AbstractInfoRetrieveSerializer):
             "email",
             "is_active",
             "notes",
+            "addresses",
         ]
 
         fields = custom_fields + AbstractInfoRetrieveSerializer.Meta.fields
 
 
+class CustomerAddressCreateSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = CustomerAddress
+        fields = ["label", "address"]
+
+
 class CustomerCreateSerializer(serializers.ModelSerializer):
+    addresses = CustomerAddressCreateSerializer(many=True)
+
     class Meta:
         model = Customer
         fields = [
@@ -61,6 +78,7 @@ class CustomerCreateSerializer(serializers.ModelSerializer):
             "email",
             "is_active",
             "notes",
+            "addresses",
         ]
 
     def validate(self, attrs):
@@ -81,17 +99,39 @@ class CustomerCreateSerializer(serializers.ModelSerializer):
         )
 
     def create(self, validated_data):
+        addresses = validated_data.pop("addresses", [])
+
         created_by = get_user_by_context(self.context)
-        return Customer.objects.create(
+        customer = Customer.objects.create(
             created_by=created_by,
             **validated_data,
         )
+
+        if addresses:
+            for address_data in addresses:
+                CustomerAddress.objects.create(
+                    customer=customer, created_by=created_by, **address_data
+                )
+
+        return customer
 
     def to_representation(self, instance):
         return {"id": instance.id, "message": CUSTOMER_CREATE_SUCCESS}
 
 
+class CustomerAddressUpdateSerializer(serializers.ModelSerializer):
+    id = serializers.PrimaryKeyRelatedField(
+        queryset=CustomerAddress.objects.filter(is_active=True)
+    )
+
+    class Meta:
+        model = CustomerAddress
+        fields = ["id", "label", "address"]
+
+
 class CustomerPatchSerializer(serializers.ModelSerializer):
+    addresses = CustomerAddressUpdateSerializer(many=True)
+
     class Meta:
         model = Customer
         fields = [
@@ -103,6 +143,7 @@ class CustomerPatchSerializer(serializers.ModelSerializer):
             "email",
             "is_active",
             "notes",
+            "addresses",
         ]
 
     def validate(self, attrs):
@@ -124,12 +165,31 @@ class CustomerPatchSerializer(serializers.ModelSerializer):
         )
 
     def update(self, instance, validated_data):
-        validated_data["updated_by"] = get_user_by_context(self.context)
+        addresses = validated_data.pop("addresses", [])
+
+        current_user = get_user_by_context(self.context)
+        validated_data["updated_by"] = current_user
 
         for attr, value in validated_data.items():
             setattr(instance, attr, value)
 
         instance.save(update_fields=validated_data.keys())
+
+        if addresses:
+            for address_data in addresses:
+                if "id" in address_data:
+                    id = address_data.pop("id").id
+                    address_data["updated_by"] = current_user
+                    addresss = instance.addresses.get(id=id)
+                    for attr, value in address_data.items():
+                        setattr(addresss, attr, value)
+                    
+                    addresss.save()
+                else:
+                    CustomerAddress.objects.create(
+                        customer=instance, created_by=current_user, **address_data
+                    )
+
         return instance
 
     def to_representation(self, instance):

@@ -1,12 +1,13 @@
 # Django Imports
 from django_filters import FilterSet
+from django.db import transaction
+
+# Rest Framework Imports
+from rest_framework.viewsets import ModelViewSet
 from django_filters.rest_framework import DjangoFilterBackend
 from rest_framework import status
 from rest_framework.filters import OrderingFilter, SearchFilter
 from rest_framework.response import Response
-
-# Rest Framework Imports
-from rest_framework.viewsets import ModelViewSet
 
 # Project Imports
 from src.libs.get_context import get_user_by_request
@@ -27,12 +28,12 @@ class FilterForCustomer(FilterSet):
         model = Customer
         fields = [
             "id",
-            "full_name",
             "email",
             "phone_no",
             "alt_phone_no",
             "customer_no",
             "is_person",
+            "is_active",
         ]
 
 
@@ -41,8 +42,8 @@ class CustomerViewSet(ModelViewSet):
     queryset = Customer.objects.filter(is_archived=False)
     filterset_class = FilterForCustomer
     filter_backends = (SearchFilter, OrderingFilter, DjangoFilterBackend)
-    search_fields = ["full_name", "email", "phone_no", "alt_phone_no"]
-    ordering_fields = ["id", "full_name", "email", "is_active", "is_person"]
+    search_fields = ["full_name", "email", "phone_no", "alt_phone_no", "customer_no"]
+    ordering_fields = ["id", "full_name"]
     ordering = ["-id"]
     http_method_names = ["get", "options", "head", "post", "patch", "delete"]
 
@@ -65,10 +66,21 @@ class CustomerViewSet(ModelViewSet):
         instance.updated_by = get_user_by_request(self.request)
         instance.save(update_fields=["is_archived", "updated_by"])
 
+    @transaction.atomic
     def destroy(self, request, *args, **kwargs):
         instance = self.get_object()
         self.perform_destroy(instance)
+        addresses = instance.addresses.all()
+        addresses.delete()
         return Response(
             {"id": instance.id, "message": CUSTOMER_DELETE_SUCCESS},
             status=status.HTTP_200_OK,
         )
+
+    @transaction.atomic
+    def perform_create(self, serializer):
+        return super().perform_create(serializer)
+
+    @transaction.atomic
+    def perform_update(self, serializer):
+        return super().perform_update(serializer)
