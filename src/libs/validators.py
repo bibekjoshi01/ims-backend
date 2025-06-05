@@ -21,7 +21,7 @@ def validate_alpha(value):
 
 def validate_file_extension(value):
     file_extension_validator = FileExtensionValidator(
-        allowed_extensions=["pdf", "doc", "docx", ".png", ".jpg"],
+        allowed_extensions=["pdf", "doc", "docx", "png", "jpg", "xlsx"],
     )
     file_extension_validator(value)
 
