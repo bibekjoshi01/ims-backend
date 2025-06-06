@@ -1,19 +1,21 @@
 # Django Imports
-from django_filters import FilterSet
 from django.db import transaction
+from django.shortcuts import get_object_or_404
+from django_filters import FilterSet
+from django_filters.rest_framework import DjangoFilterBackend
+from rest_framework import status
+from rest_framework.decorators import action
+from rest_framework.filters import OrderingFilter, SearchFilter
+from rest_framework.response import Response
 
 # Rest Framework Imports
 from rest_framework.viewsets import ModelViewSet
-from django_filters.rest_framework import DjangoFilterBackend
-from rest_framework import status
-from rest_framework.filters import OrderingFilter, SearchFilter
-from rest_framework.response import Response
 
 # Project Imports
 from src.libs.get_context import get_user_by_request
 
 from .messages import CUSTOMER_DELETE_SUCCESS
-from .models import Customer
+from .models import Customer, CustomerAddress
 from .permissions import CustomerPermission
 from .serializers import (
     CustomerCreateSerializer,
@@ -84,3 +86,21 @@ class CustomerViewSet(ModelViewSet):
     @transaction.atomic
     def perform_update(self, serializer):
         return super().perform_update(serializer)
+
+    @action(
+        detail=True,
+        methods=["DELETE"],
+        url_path=r"address/(?P<address_id>\d+)/delete",
+    )
+    def delete_customer_address(self, request, pk=None, address_id=None):
+        instance = get_object_or_404(
+            CustomerAddress,
+            customer=pk,
+            id=address_id,
+            is_archived=False,
+        )
+        instance.delete()
+        return Response(
+            {"message": "Address deleted successfully.", "is_internal": True},
+            status=status.HTTP_200_OK,
+        )
