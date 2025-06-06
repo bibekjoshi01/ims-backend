@@ -21,6 +21,7 @@ class CustomerListSerializer(serializers.ModelSerializer):
             "id",
             "full_name",
             "customer_no",
+            "gender",
             "is_person",
             "phone_no",
             "alt_phone_no",
@@ -46,6 +47,7 @@ class CustomerRetrieveSerializer(AbstractInfoRetrieveSerializer):
             "full_name",
             "customer_no",
             "is_person",
+            "gender",
             "phone_no",
             "alt_phone_no",
             "photo",
@@ -75,6 +77,7 @@ class CustomerCreateSerializer(serializers.ModelSerializer):
             "phone_no",
             "alt_phone_no",
             "photo",
+            "gender",
             "email",
             "is_active",
             "notes",
@@ -110,7 +113,9 @@ class CustomerCreateSerializer(serializers.ModelSerializer):
         if addresses:
             for address_data in addresses:
                 CustomerAddress.objects.create(
-                    customer=customer, created_by=created_by, **address_data
+                    customer=customer,
+                    created_by=created_by,
+                    **address_data,
                 )
 
         return customer
@@ -121,7 +126,7 @@ class CustomerCreateSerializer(serializers.ModelSerializer):
 
 class CustomerAddressUpdateSerializer(serializers.ModelSerializer):
     id = serializers.PrimaryKeyRelatedField(
-        queryset=CustomerAddress.objects.filter(is_active=True)
+        queryset=CustomerAddress.objects.filter(is_active=True),
     )
 
     class Meta:
@@ -139,6 +144,7 @@ class CustomerPatchSerializer(serializers.ModelSerializer):
             "is_person",
             "phone_no",
             "alt_phone_no",
+            "gender",
             "photo",
             "email",
             "is_active",
@@ -178,16 +184,18 @@ class CustomerPatchSerializer(serializers.ModelSerializer):
         if addresses:
             for address_data in addresses:
                 if "id" in address_data:
-                    id = address_data.pop("id").id
+                    _id = address_data.pop("id").id
                     address_data["updated_by"] = current_user
-                    addresss = instance.addresses.get(id=id)
+                    addresss = instance.addresses.get(id=_id)
                     for attr, value in address_data.items():
                         setattr(addresss, attr, value)
-                    
+
                     addresss.save()
                 else:
                     CustomerAddress.objects.create(
-                        customer=instance, created_by=current_user, **address_data
+                        customer=instance,
+                        created_by=current_user,
+                        **address_data,
                     )
 
         return instance

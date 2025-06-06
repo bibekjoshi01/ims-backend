@@ -17,3 +17,10 @@ class SocialMedias(BaseEnum):
     SKYPE = "SKYPE"
     VIBER = "VIBER"
     OTHER = "OTHER"
+
+
+class Gender(BaseEnum):
+    MALE = "MALE"
+    FEMALE = "FEMALE"
+    OTHER = "FEMALE"
+    NA = "NA"

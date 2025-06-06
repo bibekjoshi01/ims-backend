@@ -4,6 +4,7 @@ from django.utils.crypto import get_random_string
 from django.utils.translation import gettext_lazy as _
 
 from src.base.models import AbstractInfoModel
+from src.core.constants import Gender
 
 from .constants import AddressLabel
 
@@ -27,6 +28,13 @@ class Customer(AbstractInfoModel):
         default=True,
         verbose_name=_("Is Person"),
         help_text=_("Is the customer is person or organization/company/group?"),
+    )
+    gender = models.CharField(
+        _("Gender"),
+        choices=Gender.choices(),
+        max_length=20,
+        default=Gender.NA.value,
+        help_text=_("Customer gender in case of person."),
     )
     photo = models.ImageField(
         upload_to="customer/",

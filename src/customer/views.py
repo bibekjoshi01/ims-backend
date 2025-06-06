@@ -14,7 +14,7 @@ from rest_framework.viewsets import ModelViewSet
 # Project Imports
 from src.libs.get_context import get_user_by_request
 
-from .messages import CUSTOMER_DELETE_SUCCESS
+from .messages import CUSTOMER_ADDRESS_DELETE_SUCCESS, CUSTOMER_DELETE_SUCCESS
 from .models import Customer, CustomerAddress
 from .permissions import CustomerPermission
 from .serializers import (
@@ -101,6 +101,10 @@ class CustomerViewSet(ModelViewSet):
         )
         instance.delete()
         return Response(
-            {"message": "Address deleted successfully.", "is_internal": True},
+            {
+                "id": instance.id,
+                "message": CUSTOMER_ADDRESS_DELETE_SUCCESS,
+                "is_internal": True,
+            },
             status=status.HTTP_200_OK,
         )
