@@ -332,6 +332,8 @@ class PurchaseAttachment(AbstractInfoModel):
 
 
 class PurchaseDetailSerialNumber(AbstractInfoModel):
+    """Serial Nos for purchase details products to keep unit wise tracking"""
+
     purchase_detail = models.ForeignKey(
         PurchaseDetail,
         on_delete=models.CASCADE,
