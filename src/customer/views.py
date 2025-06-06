@@ -32,6 +32,7 @@ class FilterForCustomer(FilterSet):
             "id",
             "email",
             "phone_no",
+            "gender",
             "alt_phone_no",
             "customer_no",
             "is_person",
