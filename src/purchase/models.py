@@ -8,10 +8,11 @@ from src.base.models import AbstractInfoModel
 # Project Imports
 from src.core.models import AdditionalChargeType, PaymentMethod
 from src.inventory.catalog.models import Product
+from src.inventory.store.models import Store
 from src.libs.validators import validate_file_extension
 from src.supplier.models import Supplier
 
-from .constants import PayType, PurchaseType
+from .constants import PartyPaymentType, PayType, PurchaseType
 
 
 class Purchase(AbstractInfoModel):
@@ -77,6 +78,15 @@ class Purchase(AbstractInfoModel):
         related_name="supplier_purchases",
         verbose_name=_("Supplier"),
         help_text=_("Supplier from whom the purchase was made."),
+        db_index=True,
+    )
+    store = models.ForeignKey(
+        Store,
+        on_delete=models.SET_NULL,
+        null=True,
+        related_name="store_purchases",
+        verbose_name=_("Store"),
+        help_text=_("Store where purchase is stored or received."),
         db_index=True,
     )
     bill_no = models.CharField(
@@ -354,3 +364,97 @@ class PurchaseDetailSerialNumber(AbstractInfoModel):
 
     def __str__(self) -> str:
         return f"{self.id}"
+
+
+class SupplierPayment(AbstractInfoModel):
+    """
+    Records a payment made to a supplier.
+    """
+
+    payment_type = models.CharField(
+        choices=PartyPaymentType.choices(),
+        max_length=20,
+        verbose_name=_("Payment Type"),
+        help_text=_("Type of payment, e.g., payment, return"),
+    )
+    payment_no = models.CharField(
+        max_length=20,
+        blank=True,
+        verbose_name=_("Payment Number"),
+        help_text=_("System-generated"),
+    )
+    receipt_no = models.CharField(
+        max_length=20,
+        verbose_name=_("Receipt Number"),
+        help_text=_("Receipt number provided to the supplier, Reference Number"),
+    )
+    supplier = models.ForeignKey(
+        Supplier,
+        on_delete=models.PROTECT,
+        verbose_name=_("Supplier"),
+        help_text=_("The supplier to whom the payment was made"),
+    )
+    total_amount = models.DecimalField(
+        max_digits=12,
+        decimal_places=2,
+        verbose_name=_("Total Amount Paid"),
+        help_text=_("Total payment amount made to the supplier"),
+    )
+    payment_date = models.DateField(
+        blank=True,
+        null=True,
+        verbose_name=_("Payment Date"),
+        help_text=_("Date on which payment was made"),
+    )
+    notes = models.TextField(
+        blank=True,
+        verbose_name=_("Notes"),
+        help_text=_("Any additional information or remarks about this payment"),
+    )
+
+    class Meta:
+        verbose_name = _("Supplier Payment")
+        verbose_name_plural = _("Supplier Payments")
+        ordering = ["-payment_date"]
+
+    def __str__(self):
+        return f"#{self.payment_no or self.id} {_('to')} {self.supplier.name}"
+
+
+class SupplierPaymentDetail(AbstractInfoModel):
+    """
+    Records individual payment method details for a supplier payment.
+    """
+
+    supplier_payment = models.ForeignKey(
+        SupplierPayment,
+        on_delete=models.PROTECT,
+        related_name="details",
+        verbose_name=_("Supplier Payment"),
+        help_text=_("The main payment record this detail belongs to"),
+    )
+    payment_method = models.ForeignKey(
+        PaymentMethod,
+        on_delete=models.PROTECT,
+        verbose_name=_("Payment Method"),
+        help_text=_("Method used for the payment (e.g., cash, bank transfer)"),
+    )
+    amount = models.DecimalField(
+        max_digits=12,
+        decimal_places=2,
+        verbose_name=_("Amount"),
+        help_text=_("Amount paid using this method"),
+    )
+    remarks = models.CharField(
+        max_length=50,
+        blank=True,
+        verbose_name=_("Remarks"),
+        help_text=_("Optional remarks about this payment method"),
+    )
+
+    class Meta:
+        verbose_name = _("Supplier Payment Detail")
+        verbose_name_plural = _("Supplier Payment Details")
+
+    def __str__(self):
+        return f"{self.amount} {_('via')} {self.payment_method} ({_('Payment')})"

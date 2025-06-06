@@ -9,3 +9,8 @@ class PurchaseType(BaseEnum):
 class PayType(BaseEnum):
     CASH = "CASH"
     CREDIT = "CREDIT"
+
+
+class PartyPaymentType(BaseEnum):
+    PAYMENT = "PAYMENT"
+    RETURN = "RETURN"

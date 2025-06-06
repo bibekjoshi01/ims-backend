@@ -1,5 +1,6 @@
 from django.contrib import admin
 
-from .models import InvPurchaseMain
+from .models import Purchase, SupplierPayment
 
-admin.site.register(InvPurchaseMain)
+admin.site.register(Purchase)
+admin.site.register(SupplierPayment)

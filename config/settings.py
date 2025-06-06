@@ -51,7 +51,9 @@ LOCAL_APPS = [
     "src.blog",
     "src.supplier",
     "src.customer",
+    "src.purchase",
     "src.inventory.catalog",
+    "src.inventory.store",
 ]
 
 INSTALLED_APPS = DJANGO_APPS + THIRD_PARTY_APPS + LOCAL_APPS
