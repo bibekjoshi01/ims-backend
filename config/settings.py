@@ -61,7 +61,7 @@ MIDDLEWARE = [
 
 
 ROOT_URLCONF = "config.tenant_urls"
-PUBLIC_SCHEMA_URLCONF = "config.urls"
+PUBLIC_SCHEMA_URLCONF = "config.platform_urls"
 ADMIN_URL = "cms/"
 
 TEMPLATES = [
@@ -207,8 +207,8 @@ SPECTACULAR_SETTINGS = {
         "drf_spectacular.hooks.postprocess_schema_enums",
         "drf_spectacular.contrib.djangorestframework_camel_case.camelize_serializer_fields",
     ],
-    "SERVE_PERMISSIONS": ["rest_framework.permissions.IsAdminUser"],
-    "SCHEMA_PATH_PREFIX": "/api/v1/admin",
+    "SERVE_PERMISSIONS": ["rest_framework.permissions.AllowAny"],
+    "SCHEMA_PATH_PREFIX": "/api/v1/internal",
     "SWAGGER_UI_SETTINGS": {
         "defaultModelsExpandDepth": -1,
     },

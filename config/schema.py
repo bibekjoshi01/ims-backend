@@ -1,0 +1,51 @@
+from drf_spectacular.views import SpectacularAPIView, SpectacularSwaggerView
+
+
+# Platform
+class CustomPlatformSpectacularSwaggerView(SpectacularSwaggerView):
+    def dispatch(self, request, *args, **kwargs):
+        from django.shortcuts import redirect
+        from rest_framework.reverse import reverse
+
+        response = super().dispatch(request, *args, **kwargs)
+        if response.status_code == 401:
+            # Redirect the user to the login page if not authenticated
+            return redirect(reverse("rest_framework:login") + f"?next={request.path}")
+        return response
+
+
+class CustomPlatformSpectacularAPIView(SpectacularAPIView):
+    def dispatch(self, request, *args, **kwargs):
+        from django.shortcuts import redirect
+        from rest_framework.reverse import reverse
+
+        response = super().dispatch(request, *args, **kwargs)
+        if response.status_code == 401:
+            # Redirect the user to the login page if not authenticated
+            return redirect(reverse("rest_framework:login") + f"?next={request.path}")
+        return response
+
+
+# Tenant
+class CustomTenantSpectacularSwaggerView(SpectacularSwaggerView):
+    def dispatch(self, request, *args, **kwargs):
+        from django.shortcuts import redirect
+        from rest_framework.reverse import reverse
+
+        response = super().dispatch(request, *args, **kwargs)
+        if response.status_code == 401 or not request.user.is_authenticated:
+            # Redirect the user to the login page if not authenticated
+            return redirect(reverse("rest_framework:login") + f"?next={request.path}")
+        return response
+
+
+class CustomTenantSpectacularAPIView(SpectacularAPIView):
+    def dispatch(self, request, *args, **kwargs):
+        from django.shortcuts import redirect
+        from rest_framework.reverse import reverse
+
+        response = super().dispatch(request, *args, **kwargs)
+        if response.status_code == 401 or not request.user.is_authenticated:
+            # Redirect the user to the login page if not authenticated
+            return redirect(reverse("rest_framework:login") + f"?next={request.path}")
+        return response
