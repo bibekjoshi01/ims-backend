@@ -1,0 +1,59 @@
+{% load static i18n %}
+<!DOCTYPE html>
+{% get_current_language as LANGUAGE_CODE %}
+<html lang="{{ LANGUAGE_CODE }}">
+  <head>
+    <meta charset="utf-8" />
+    <meta http-equiv="x-ua-compatible" content="ie=edge" />
+    <title>{% block title %} KS Backend {% endblock title %}</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="description" content="KS API Management!" />
+    <meta name="author" content="Bibek Joshi" />
+    <link rel="icon" href="{% static 'images/favicons/favicon.ico' %}" />
+    <link href="{% static 'css/home.css' %}" rel="stylesheet" />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Montserrat:ital,wght@0,100..900;1,100..900&family=Roboto:ital,wght@0,100;0,300;0,400;0,500;0,700;0,900;1,100;1,300;1,400;1,500;1,700;1,900&display=swap"
+      rel="stylesheet"
+    />
+  </head>
+  <body>
+    <div class="container">
+      <div class="content">
+        <img
+          src="{% static 'images/logo.png' %}"
+          style="max-width: 300px"
+          alt="logo"
+        />
+        <header class="header">
+          <h1>Kavya Sudha API Management</h1>
+          <p class="description">
+            Use the links below to access essential tools for managing and
+            testing the API. Ensure you're authenticated to access restricted
+            areas.
+          </p>
+        </header>
+        <main class="main-content">
+          <div class="buttons">
+            <a href="{% url 'swagger-ui' %}" class="button">
+              <span class="icon">🛠️</span> API Documentation
+            </a>
+            <a href="{% url 'admin:index' %}" class="button">
+              <span class="icon">🔒</span> Content Management
+            </a>
+          </div>
+        </main>
+        <footer class="footer">
+          <p>
+            Need help? Visit the
+            <a href="https://github.com/kayo-badger/ks-backend" target="_blank"
+              >project documentation</a
+            >
+            or contact the backend support team.
+          </p>
+        </footer>
+      </div>
+    </div>
+  </body>
+</html>

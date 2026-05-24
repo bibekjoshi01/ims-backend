@@ -1,0 +1,516 @@
+/* ============================================================================
+   OPERON SAAS - Global Styles
+   ============================================================================ */
+
+/* Reset & Base */
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+html {
+    scroll-behavior: smooth;
+}
+
+body {
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Oxygen,
+        Ubuntu, Cantarell, sans-serif;
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    min-height: 100vh;
+    color: #333;
+    line-height: 1.6;
+}
+
+/* ============================================================================
+   Layout
+   ============================================================================ */
+
+.page-wrapper {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    min-height: 100vh;
+    padding: 20px;
+}
+
+.container {
+    background: white;
+    border-radius: 12px;
+    padding: 50px 40px;
+    box-shadow: 0 20px 60px rgba(0, 0, 0, 0.15);
+    max-width: 600px;
+    width: 100%;
+    animation: slideUp 0.5s ease-out;
+}
+
+.container.large {
+    max-width: 700px;
+}
+
+@keyframes slideUp {
+    from {
+        opacity: 0;
+        transform: translateY(20px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+/* ============================================================================
+   Header & Typography
+   ============================================================================ */
+
+.page-header {
+    text-align: center;
+    margin-bottom: 40px;
+}
+
+h1 {
+    color: #333;
+    font-size: 2.5em;
+    margin-bottom: 15px;
+    font-weight: 700;
+    letter-spacing: -0.5px;
+}
+
+h1.success {
+    color: #28a745;
+    font-size: 2.2em;
+}
+
+h2 {
+    color: #333;
+    font-size: 1.1em;
+    margin-bottom: 20px;
+    font-weight: 600;
+}
+
+h3 {
+    color: #667eea;
+    font-size: 1em;
+    margin-bottom: 12px;
+    font-weight: 600;
+}
+
+.subtitle {
+    color: #666;
+    font-size: 1.05em;
+    line-height: 1.6;
+    margin-bottom: 30px;
+}
+
+p {
+    color: #666;
+    font-size: 1em;
+    line-height: 1.6;
+}
+
+/* ============================================================================
+   Forms
+   ============================================================================ */
+
+.form-group {
+    margin-bottom: 20px;
+}
+
+label {
+    display: block;
+    color: #333;
+    font-weight: 600;
+    margin-bottom: 8px;
+    font-size: 0.95em;
+}
+
+label .required {
+    color: #e74c3c;
+    margin-left: 3px;
+}
+
+input[type="text"],
+input[type="email"],
+input[type="password"] {
+    width: 100%;
+    padding: 12px 15px;
+    border: 2px solid #e0e0e0;
+    border-radius: 6px;
+    font-size: 1em;
+    font-family: inherit;
+    transition: all 0.3s ease;
+}
+
+input[type="text"]:focus,
+input[type="email"]:focus,
+input[type="password"]:focus {
+    outline: none;
+    border-color: #667eea;
+    box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+}
+
+.help-text {
+    font-size: 0.85em;
+    color: #888;
+    margin-top: 5px;
+    display: block;
+}
+
+/* Form Layout Grid */
+.form-row {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 20px;
+}
+
+.form-row.full {
+    grid-template-columns: 1fr;
+}
+
+/* ============================================================================
+   Messages & Alerts
+   ============================================================================ */
+
+.error-list {
+    list-style: none;
+    background: #fee;
+    color: #c33;
+    padding: 10px 15px;
+    border-radius: 6px;
+    margin-top: 5px;
+    font-size: 0.9em;
+}
+
+.error-list li {
+    margin-bottom: 5px;
+}
+
+.error-list li:last-child {
+    margin-bottom: 0;
+}
+
+/* Info Boxes */
+.info-box {
+    background: #f0f7ff;
+    border-left: 4px solid #667eea;
+    padding: 15px;
+    border-radius: 6px;
+    margin-bottom: 25px;
+    font-size: 0.95em;
+    color: #333;
+}
+
+.info-box strong {
+    display: block;
+    color: #667eea;
+    margin-bottom: 5px;
+}
+
+.info-box.warning {
+    background: #fff3cd;
+    border-left-color: #ffc107;
+}
+
+.info-box.warning strong {
+    color: #dc8500;
+}
+
+.info-box.success {
+    background: #e8f5e9;
+    border-left-color: #28a745;
+}
+
+.info-box.success strong {
+    color: #28a745;
+}
+
+/* Success Icon */
+.success-icon {
+    font-size: 4em;
+    margin-bottom: 20px;
+    animation: pulse 0.6s ease-out;
+}
+
+@keyframes pulse {
+    0% {
+        transform: scale(0.5);
+        opacity: 0;
+    }
+    100% {
+        transform: scale(1);
+        opacity: 1;
+    }
+}
+
+/* ============================================================================
+   Cards & Sections
+   ============================================================================ */
+
+.credentials-box {
+    background: #f8f9fa;
+    border-left: 4px solid #28a745;
+    padding: 25px;
+    border-radius: 6px;
+    margin-bottom: 30px;
+}
+
+.credential-item {
+    margin-bottom: 15px;
+    padding: 12px;
+    background: white;
+    border-radius: 5px;
+    border: 1px solid #e0e0e0;
+}
+
+.credential-item:last-child {
+    margin-bottom: 0;
+}
+
+.credential-label {
+    color: #667eea;
+    font-weight: 600;
+    font-size: 0.9em;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    margin-bottom: 5px;
+}
+
+.credential-value {
+    color: #333;
+    font-size: 1em;
+    font-family: "Courier New", monospace;
+    word-break: break-all;
+}
+
+.info-sections {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 25px;
+    margin-bottom: 30px;
+}
+
+.info-section {
+    background: #f0f7ff;
+    border-left: 4px solid #667eea;
+    padding: 20px;
+    border-radius: 6px;
+}
+
+.info-section h3 {
+    margin-bottom: 12px;
+}
+
+.info-section p {
+    color: #555;
+    font-size: 0.95em;
+}
+
+.info-section code {
+    background: white;
+    padding: 2px 5px;
+    border-radius: 3px;
+    font-family: "Courier New", monospace;
+    color: #667eea;
+}
+
+/* ============================================================================
+   Buttons
+   ============================================================================ */
+
+.button-group {
+    display: flex;
+    gap: 15px;
+    margin-top: 30px;
+    flex-wrap: wrap;
+}
+
+.button-group.centered {
+    justify-content: center;
+}
+
+button,
+.btn,
+a.btn {
+    padding: 12px 30px;
+    border: none;
+    border-radius: 6px;
+    font-weight: 600;
+    font-size: 1em;
+    cursor: pointer;
+    text-decoration: none;
+    text-align: center;
+    transition: all 0.3s ease;
+    display: inline-block;
+    outline: none;
+}
+
+button {
+    flex: 1;
+}
+
+a.btn {
+    flex: 1;
+}
+
+.btn-primary {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: white;
+    border: none;
+}
+
+.btn-primary:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 10px 25px rgba(102, 126, 234, 0.4);
+}
+
+.btn-primary:active {
+    transform: translateY(0);
+}
+
+.btn-secondary {
+    background: #f0f0f0;
+    color: #333;
+    border: 2px solid #e0e0e0;
+}
+
+.btn-secondary:hover {
+    background: #e0e0e0;
+    border-color: #d0d0d0;
+}
+
+.btn-success {
+    background: linear-gradient(135deg, #28a745 0%, #1e8449 100%);
+    color: white;
+}
+
+.btn-success:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 10px 25px rgba(40, 167, 69, 0.3);
+}
+
+/* ============================================================================
+   Utility Classes
+   ============================================================================ */
+
+.text-center {
+    text-align: center;
+}
+
+.text-left {
+    text-align: left;
+}
+
+.mb-20 {
+    margin-bottom: 20px;
+}
+
+.mb-30 {
+    margin-bottom: 30px;
+}
+
+.mt-30 {
+    margin-top: 30px;
+}
+
+.hidden {
+    display: none;
+}
+
+/* ============================================================================
+   Responsive Design
+   ============================================================================ */
+
+@media (max-width: 768px) {
+    .container {
+        padding: 40px 25px;
+    }
+
+    h1 {
+        font-size: 2em;
+    }
+
+    h1.success {
+        font-size: 1.8em;
+    }
+
+    .form-row {
+        grid-template-columns: 1fr;
+    }
+
+    .info-sections {
+        grid-template-columns: 1fr;
+    }
+
+    .button-group {
+        flex-direction: column;
+    }
+
+    button,
+    .btn,
+    a.btn {
+        width: 100%;
+    }
+}
+
+@media (max-width: 480px) {
+    .page-wrapper {
+        padding: 15px;
+    }
+
+    .container {
+        padding: 30px 20px;
+        border-radius: 8px;
+    }
+
+    .page-header {
+        margin-bottom: 30px;
+    }
+
+    h1 {
+        font-size: 1.6em;
+    }
+
+    h1.success {
+        font-size: 1.4em;
+    }
+
+    .subtitle {
+        font-size: 0.95em;
+    }
+
+    .success-icon {
+        font-size: 3em;
+    }
+}
+
+/* ============================================================================
+   Animations
+   ============================================================================ */
+
+@keyframes fadeIn {
+    from {
+        opacity: 0;
+    }
+    to {
+        opacity: 1;
+    }
+}
+
+@keyframes slideInUp {
+    from {
+        opacity: 0;
+        transform: translateY(30px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+.fade-in {
+    animation: fadeIn 0.5s ease-out;
+}
+
+.slide-up {
+    animation: slideInUp 0.5s ease-out;
+}

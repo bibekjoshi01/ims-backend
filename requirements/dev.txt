@@ -1,0 +1,7 @@
+-r base.txt
+
+pytest==9.0.2
+black==26.3.0
+isort==8.0.1
+pre_commit==4.5.1
+ruff==0.15.5

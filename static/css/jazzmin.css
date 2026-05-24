@@ -1,0 +1,175 @@
+/* Login Logo  */
+/* ---------------------------------------------------- */
+.login-logo img {
+  max-width: 200px;
+  width: 200px;
+  height: auto;
+}
+
+/* === Move label to top for description field === */
+.form-group.field-description {
+  display: block !important;
+}
+
+/* Make label full-width and on top */
+.form-group.field-description > label {
+  display: block !important;
+  width: 100% !important;
+  margin-bottom: 8px;
+  font-weight: 600;
+}
+
+/* Make input container full width (override col-sm-7) */
+.form-group.field-description .col-sm-7 {
+  flex: 0 0 100% !important;
+  max-width: 100% !important;
+}
+
+/* Ensure CKEditor fills the container */
+.form-group.field-description .ck-editor,
+.form-group.field-description .ck-editor__main,
+.form-group.field-description .ck-editor__editable {
+  width: 100% !important;
+  max-width: 100% !important;
+}
+
+/* Editor height */
+.form-group.field-description .ck-editor__editable {
+  min-height: 400px;
+}
+
+.col-sm-1-5 {
+  flex: 0 0 12.5%;
+  max-width: 12.5%;
+}
+
+/* Submit Buttons Fix*/
+/* -------------------------------------------- */
+
+/* 1. Make form full width */
+.col-lg-9 {
+  flex: 0 0 100% !important;
+  max-width: 100% !important;
+}
+
+/* 2. Move sidebar below form */
+.col-lg-3 {
+  flex: 0 0 100% !important;
+  max-width: 100% !important;
+  margin-top: 20px;
+}
+
+/* 3. Turn actions into horizontal row */
+#jazzy-actions > div {
+  display: flex !important;
+  flex-direction: row !important;
+  justify-content: flex-end;
+  gap: 10px;
+  flex-wrap: wrap;
+  margin-bottom: 20px;
+}
+
+#jazzy-actions > .object-tools {
+  max-width: 100px;
+}
+
+/* 4. Fix bootstrap stacking */
+#jazzy-actions .form-group {
+  margin: 0 !important;
+}
+
+/* 5. Fix full-width buttons */
+#jazzy-actions .form-control {
+  width: auto !important;
+  display: inline-block !important;
+}
+
+/* ONLY form cards inside tab content (Item, Supplier, etc.) */
+.tab-content .tab-pane .card {
+  box-shadow: none !important;
+  border: 0px solid #e9ecef !important;
+}
+
+/* reduce padding from p-5 (3rem) to 2rem */
+.tab-content .tab-pane .card-body {
+  padding: 1rem !important;
+}
+
+/* Jazzmin Footer */
+/* -------------------------------------------------- */
+
+/* Hide Jazzmin version text */
+.main-footer .float-right {
+  display: none !important;
+}
+
+/* ================================
+   Jazzmin Sidebar Scroll Fix
+   ================================ */
+
+#jazzy-sidebar {
+  height: 100vh;
+  position: fixed;
+  overflow: hidden; /* prevents full-page scroll */
+}
+
+/* THIS is the actual scroll container */
+#jazzy-sidebar .sidebar {
+  height: calc(100vh - 70px); /* subtract brand + user panel area */
+  overflow-y: auto;
+  overflow-x: hidden;
+}
+
+/* optional: keep brand + user panel fixed */
+#jazzy-sidebar .brand-link,
+#jazzy-sidebar .user-panel {
+  flex-shrink: 0;
+}
+
+/* improve scrollbar (optional) */
+#jazzy-sidebar .sidebar::-webkit-scrollbar {
+  width: 6px;
+}
+
+#jazzy-sidebar .sidebar::-webkit-scrollbar-thumb {
+  background: #555;
+  border-radius: 4px;
+}
+
+#jazzy-sidebar .sidebar::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+#jazzy-sidebar .sidebar {
+  scrollbar-width: thin;
+}
+
+/* Sidebar Searching */
+/* ----------------------------------------- */
+
+.sidebar-search-wrapper {
+  width: 100%;
+  padding: 5px 10px;
+}
+
+.sidebar-search {
+  width: 100%;
+  padding: 7px 10px;
+  border-radius: 6px;
+  border: 1px solid #3c4b64;
+  background: #1f2d3d;
+  color: #fff;
+  font-size: 13px;
+  outline: none;
+}
+
+.sidebar-search::placeholder {
+  color: #aaa;
+}
+
+/* Search Bar Results in Page */
+/* // ---------------------------------------------------------- */
+#changelist-search #search_group span {
+  margin-left: 20px;
+  font-size: 16px;
+}
