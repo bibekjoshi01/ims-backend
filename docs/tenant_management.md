@@ -28,17 +28,17 @@ Domain.objects.create(
 ### Creating Tenant Users
 
 ```bash
-python manage.py create_tenant_user <schema_name> <username> <password> [--is_staff] [--is_superuser]
+python manage.py create_tenant_user <schema_name> <username> <password> <email> [--is_staff] [--is_superuser]
 ```
 
 Examples:
 
 ```bash
 # Regular tenant user
-python manage.py create_tenant_user client1 john password123
+python manage.py create_tenant_user client1 john john@gmail.com password123
 
 # Tenant admin
-python manage.py create_tenant_user client1 admin admin123 --is_staff --is_superuser
+python manage.py create_tenant_user client1 admin admin123 admin@gmail.com --is_staff --is_superuser
 ```
 
 ### Accessing Tenant Admin

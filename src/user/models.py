@@ -3,6 +3,7 @@ from uuid import uuid4
 from django.conf import settings
 from django.contrib.auth.base_user import AbstractBaseUser, BaseUserManager
 from django.contrib.auth.hashers import make_password
+from django.contrib.auth.models import PermissionsMixin
 
 # Django Imports
 from django.db import models
@@ -148,7 +149,7 @@ class UserManager(BaseUserManager):
         return user
 
 
-class User(AbstractBaseUser):
+class User(AbstractBaseUser, PermissionsMixin):
     """
     User Model
 

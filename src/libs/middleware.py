@@ -1,5 +1,4 @@
-from django.http import HttpResponseForbidden
-from django.http import JsonResponse
+from django.http import HttpResponseForbidden, JsonResponse
 
 
 class TenantStatusMiddleware:

@@ -47,14 +47,17 @@ INSTALLED_APPS = list(SHARED_APPS) + [app for app in TENANT_APPS if app not in S
 MIDDLEWARE = [
     "django_tenants.middleware.TenantMainMiddleware",
     "django.middleware.security.SecurityMiddleware",
+    "corsheaders.middleware.CorsMiddleware",
     "django.contrib.sessions.middleware.SessionMiddleware",
+    "django.middleware.locale.LocaleMiddleware",
     "django.middleware.common.CommonMiddleware",
-    "rest_framework_simplejwt.token_blacklist",
+    "django.middleware.csrf.CsrfViewMiddleware",
     "django.contrib.auth.middleware.AuthenticationMiddleware",
     "django.contrib.messages.middleware.MessageMiddleware",
     "django.middleware.clickjacking.XFrameOptionsMiddleware",
-    # "src.libs.middleware.TenantStatusMiddleware",
+    "src.libs.middleware.TenantStatusMiddleware",
 ]
+
 
 ROOT_URLCONF = "config.tenant_urls"
 PUBLIC_SCHEMA_URLCONF = "config.urls"
@@ -190,6 +193,16 @@ LOGGING = {
             "level": "INFO",
             "encoding": "utf-8",
         },
+        "exception_error_file": {
+            "class": "logging.handlers.TimedRotatingFileHandler",
+            "filename": str(LOG_DIR / "exception_log"),  # base filename
+            "when": "midnight",  # rotate at midnight
+            "interval": 1,  # every 1 day
+            "backupCount": 7,  # keep last 7 days
+            "formatter": "detailed",
+            "level": "INFO",
+            "encoding": "utf-8",
+        },
         "email_error_file": {
             "class": "logging.handlers.TimedRotatingFileHandler",
             "filename": str(LOG_DIR / "email_log"),  # base filename
@@ -211,6 +224,11 @@ LOGGING = {
         # Customer Manual logs
         "server_error": {
             "handlers": ["server_error_file"],
+            "level": "INFO",
+            "propagate": False,
+        },
+        "exception_error": {
+            "handlers": ["exception_error_file"],
             "level": "INFO",
             "propagate": False,
         },
@@ -263,7 +281,7 @@ REST_FRAMEWORK = {
         "django_filters.rest_framework.DjangoFilterBackend",
     ],
     "DEFAULT_SCHEMA_CLASS": "drf_spectacular.openapi.AutoSchema",
-    "EXCEPTION_HANDLER": "src.libs.exception_handler.custom_exception_handler",
+    "EXCEPTION_HANDLER": "src.libs.handler.custom_exception_handler",
 }
 
 
@@ -307,9 +325,9 @@ FILE_UPLOAD_MAX_MEMORY_SIZE = 10 * 1024 * 1024  # 10 MB
 
 # Celery
 # ------------------------------------------------------------------------------
-REDIS_HOST = os.getenv("REDIS_HOST")
-REDIS_PORT = os.getenv("REDIS_PORT")
-REDIS_DB = os.getenv("REDIS_DB")
+REDIS_HOST = os.getenv("REDIS_HOST", "127.0.0.1")
+REDIS_PORT = os.getenv("REDIS_PORT", "6379")
+REDIS_DB = os.getenv("REDIS_DB", "0")
 
 
 SESSION_ENGINE = "django.contrib.sessions.backends.cache"

@@ -12,6 +12,7 @@ class Command(BaseCommand):
         parser.add_argument("schema_name", type=str)
         parser.add_argument("username", type=str)
         parser.add_argument("password", type=str)
+        parser.add_argument("email", type=str)
         parser.add_argument("--is_superuser", action="store_true")
         parser.add_argument("--is_staff", action="store_true")
 
@@ -20,6 +21,7 @@ class Command(BaseCommand):
 
         username = options["username"]
         password = options["password"]
+        email = options["email"]
 
         is_superuser = options["is_superuser"]
         is_staff = options["is_staff"]
@@ -28,6 +30,7 @@ class Command(BaseCommand):
             User.objects.create_user(
                 username=username,
                 password=password,
+                email=email,
                 is_staff=is_staff,
                 is_superuser=is_superuser,
             )
