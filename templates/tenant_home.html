@@ -1,5 +1,5 @@
 {% load static i18n %}
-<!DOCTYPE html>
+<!doctype html>
 {% get_current_language as LANGUAGE_CODE %}
 <html lang="{{ LANGUAGE_CODE }}">
   <head>
@@ -27,7 +27,7 @@
           alt="logo"
         />
         <header class="header">
-          <h1>Operon API Management</h1>
+          <h1>Operon Admin Management</h1>
           <p class="description">
             Use the links below to access essential tools for managing and
             testing the API. Ensure you're authenticated to access restricted
@@ -40,7 +40,7 @@
               <span class="icon">🛠️</span> API Documentation
             </a>
             <a href="{% url 'admin:index' %}" class="button">
-              <span class="icon">🔒</span> Content Management
+              <span class="icon">🔒</span> Administrator Panel
             </a>
           </div>
         </main>
