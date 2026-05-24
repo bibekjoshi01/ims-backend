@@ -35,7 +35,7 @@ JAZZMIN_SETTINGS = {
     "icons": {
         "auth.Group": "fas fa-users",
         # Custom User module
-        "user": "fas fa-user",
+        "user.User": "fas fa-user",
     },
     # Icons that are used when one is not manually specified
     "default_icon_parents": "fas fa-chevron-circle-right",

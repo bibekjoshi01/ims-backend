@@ -44,17 +44,3 @@ class Domain(DomainMixin):
     class Meta:
         verbose_name = "Domain"
         verbose_name_plural = "Domains"
-
-
-class TenantProfile(models.Model):
-    """Extended business info."""
-
-    tenant = models.OneToOneField(Tenant, on_delete=models.CASCADE, related_name="profile")
-
-    admin_email = models.EmailField()
-    phone = models.CharField(max_length=20, blank=True)
-
-    logo = models.ImageField(blank=True, null=True)
-    description = models.TextField(blank=True)
-
-    created_at = models.DateTimeField(auto_now_add=True)

@@ -5,6 +5,3 @@
 # ASGI / WSGI
 gunicorn==22.0.0
 uvicorn[standard]>=0.23,<0.24
-
-# Monitoring / Sentry
-sentry-sdk>=2.0,<3.0
