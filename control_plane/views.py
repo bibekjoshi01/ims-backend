@@ -95,6 +95,9 @@ class TenantUserViewset(ModelViewSet):
         return self._tenant
 
     def get_queryset(self):
+        if getattr(self, "swagger_fake_view", False):
+            return User.objects.none()
+
         tenant = self.get_tenant()
         connection.set_schema(tenant.schema_name)
 
