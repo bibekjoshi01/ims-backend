@@ -29,6 +29,7 @@ SHARED_APPS = (
     "rest_framework",
     "django_filters",
     "drf_spectacular",
+    "control_plane",
 )
 
 TENANT_APPS = (

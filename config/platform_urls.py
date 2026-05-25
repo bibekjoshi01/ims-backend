@@ -3,7 +3,7 @@ from django.contrib.staticfiles.urls import staticfiles_urlpatterns
 from django.urls import include, path
 from django.views.generic import TemplateView
 
-from .schema import CustomPlatformSpectacularAPIView, CustomPlatformSpectacularSwaggerView
+from .schema import platform_docs_view, platform_schema_view
 
 urlpatterns = [
     path("", TemplateView.as_view(template_name="home.html"), name="home"),
@@ -17,10 +17,6 @@ if settings.DEBUG:
     # API URLS
     urlpatterns += [
         # PLATFORM DOCS
-        path("api/schema/", CustomPlatformSpectacularAPIView.as_view(), name="api-schema"),
-        path(
-            "api/docs/",
-            CustomPlatformSpectacularSwaggerView.as_view(url_name="api-schema"),
-            name="swagger-ui",
-        ),
+        path("api/docs/", platform_docs_view, name="platform-docs"),
+        path("api/schema/", platform_schema_view, name="platform-schema"),
     ]
