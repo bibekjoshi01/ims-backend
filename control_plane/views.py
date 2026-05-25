@@ -5,13 +5,16 @@ from django_tenants.utils import schema_context
 from drf_spectacular.utils import extend_schema
 from rest_framework import status
 from rest_framework.decorators import action
+from rest_framework.generics import CreateAPIView
 from rest_framework.permissions import AllowAny
 from rest_framework.response import Response
 from rest_framework.viewsets import ModelViewSet
 
 # Project Imports
+from control_plane.auth import PlatformJWTAuthentication, login_user
 from tenants.models import Tenant
 
+from .permissions import IsPlatformUser
 from .serializers import (
     TenantCreateSerializer,
     TenantListSerializer,
@@ -27,7 +30,8 @@ User = get_user_model()
 
 
 class TenantViewset(ModelViewSet):
-    permission_classes = [AllowAny]
+    permission_classes = [IsPlatformUser]
+    authentication_classes = [PlatformJWTAuthentication]
     serializer_class = TenantListSerializer
     queryset = Tenant.objects.exclude(schema_name="public")
     http_method_names = ["head", "options", "get", "post", "patch"]
@@ -75,7 +79,8 @@ class TenantViewset(ModelViewSet):
 
 
 class TenantUserViewset(ModelViewSet):
-    permission_classes = [AllowAny]
+    permission_classes = [IsPlatformUser]
+    authentication_classes = [PlatformJWTAuthentication]
     http_method_names = ["get", "post", "patch", "head", "options"]
 
     serializer_class = TenantUserListSerializer  # default fallback
@@ -118,3 +123,19 @@ class TenantUserViewset(ModelViewSet):
 
         with schema_context(tenant.schema_name):
             serializer.save()
+
+
+class LoginAPIView(CreateAPIView):
+    authentication_classes = [PlatformJWTAuthentication]
+    permission_classes = [AllowAny]
+
+    def create(self, request):
+        email = request.data.get("email")
+        password = request.data.get("password")
+
+        data, error = login_user(email, password)
+
+        if error:
+            return Response({"error": error}, status=status.HTTP_400_BAD_REQUEST)
+
+        return Response(data, status=status.HTTP_200_OK)
