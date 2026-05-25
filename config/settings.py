@@ -4,7 +4,7 @@ from datetime import timedelta
 from pathlib import Path
 from dotenv import load_dotenv
 from .jazzmin_settings import *
-from .logging import *
+from .logging_config import *
 from .ckeditor_settings import *
 
 load_dotenv()
