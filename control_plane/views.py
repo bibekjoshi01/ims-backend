@@ -16,6 +16,7 @@ from tenants.models import Tenant
 
 from .permissions import IsPlatformUser
 from .serializers import (
+    LoginSerializer,
     TenantCreateSerializer,
     TenantListSerializer,
     TenantPatchSerializer,
@@ -128,12 +129,17 @@ class TenantUserViewset(ModelViewSet):
 class LoginAPIView(CreateAPIView):
     authentication_classes = [PlatformJWTAuthentication]
     permission_classes = [AllowAny]
+    serializer_class = LoginSerializer
 
     def create(self, request):
-        email = request.data.get("email")
-        password = request.data.get("password")
+        serializer = self.get_serializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
 
-        data, error = login_user(email, password)
+        validated_data = serializer.validated_data
+        username = validated_data["username"]
+        password = validated_data["password"]
+
+        data, error = login_user(username, password)
 
         if error:
             return Response({"error": error}, status=status.HTTP_400_BAD_REQUEST)

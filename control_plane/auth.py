@@ -45,7 +45,7 @@ def decode_token(token):
 
 def login_user(username, password):
     try:
-        user = PlatformUser.objects.get(email=username)
+        user = PlatformUser.objects.get(username=username)
     except PlatformUser.DoesNotExist:
         return None, "Invalid credentials"
 

@@ -1,7 +1,7 @@
 from django.urls import path
 from rest_framework.routers import DefaultRouter
 
-from control_plane.views import TenantUserViewset, TenantViewset
+from control_plane.views import LoginAPIView, TenantUserViewset, TenantViewset
 
 router = DefaultRouter(trailing_slash=False)
 
@@ -24,4 +24,5 @@ urlpatterns = [
         ),
         name="tenant-user-detail",
     ),
+    path("login", LoginAPIView.as_view(), name="login"),
 ] + router.urls

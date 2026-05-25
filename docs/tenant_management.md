@@ -55,3 +55,10 @@ Run migrations for the specific tenant:
 ```bash
 python manage.py migrate_schemas --schema=client1
 ```
+
+### Load Data
+
+```bash
+python manage.py all_tenants_command loaddata order_status.json
+python manage.py all_tenants_command loaddata payment_methods.json
+```

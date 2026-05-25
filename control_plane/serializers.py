@@ -177,3 +177,8 @@ class TenantUserPatchSerializer(serializers.ModelSerializer):
 
         instance.save()
         return instance
+
+
+class LoginSerializer(serializers.Serializer):
+    username = serializers.CharField()
+    password = serializers.CharField()

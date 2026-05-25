@@ -68,6 +68,9 @@ Domain.objects.create(
     tenant=tenant,
     is_primary=True
 )
+
+# Create User
+python manage.py create_platform_user admin admin123  --is_platform_admin
 ```
 
 ### 6. Start Development Server
@@ -78,7 +81,7 @@ python manage.py runserver
 
 Access the application:
 
-- **Public Portal**: http://localhost:8000
+- **Admin Portal**: http://localhost:8000
 
 ### Database Migrations
 
@@ -87,11 +90,4 @@ For shared schema:
 ```bash
 python manage.py makemigrations
 python manage.py migrate_schemas --shared
-```
-
-### Load Data
-
-```bash
-python manage.py all_tenants_command loaddata order_status.json
-python manage.py all_tenants_command loaddata payment_methods.json
 ```
