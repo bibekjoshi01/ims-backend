@@ -18,14 +18,14 @@
 
       <div class="flex flex-wrap items-center gap-3">
         <a
-          href="{% url 'tenant-users' tenant.id %}"
+          href="{% url 'control_plane:tenant-users' tenant.id %}"
           class="rounded-2xl bg-slate-950 px-4 py-3 text-sm font-semibold text-white transition hover:bg-slate-800"
         >
           Manage users
         </a>
         <button
           type="button"
-          data-modal-url="{% url 'tenant-edit' tenant.id %}"
+          data-modal-url="{% url 'control_plane:tenant-edit' tenant.id %}"
           class="rounded-2xl border border-white/10 px-4 py-3 text-sm font-semibold text-slate-200 transition hover:bg-white/5"
         >
           Edit client
@@ -83,7 +83,7 @@
         {% if tenant.is_active %}
           <button
             type="button"
-            data-modal-url="{% url 'tenant-action-confirm' tenant.id 'deactivate' %}"
+            data-modal-url="{% url 'control_plane:tenant-action-confirm' tenant.id 'deactivate' %}"
             class="rounded-2xl border border-amber-200 bg-amber-50 px-4 py-3 text-sm font-semibold text-amber-700 transition hover:bg-amber-100"
           >
             Suspend client
@@ -91,7 +91,7 @@
         {% else %}
           <button
             type="button"
-            data-modal-url="{% url 'tenant-action-confirm' tenant.id 'activate' %}"
+            data-modal-url="{% url 'control_plane:tenant-action-confirm' tenant.id 'activate' %}"
             class="rounded-2xl border border-emerald-200 bg-emerald-50 px-4 py-3 text-sm font-semibold text-emerald-700 transition hover:bg-emerald-100"
           >
             Activate client

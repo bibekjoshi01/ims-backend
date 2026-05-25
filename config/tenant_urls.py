@@ -5,6 +5,7 @@ from django.contrib.staticfiles.urls import staticfiles_urlpatterns
 from django.urls import include, path
 from django.views.generic import TemplateView
 
+from .robots import robots_txt
 from .schema import CustomTenantSpectacularAPIView, CustomTenantSpectacularSwaggerView
 
 api_url_patterns = [
@@ -13,7 +14,15 @@ api_url_patterns = [
 ]
 
 urlpatterns = [
-    path("", TemplateView.as_view(template_name="tenant_home.html"), name="home_tenant"),
+    path(
+        "",
+        TemplateView.as_view(
+            template_name="tenant_home.html",
+            extra_context={"show_tenant_docs": settings.DEBUG},
+        ),
+        name="home_tenant",
+    ),
+    path("robots.txt", robots_txt, name="robots"),
     # Django Admin, use {% url 'admin:index' %}
     path(settings.ADMIN_URL, admin.site.urls),
     path("ckeditor5/", include("django_ckeditor_5.urls")),

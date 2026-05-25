@@ -29,15 +29,15 @@
         Actions
       </summary>
       <div data-action-menu-panel class="absolute right-0 z-[70] mt-2 w-56 overflow-hidden rounded-3xl border border-white/10 bg-slate-950 p-2 shadow-xl">
-        <a href="{% url 'tenant-detail' tenant.id %}" class="flex items-center rounded-2xl px-4 py-3 text-sm text-slate-200 transition hover:bg-white/5">
+        <a href="{% url 'control_plane:tenant-detail' tenant.id %}" class="flex items-center rounded-2xl px-4 py-3 text-sm text-slate-200 transition hover:bg-white/5">
           View details
         </a>
-        <a href="{% url 'tenant-users' tenant.id %}" class="flex items-center rounded-2xl px-4 py-3 text-sm text-slate-200 transition hover:bg-white/5">
+        <a href="{% url 'control_plane:tenant-users' tenant.id %}" class="flex items-center rounded-2xl px-4 py-3 text-sm text-slate-200 transition hover:bg-white/5">
           Manage users
         </a>
         <button
           type="button"
-          data-modal-url="{% url 'tenant-edit' tenant.id %}"
+          data-modal-url="{% url 'control_plane:tenant-edit' tenant.id %}"
           class="flex w-full items-center rounded-2xl px-4 py-3 text-left text-sm text-slate-200 transition hover:bg-white/5"
         >
           Edit client
@@ -46,7 +46,7 @@
         {% if tenant.is_active %}
           <button
             type="button"
-            data-modal-url="{% url 'tenant-action-confirm' tenant.id 'deactivate' %}"
+            data-modal-url="{% url 'control_plane:tenant-action-confirm' tenant.id 'deactivate' %}"
             class="flex w-full items-center rounded-2xl px-4 py-3 text-left text-sm text-amber-300 transition hover:bg-amber-500/10"
           >
             Suspend client
@@ -54,7 +54,7 @@
         {% else %}
           <button
             type="button"
-            data-modal-url="{% url 'tenant-action-confirm' tenant.id 'activate' %}"
+            data-modal-url="{% url 'control_plane:tenant-action-confirm' tenant.id 'activate' %}"
             class="flex w-full items-center rounded-2xl px-4 py-3 text-left text-sm text-emerald-300 transition hover:bg-emerald-500/10"
           >
             Activate client

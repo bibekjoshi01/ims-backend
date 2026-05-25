@@ -5,6 +5,7 @@
   <head>
     <meta charset="utf-8" />
     <meta http-equiv="x-ua-compatible" content="ie=edge" />
+    <meta name="robots" content="noindex, nofollow, noarchive" />
     <title>{% block title %} Operon Backend {% endblock title %}</title>
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <meta name="description" content="Operon API Management!" />
@@ -36,9 +37,11 @@
         </header>
         <main class="main-content">
           <div class="buttons">
+            {% if show_tenant_docs %}
             <a href="{% url 'swagger-ui' %}" class="button">
               <span class="icon">🛠️</span> API Documentation
             </a>
+            {% endif %}
             <a href="{% url 'admin:index' %}" class="button">
               <span class="icon">🔒</span> Administrator Panel
             </a>

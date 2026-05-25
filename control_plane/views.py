@@ -35,6 +35,7 @@ from control_plane.serializers import (
     TenantUserPatchSerializer,
     TenantUserRetrieveSerializer,
 )
+from control_plane.throttling import PlatformAdminThrottle
 from src.user.throttling import LoginThrottle
 from tenants.models import Domain, Tenant
 
@@ -192,6 +193,7 @@ def _modal_form_error_response(request, template_name, context):
 class TenantViewset(ModelViewSet):
     permission_classes = [IsPlatformUser]
     authentication_classes = [PlatformJWTAuthentication]
+    throttle_classes = [PlatformAdminThrottle]
     serializer_class = TenantListSerializer
     queryset = Tenant.objects.exclude(schema_name="public")
     http_method_names = ["head", "options", "get", "post", "patch"]
@@ -267,6 +269,7 @@ class TenantViewset(ModelViewSet):
 class TenantUserViewset(ModelViewSet):
     permission_classes = [IsPlatformUser]
     authentication_classes = [PlatformJWTAuthentication]
+    throttle_classes = [PlatformAdminThrottle]
     http_method_names = ["get", "post", "patch", "head", "options"]
     serializer_class = TenantUserListSerializer
 

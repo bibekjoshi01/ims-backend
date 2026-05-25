@@ -26,6 +26,7 @@ from control_plane.views import (
 )
 
 from .health import healthz, readyz
+from .robots import robots_txt
 from .schema import platform_docs_view, platform_schema_view
 
 urlpatterns = [
@@ -37,6 +38,7 @@ urlpatterns = [
         ),
         name="home",
     ),
+    path("robots.txt", robots_txt, name="robots"),
     path("healthz", healthz, name="healthz"),
     path("readyz", readyz, name="readyz"),
     path(

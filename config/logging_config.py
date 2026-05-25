@@ -21,11 +21,18 @@ except PermissionError:
 LOGGING = {
     "version": 1,
     "disable_existing_loggers": False,
+    "filters": {
+        "request_context": {
+            "()": "src.libs.logging_filters.RequestContextFilter",
+        },
+    },
     "formatters": {
         "detailed": {
             "format": (
-                "[{asctime}] {levelname} "
-                "{name} | {filename}:{lineno} in {funcName}() | {message}"
+                "[{asctime}] {levelname} {name} "
+                "| request_id={request_id} schema={schema_name} "
+                "method={method} path={path} status={status_code} duration_ms={duration_ms} "
+                "| {filename}:{lineno} in {funcName}() | {message}"
             ),
             "style": "{",
         },
@@ -40,6 +47,7 @@ LOGGING = {
             "formatter": "detailed",
             "level": "INFO",
             "encoding": "utf-8",
+            "filters": ["request_context"],
         },
         "server_error_file": {
             "class": "logging.handlers.TimedRotatingFileHandler",
@@ -50,6 +58,7 @@ LOGGING = {
             "formatter": "detailed",
             "level": "INFO",
             "encoding": "utf-8",
+            "filters": ["request_context"],
         },
         "exception_error_file": {
             "class": "logging.handlers.TimedRotatingFileHandler",
@@ -60,6 +69,7 @@ LOGGING = {
             "formatter": "detailed",
             "level": "INFO",
             "encoding": "utf-8",
+            "filters": ["request_context"],
         },
         "email_error_file": {
             "class": "logging.handlers.TimedRotatingFileHandler",
@@ -70,6 +80,18 @@ LOGGING = {
             "formatter": "detailed",
             "level": "INFO",
             "encoding": "utf-8",
+            "filters": ["request_context"],
+        },
+        "access_file": {
+            "class": "logging.handlers.TimedRotatingFileHandler",
+            "filename": str(LOG_DIR / "access_log"),
+            "when": "midnight",
+            "interval": 1,
+            "backupCount": 7,
+            "formatter": "detailed",
+            "level": "INFO",
+            "encoding": "utf-8",
+            "filters": ["request_context"],
         },
     },
     "loggers": {
@@ -92,6 +114,11 @@ LOGGING = {
         },
         "email_error": {
             "handlers": ["email_error_file"],
+            "level": "INFO",
+            "propagate": False,
+        },
+        "request_access": {
+            "handlers": ["access_file"],
             "level": "INFO",
             "propagate": False,
         },
