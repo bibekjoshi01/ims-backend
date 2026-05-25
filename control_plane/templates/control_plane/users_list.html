@@ -1,0 +1,64 @@
+{% extends "control_plane/base.html" %}
+{% block content %}
+<div class="flex min-h-[calc(100vh-10rem)] flex-col gap-6">
+  <section class="rounded-[2rem] border border-white/10 bg-white/5 p-6 text-slate-100 shadow-soft">
+    <div class="flex flex-col gap-6 lg:flex-row lg:items-end lg:justify-between">
+      <div>
+        <div class="flex flex-wrap items-center gap-3 text-sm text-slate-400">
+          <a href="{% url 'tenants-list' %}" class="font-medium text-slate-300 hover:text-white">Clients</a>
+          <span>/</span>
+          <span>{{ tenant.name }}</span>
+        </div>
+        <h2 class="mt-3 text-3xl font-semibold tracking-tight text-white">Client users</h2>
+        <p class="mt-3 max-w-2xl text-sm leading-6 text-slate-300">
+          Manage client staff access, update user details, and disable accounts without leaving the client context.
+        </p>
+      </div>
+
+      <div class="flex flex-wrap items-center gap-3">
+        <a
+          href="{% url 'tenant-detail' tenant.id %}"
+          class="rounded-2xl border border-white/10 px-4 py-3 text-sm font-semibold text-slate-200 transition hover:bg-white/5"
+        >
+          Client details
+        </a>
+        <button
+          type="button"
+          data-modal-url="{% url 'tenant-user-create' tenant.id %}"
+          class="rounded-2xl bg-slate-950 px-4 py-3 text-sm font-semibold text-white transition hover:bg-slate-800"
+        >
+          New user
+        </button>
+      </div>
+    </div>
+
+    <div class="mt-8 grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
+      <div class="rounded-3xl border border-white/10 bg-slate-950/60 p-5">
+        <p class="text-xs uppercase tracking-[0.2em] text-slate-400">Total users</p>
+        <p class="mt-3 text-3xl font-semibold text-white">{{ stats.total|default:0 }}</p>
+      </div>
+      <div class="rounded-3xl border border-white/10 bg-slate-950/60 p-5">
+        <p class="text-xs uppercase tracking-[0.2em] text-slate-400">Active</p>
+        <p class="mt-3 text-3xl font-semibold text-emerald-300">{{ stats.active|default:0 }}</p>
+      </div>
+      <div class="rounded-3xl border border-white/10 bg-slate-950/60 p-5">
+        <p class="text-xs uppercase tracking-[0.2em] text-slate-400">Staff</p>
+        <p class="mt-3 text-3xl font-semibold text-sky-300">{{ stats.staff|default:0 }}</p>
+      </div>
+      <div class="rounded-3xl border border-white/10 bg-slate-950/60 p-5">
+        <p class="text-xs uppercase tracking-[0.2em] text-slate-400">Superusers</p>
+        <p class="mt-3 text-3xl font-semibold text-amber-300">{{ stats.admins|default:0 }}</p>
+      </div>
+    </div>
+  </section>
+
+  <section class="flex min-h-[36rem] flex-col overflow-hidden rounded-[2rem] border border-white/10 bg-white/5 shadow-soft lg:min-h-[42rem] xl:min-h-[48rem]">
+    <div class="border-b border-white/10 px-6 py-4">
+      <h3 class="text-base font-semibold text-white">User directory</h3>
+      <p class="mt-1 text-sm text-slate-300">Edit, activate, or deactivate client users in place.</p>
+    </div>
+
+    {% include "control_plane/partials/users_table.html" %}
+  </section>
+</div>
+{% endblock %}

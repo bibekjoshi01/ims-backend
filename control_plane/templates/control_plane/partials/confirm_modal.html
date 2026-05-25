@@ -1,0 +1,38 @@
+<div class="fixed inset-0 z-50 flex items-center justify-center p-4">
+  <div class="absolute inset-0 bg-slate-950/70 backdrop-blur-sm" data-close-modal></div>
+  <div class="relative w-full max-w-lg overflow-hidden rounded-[2rem] border border-white/10 bg-slate-950 shadow-[0_30px_100px_-30px_rgba(15,23,42,0.85)]">
+    <div class="border-b border-white/10 px-6 py-5">
+      <p class="text-xs font-semibold uppercase tracking-[0.28em] text-slate-400">Confirm action</p>
+      <h3 class="mt-2 text-2xl font-semibold text-white">{{ title }}</h3>
+    </div>
+
+    <div class="space-y-6 px-6 py-6">
+      <p class="text-sm leading-6 text-slate-300">{{ message }}</p>
+
+      <form
+        method="post"
+        data-api-form
+        data-api-url="{{ action_url }}"
+        data-api-method="{{ api_method }}"
+        data-success-message="{{ success_message }}"
+        class="flex items-center justify-end gap-3"
+      >
+        {% if api_payload %}
+          {% for key, value in api_payload.items %}
+            <input type="hidden" name="{{ key }}" value="{{ value|yesno:'true,false' }}" />
+          {% endfor %}
+        {% endif %}
+        <button
+          type="button"
+          data-close-modal
+          class="rounded-2xl border border-white/10 px-4 py-3 text-sm font-semibold text-slate-200 transition hover:bg-white/5"
+        >
+          Cancel
+        </button>
+        <button type="submit" class="rounded-2xl px-4 py-3 text-sm font-semibold transition {{ button_class }}">
+          {{ button_label }}
+        </button>
+      </form>
+    </div>
+  </div>
+</div>

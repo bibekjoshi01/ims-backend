@@ -1,0 +1,105 @@
+<div class="fixed inset-0 z-50 flex items-center justify-center p-4">
+  <div class="absolute inset-0 bg-slate-950/60 backdrop-blur-sm" data-close-modal></div>
+  <div class="relative w-full max-w-3xl overflow-hidden rounded-[2rem] border border-white/10 bg-slate-950 shadow-[0_30px_100px_-30px_rgba(15,23,42,0.85)]">
+    <div class="border-b border-white/10 px-6 py-5">
+      <p class="text-xs font-semibold uppercase tracking-[0.28em] text-sky-300">
+        {% if is_edit %}Edit user{% else %}Create user{% endif %}
+      </p>
+      <h3 class="mt-2 text-2xl font-semibold text-white">
+        {% if is_edit %}Update client user{% else %}Provision a new client user{% endif %}
+      </h3>
+      <p class="mt-2 text-sm text-slate-300">
+        {% if is_edit %}
+          Update identity, access, or password without breaking the client context.
+        {% else %}
+          Create a user inside this client and assign the right access level from the start.
+        {% endif %}
+      </p>
+    </div>
+
+    <form
+      method="post"
+      data-api-form
+      data-api-url="{{ api_url }}"
+      data-api-method="{{ api_method }}"
+      data-success-message="{{ success_message }}"
+      class="space-y-6 px-6 py-6"
+    >
+      <div data-form-error class="hidden rounded-2xl border border-rose-500/20 bg-rose-500/10 px-4 py-3 text-sm text-rose-300"></div>
+
+      <div class="grid gap-5 md:grid-cols-2">
+        <div>
+          <label class="text-sm font-medium text-slate-200" for="{{ form.username.id_for_label }}">{{ form.username.label }}</label>
+          {{ form.username }}
+          {% if form.username.errors %}<p class="mt-2 text-sm text-rose-600">{{ form.username.errors|striptags }}</p>{% endif %}
+        </div>
+        <div>
+          <label class="text-sm font-medium text-slate-200" for="{{ form.email.id_for_label }}">{{ form.email.label }}</label>
+          {{ form.email }}
+          {% if form.email.errors %}<p class="mt-2 text-sm text-rose-600">{{ form.email.errors|striptags }}</p>{% endif %}
+        </div>
+        <div>
+          <label class="text-sm font-medium text-slate-200" for="{{ form.first_name.id_for_label }}">{{ form.first_name.label }}</label>
+          {{ form.first_name }}
+          {% if form.first_name.errors %}<p class="mt-2 text-sm text-rose-600">{{ form.first_name.errors|striptags }}</p>{% endif %}
+        </div>
+        <div>
+          <label class="text-sm font-medium text-slate-200" for="{{ form.last_name.id_for_label }}">{{ form.last_name.label }}</label>
+          {{ form.last_name }}
+          {% if form.last_name.errors %}<p class="mt-2 text-sm text-rose-600">{{ form.last_name.errors|striptags }}</p>{% endif %}
+        </div>
+        <div class="md:col-span-2">
+          <label class="text-sm font-medium text-slate-200" for="{{ form.phone_no.id_for_label }}">{{ form.phone_no.label }}</label>
+          {{ form.phone_no }}
+          {% if form.phone_no.errors %}<p class="mt-2 text-sm text-rose-600">{{ form.phone_no.errors|striptags }}</p>{% endif %}
+        </div>
+        <div class="md:col-span-2">
+          <label class="text-sm font-medium text-slate-200" for="{{ form.password.id_for_label }}">{{ form.password.label }}</label>
+          {{ form.password }}
+          <p class="mt-2 text-xs text-slate-400">Leave this blank on edit to keep the current password.</p>
+          {% if form.password.errors %}<p class="mt-2 text-sm text-rose-300">{{ form.password.errors|striptags }}</p>{% endif %}
+        </div>
+      </div>
+
+      <div class="grid gap-3 md:grid-cols-3">
+        <label class="flex items-center gap-3 rounded-3xl border border-white/10 bg-white/5 px-4 py-4">
+          {{ form.is_staff }}
+          <span>
+            <span class="block text-sm font-semibold text-white">{{ form.is_staff.label }}</span>
+            <span class="block text-sm text-slate-400">Allow staff dashboard access.</span>
+          </span>
+        </label>
+        <label class="flex items-center gap-3 rounded-3xl border border-white/10 bg-white/5 px-4 py-4">
+          {{ form.is_superuser }}
+          <span>
+            <span class="block text-sm font-semibold text-white">{{ form.is_superuser.label }}</span>
+            <span class="block text-sm text-slate-400">Grant full administrative permissions.</span>
+          </span>
+        </label>
+        <label class="flex items-center gap-3 rounded-3xl border border-white/10 bg-white/5 px-4 py-4">
+          {{ form.is_active }}
+          <span>
+            <span class="block text-sm font-semibold text-white">{{ form.is_active.label }}</span>
+            <span class="block text-sm text-slate-400">Disable access without deleting the record.</span>
+          </span>
+        </label>
+      </div>
+
+      <div class="flex items-center justify-end gap-3 border-t border-white/10 pt-5">
+        <button
+          type="button"
+          data-close-modal
+          class="rounded-2xl border border-white/10 px-4 py-3 text-sm font-semibold text-slate-200 transition hover:bg-white/5"
+        >
+          Cancel
+        </button>
+        <button
+          type="submit"
+          class="rounded-2xl bg-slate-950 px-4 py-3 text-sm font-semibold text-white transition hover:bg-slate-800"
+        >
+          {% if is_edit %}Save user{% else %}Create user{% endif %}
+        </button>
+      </div>
+    </form>
+  </div>
+</div>

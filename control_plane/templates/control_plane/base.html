@@ -1,0 +1,130 @@
+{% load static %}
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Platform Control Plane</title>
+    <style>
+      @media (min-width: 1280px) {
+        body.sidebar-collapsed .sidebar-shell {
+          width: 0 !important;
+          min-width: 0 !important;
+          flex: 0 0 0 !important;
+          padding-left: 0 !important;
+          padding-right: 0 !important;
+          border-width: 0 !important;
+          overflow: hidden !important;
+          pointer-events: none !important;
+        }
+
+        body.sidebar-collapsed .sidebar-card {
+          opacity: 0;
+          visibility: hidden;
+        }
+      }
+    </style>
+    <script>
+      tailwind.config = {
+        theme: {
+          extend: {
+            boxShadow: {
+              soft: "0 18px 60px -22px rgba(15, 23, 42, 0.4)",
+            },
+          },
+        },
+      };
+    </script>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="{% static 'js/control_plane_app.js' %}" defer></script>
+  </head>
+  <body class="min-h-screen bg-slate-950 text-slate-100 antialiased">
+    <div class="min-h-screen bg-[radial-gradient(circle_at_top_left,_rgba(59,130,246,0.16),_transparent_32%),radial-gradient(circle_at_top_right,_rgba(16,185,129,0.14),_transparent_28%),linear-gradient(180deg,_#020617_0%,_#0f172a_100%)]">
+      <div id="sidebar-overlay" class="fixed inset-0 z-30 hidden bg-slate-950/60 backdrop-blur-sm xl:hidden"></div>
+      <div class="mx-auto flex min-h-screen max-w-[96rem]">
+        <aside
+          id="sidebar"
+          class="sidebar-shell fixed inset-y-0 left-0 z-40 w-80 -translate-x-full border-r border-white/10 bg-slate-950/90 px-6 py-6 backdrop-blur transition-transform duration-300 xl:static xl:translate-x-0 xl:shrink-0 xl:w-80"
+        >
+          <div class="sidebar-card rounded-3xl border border-white/10 bg-white/5 p-5 shadow-soft">
+            <div class="flex items-center gap-3">
+              <div class="flex h-11 w-11 items-center justify-center rounded-2xl bg-indigo-500/20 text-sm font-semibold text-indigo-200 ring-1 ring-indigo-400/20">
+                OC
+              </div>
+              <div class="sidebar-brand-text">
+                <p class="text-xs uppercase tracking-[0.28em] text-slate-400">Platform</p>
+                <h1 class="text-lg font-semibold text-white">Control Plane</h1>
+              </div>
+            </div>
+
+            <div class="sidebar-user mt-5 rounded-2xl border border-white/10 bg-slate-900/70 px-4 py-3">
+              <p class="text-xs uppercase tracking-[0.2em] text-slate-400">Signed in as</p>
+              <p class="mt-1 text-sm font-medium text-white">
+                {{ request.platform_user.username|default:"Platform user" }}
+              </p>
+            </div>
+
+            <nav class="mt-6 space-y-2 text-sm">
+              <a
+                href="{% url 'dashboard' %}"
+                class="sidebar-nav-link flex items-center gap-3 rounded-2xl px-4 py-3 transition {% if request.path == '/dashboard' %}bg-white text-slate-950 shadow-soft{% else %}text-slate-300 hover:bg-white/5 hover:text-white{% endif %}"
+              >
+                <span class="flex h-8 w-8 items-center justify-center rounded-xl {% if request.path == '/dashboard' %}bg-slate-950/10{% else %}bg-white/5{% endif %}">
+                  D
+                </span>
+                <span class="sidebar-label font-medium">Dashboard</span>
+              </a>
+              <a
+                href="{% url 'tenants-list' %}"
+                class="sidebar-nav-link flex items-center gap-3 rounded-2xl px-4 py-3 transition {% if '/dashboard/clients' in request.path %}bg-white text-slate-950 shadow-soft{% else %}text-slate-300 hover:bg-white/5 hover:text-white{% endif %}"
+              >
+                <span class="flex h-8 w-8 items-center justify-center rounded-xl {% if '/dashboard/clients' in request.path %}bg-slate-950/10{% else %}bg-white/5{% endif %}">
+                  C
+                </span>
+                <span class="sidebar-label font-medium">Clients</span>
+              </a>
+            </nav>
+          </div>
+        </aside>
+
+        <div class="flex min-h-screen flex-1 flex-col">
+          <header class="border-b border-white/10 bg-slate-950/55 backdrop-blur">
+            <div class="flex items-center justify-between gap-4 px-4 py-4 sm:px-6 xl:px-10">
+              <div class="flex items-center gap-3">
+                <button
+                  type="button"
+                  data-sidebar-toggle
+                  class="inline-flex h-11 w-11 items-center justify-center rounded-2xl border border-white/10 bg-white/5 text-white transition hover:bg-white/10"
+                  aria-label="Toggle sidebar"
+                >
+                  ☰
+                </button>
+              </div>
+
+              <div class="flex items-center gap-3">
+                <div class="hidden rounded-2xl border border-white/10 bg-white/5 px-3 py-2 text-sm text-slate-300 lg:block">
+                  {{ request.platform_user.username|default:"platform" }}
+                </div>
+                <button
+                  type="button"
+                  data-logout-url="{% url 'logout' %}"
+                  class="rounded-2xl border border-white/10 bg-white/5 px-4 py-2 text-sm font-medium text-white transition hover:bg-white/10"
+                >
+                  Sign out
+                </button>
+              </div>
+            </div>
+          </header>
+
+          <main class="flex-1 px-4 py-6 sm:px-6 xl:px-10">
+            <div class="mx-auto max-w-7xl">
+              {% block content %}{% endblock %}
+            </div>
+          </main>
+        </div>
+      </div>
+      <div id="modal-body"></div>
+      <div id="toast-container" class="fixed right-4 top-4 z-[60] flex w-[min(24rem,calc(100vw-2rem))] flex-col gap-3"></div>
+    </div>
+  </body>
+</html>

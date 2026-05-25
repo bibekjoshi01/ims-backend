@@ -1,0 +1,140 @@
+{% extends "control_plane/base.html" %}
+{% block content %}
+<div class="space-y-6">
+  <section class="rounded-[2rem] border border-white/10 bg-white/5 p-5 text-slate-100 shadow-soft">
+    <form method="get" class="flex flex-col gap-4 lg:flex-row lg:items-end lg:justify-between">
+      <div class="grid flex-1 gap-4 md:grid-cols-[1.6fr_0.8fr]">
+        <div>
+          <label for="q" class="text-sm font-medium text-slate-300">Client name</label>
+          <input
+            id="q"
+            name="q"
+            value="{{ query|default:'' }}"
+            placeholder="Search by client name"
+            class="mt-1 block w-full rounded-2xl border border-white/10 bg-slate-950/70 px-4 py-3 text-white outline-none transition placeholder:text-slate-500 focus:border-indigo-400 focus:ring-4 focus:ring-indigo-500/20"
+          />
+        </div>
+        <div>
+          <label for="status" class="text-sm font-medium text-slate-300">Status</label>
+          <select
+            id="status"
+            name="status"
+            class="mt-1 block w-full rounded-2xl border border-white/10 bg-slate-950/70 px-4 py-3 text-white outline-none transition focus:border-indigo-400 focus:ring-4 focus:ring-indigo-500/20"
+          >
+            <option value="" {% if not status_filter %}selected{% endif %}>All clients</option>
+            <option value="active" {% if status_filter == "active" %}selected{% endif %}>Active</option>
+            <option value="suspended" {% if status_filter == "suspended" %}selected{% endif %}>Suspended</option>
+          </select>
+        </div>
+      </div>
+
+      <div class="flex items-center gap-3">
+        <a
+          href="{% url 'tenants-list' %}"
+          class="rounded-2xl border border-white/10 px-4 py-3 text-sm font-medium text-slate-200 transition hover:bg-white/5"
+        >
+          Reset
+        </a>
+        <button
+          type="submit"
+          class="rounded-2xl bg-slate-950 px-4 py-3 text-sm font-semibold text-white transition hover:bg-slate-800"
+        >
+          Apply filters
+        </button>
+      </div>
+    </form>
+  </section>
+
+  <section class="flex min-h-[36rem] flex-col overflow-hidden rounded-[2rem] border border-white/10 bg-white/5 shadow-soft lg:min-h-[42rem] xl:min-h-[48rem]">
+    <div class="border-b border-white/10 px-6 py-4">
+      <div class="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+        <div>
+          <h3 class="text-base font-semibold text-white">Client directory</h3>
+          <p class="mt-1 text-sm text-slate-300">Open a client to edit details or manage its users.</p>
+        </div>
+        <button
+          type="button"
+          data-modal-url="{% url 'tenant-create' %}"
+          class="inline-flex items-center justify-center gap-2 rounded-2xl bg-slate-950 px-4 py-3 text-sm font-semibold text-white transition hover:bg-slate-800"
+        >
+          <span class="text-base leading-none">+</span>
+          New client
+        </button>
+      </div>
+    </div>
+
+    <div class="flex-1 overflow-auto">
+      <table class="min-w-full divide-y divide-white/10">
+        <thead class="bg-slate-950/50">
+          <tr class="text-left text-xs font-semibold uppercase tracking-[0.2em] text-slate-400">
+            <th class="px-6 py-4">Client</th>
+            <th class="px-6 py-4">Subdomain</th>
+            <th class="px-6 py-4">Status</th>
+            <th class="px-6 py-4">Created</th>
+            <th class="px-6 py-4 text-right">Actions</th>
+          </tr>
+        </thead>
+        <tbody id="tenants-table" class="divide-y divide-slate-100">
+          {% for tenant in tenants %}
+            {% include "control_plane/partials/tenant_row.html" %}
+          {% empty %}
+            <tr>
+              <td colspan="5" class="px-6 py-14 text-center">
+                <div class="mx-auto max-w-md">
+                <p class="text-base font-semibold text-white">No clients found</p>
+                <p class="mt-2 text-sm text-slate-300">Try clearing filters or create the first client to get started.</p>
+                </div>
+              </td>
+            </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+
+    {% if page_obj.has_other_pages %}
+      <div class="flex flex-col gap-4 border-t border-white/10 px-6 py-4 sm:flex-row sm:items-center sm:justify-between">
+        <p class="text-sm text-slate-300">{{ page_summary }}</p>
+
+        <nav class="flex items-center gap-2">
+          {% if page_obj.has_previous %}
+            <a
+              href="{{ tenant_querystring }}{% if tenant_querystring %}&{% else %}?{% endif %}page={{ page_obj.previous_page_number }}"
+              class="rounded-2xl border border-white/10 px-3 py-2 text-sm font-medium text-slate-200 transition hover:bg-white/5"
+            >
+              Previous
+            </a>
+          {% else %}
+            <span class="rounded-2xl border border-white/10 px-3 py-2 text-sm font-medium text-slate-500">Previous</span>
+          {% endif %}
+
+          <div class="flex items-center gap-1">
+            {% for page_number in page_obj.paginator.page_range %}
+              {% if page_number == page_obj.number %}
+                <span class="rounded-2xl bg-slate-950 px-3 py-2 text-sm font-semibold text-white">{{ page_number }}</span>
+              {% elif page_number >= page_obj.number|add:'-2' and page_number <= page_obj.number|add:'2' %}
+                <a
+                  href="{{ tenant_querystring }}{% if tenant_querystring %}&{% else %}?{% endif %}page={{ page_number }}"
+                  class="rounded-2xl border border-white/10 px-3 py-2 text-sm font-medium text-slate-200 transition hover:bg-white/5"
+                >
+                  {{ page_number }}
+                </a>
+              {% endif %}
+            {% endfor %}
+          </div>
+
+          {% if page_obj.has_next %}
+            <a
+              href="{{ tenant_querystring }}{% if tenant_querystring %}&{% else %}?{% endif %}page={{ page_obj.next_page_number }}"
+              class="rounded-2xl border border-white/10 px-3 py-2 text-sm font-medium text-slate-200 transition hover:bg-white/5"
+            >
+              Next
+            </a>
+          {% else %}
+            <span class="rounded-2xl border border-white/10 px-3 py-2 text-sm font-medium text-slate-500">Next</span>
+          {% endif %}
+        </nav>
+      </div>
+    {% endif %}
+  </section>
+</div>
+{% endblock %}

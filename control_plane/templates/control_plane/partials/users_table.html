@@ -1,0 +1,27 @@
+<div class="flex-1 overflow-auto">
+  <table class="min-w-full divide-y divide-slate-100">
+    <thead class="bg-slate-950/50">
+      <tr class="text-left text-xs font-semibold uppercase tracking-[0.2em] text-slate-400">
+        <th class="px-6 py-4">User</th>
+        <th class="px-6 py-4">Contact</th>
+        <th class="px-6 py-4">Access</th>
+        <th class="px-6 py-4">Status</th>
+        <th class="px-6 py-4 text-right">Actions</th>
+      </tr>
+    </thead>
+    <tbody id="users-table-body" class="divide-y divide-slate-100">
+      {% for user in users %}
+        {% include "control_plane/partials/user_row.html" with user=user tenant=tenant %}
+      {% empty %}
+        <tr>
+          <td colspan="5" class="px-6 py-14 text-center">
+            <div class="mx-auto max-w-md">
+              <p class="text-base font-semibold text-white">No users yet</p>
+              <p class="mt-2 text-sm text-slate-300">Add the first client staff member or invite a teammate to manage this account.</p>
+            </div>
+          </td>
+        </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+</div>

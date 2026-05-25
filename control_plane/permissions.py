@@ -15,4 +15,7 @@ class IsPlatformUser(BasePermission):
         if hasattr(user, "is_active") and not user.is_active:
             return False
 
+        if hasattr(user, "is_platform_admin") and not user.is_platform_admin:
+            return False
+
         return True

@@ -1,7 +1,13 @@
 from django.urls import path
 from rest_framework.routers import DefaultRouter
 
-from control_plane.views import LoginAPIView, TenantUserViewset, TenantViewset
+from control_plane.views import (
+    LoginAPIView,
+    TenantUserViewset,
+    TenantViewset,
+)
+
+app_name = "control_plane"
 
 router = DefaultRouter(trailing_slash=False)
 
@@ -11,6 +17,7 @@ urlpatterns = [
     path(
         "clients/<int:client_id>/users",
         TenantUserViewset.as_view({"get": "list", "post": "create"}),
+        name="tenant-user-list",
     ),
     path(
         "clients/<int:client_id>/users/<int:pk>",

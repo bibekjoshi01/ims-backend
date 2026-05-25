@@ -7,19 +7,26 @@ from rest_framework.exceptions import AuthenticationFailed
 
 from .models import PlatformUser
 
+PLATFORM_JWT_COOKIE = "platform_access_token"
+
 
 class PlatformJWTAuthentication(BaseAuthentication):
     def authenticate(self, request):
         auth = request.headers.get("Authorization")
+        token = None
 
-        if not auth:
-            return None
+        if auth:
+            try:
+                prefix, bearer_token = auth.split(" ")
+                if prefix.lower() == "bearer":
+                    token = bearer_token
+            except Exception:
+                token = None
 
-        try:
-            prefix, token = auth.split(" ")
-            if prefix.lower() != "bearer":
-                return None
-        except Exception:
+        if not token:
+            token = request.COOKIES.get(PLATFORM_JWT_COOKIE)
+
+        if not token:
             return None
 
         try:
@@ -27,6 +34,9 @@ class PlatformJWTAuthentication(BaseAuthentication):
             user = PlatformUser.objects.get(id=payload["user_id"])
         except Exception as err:
             raise AuthenticationFailed("Invalid token") from err
+
+        if not user.is_active or not user.is_platform_admin:
+            raise AuthenticationFailed("Invalid token")
 
         return (user, None)
 
@@ -54,6 +64,9 @@ def login_user(username, password):
 
     if not user.is_active:
         return None, "User inactive"
+
+    if not user.is_platform_admin:
+        return None, "You do not have platform admin access"
 
     token = generate_token(user.id)
 

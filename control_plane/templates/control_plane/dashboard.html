@@ -1,0 +1,44 @@
+{% extends "control_plane/base.html" %}
+{% block content %}
+<div class="space-y-6">
+  <section class="rounded-[2rem] border border-white/10 bg-white/5 p-6 shadow-soft">
+    <div class="flex flex-col gap-6 lg:flex-row lg:items-end lg:justify-between">
+      <div class="max-w-2xl">
+        <p class="text-xs font-semibold uppercase tracking-[0.28em] text-sky-300">Overview</p>
+        <h2 class="mt-3 text-3xl font-semibold tracking-tight text-white">Dashboard</h2>
+        <p class="mt-3 max-w-xl text-sm leading-6 text-slate-300">
+          Track client health, activation trends, and recent provisioning activity before jumping into the client directory.
+        </p>
+      </div>
+
+      <div class="flex flex-wrap items-center gap-3">
+        <a
+          href="{% url 'tenants-list' %}"
+          class="inline-flex items-center gap-2 rounded-2xl bg-white px-4 py-3 text-sm font-semibold text-slate-950 transition hover:bg-slate-100"
+        >
+          Open clients
+        </a>
+      </div>
+    </div>
+
+    <div class="mt-6 grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
+      <div class="rounded-3xl border border-white/10 bg-slate-950/60 p-5">
+        <p class="text-xs uppercase tracking-[0.22em] text-slate-400">Total clients</p>
+        <p class="mt-3 text-3xl font-semibold text-white">{{ stats.total|default:0 }}</p>
+      </div>
+      <div class="rounded-3xl border border-white/10 bg-slate-950/60 p-5">
+        <p class="text-xs uppercase tracking-[0.22em] text-slate-400">Active</p>
+        <p class="mt-3 text-3xl font-semibold text-emerald-300">{{ stats.active|default:0 }}</p>
+      </div>
+      <div class="rounded-3xl border border-white/10 bg-slate-950/60 p-5">
+        <p class="text-xs uppercase tracking-[0.22em] text-slate-400">Suspended</p>
+        <p class="mt-3 text-3xl font-semibold text-amber-300">{{ stats.suspended|default:0 }}</p>
+      </div>
+      <div class="rounded-3xl border border-white/10 bg-slate-950/60 p-5">
+        <p class="text-xs uppercase tracking-[0.22em] text-slate-400">Created this month</p>
+        <p class="mt-3 text-3xl font-semibold text-sky-300">{{ stats.recent|default:0 }}</p>
+      </div>
+    </div>
+  </section>
+</div>
+{% endblock %}

@@ -53,7 +53,7 @@ class TenantCreateSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Tenant
-        fields = ["id", "name", "subdomain"]
+        fields = ["id", "name", "subdomain", "is_active"]
 
     def create(self, validated_data):
         subdomain = validated_data["subdomain"]
@@ -69,13 +69,18 @@ class TenantCreateSerializer(serializers.ModelSerializer):
             is_primary=True,
         )
 
+        if tenant.is_active:
+            tenant.activate()
+        else:
+            tenant.suspend()
+
         return tenant
 
 
 class TenantPatchSerializer(serializers.ModelSerializer):
     class Meta:
         model = Tenant
-        fields = ["id", "name", "subdomain"]
+        fields = ["id", "name", "subdomain", "is_active"]
 
     def update(self, instance, validated_data):
         new_subdomain = validated_data.get("subdomain")
@@ -88,7 +93,16 @@ class TenantPatchSerializer(serializers.ModelSerializer):
             instance.subdomain = new_subdomain
 
         instance.name = validated_data.get("name", instance.name)
+        if "is_active" in validated_data:
+            instance.is_active = validated_data["is_active"]
+
         instance.save()
+
+        if "is_active" in validated_data:
+            if instance.is_active:
+                instance.activate()
+            else:
+                instance.suspend()
 
         return instance
 
@@ -100,6 +114,10 @@ class TenantUserListSerializer(serializers.ModelSerializer):
             "id",
             "username",
             "email",
+            "first_name",
+            "last_name",
+            "phone_no",
+            "is_staff",
             "is_superuser",
             "is_active",
         ]
@@ -112,6 +130,10 @@ class TenantUserRetrieveSerializer(serializers.ModelSerializer):
             "id",
             "username",
             "email",
+            "first_name",
+            "last_name",
+            "phone_no",
+            "is_staff",
             "is_superuser",
             "is_active",
         ]
@@ -130,6 +152,10 @@ class TenantUserCreateSerializer(serializers.ModelSerializer):
             "id",
             "username",
             "email",
+            "first_name",
+            "last_name",
+            "phone_no",
+            "is_staff",
             "is_superuser",
             "password",
             "is_active",
@@ -143,7 +169,9 @@ class TenantUserCreateSerializer(serializers.ModelSerializer):
 
     def create(self, validated_data):
         password = validated_data.pop("password")
-        validated_data["is_staff"] = True
+        validated_data["is_staff"] = validated_data.get("is_staff", True) or validated_data.get(
+            "is_superuser", False
+        )
         user = User.objects.create(**validated_data)
         user.set_password(password)
 
@@ -156,7 +184,17 @@ class TenantUserPatchSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = User
-        fields = ["username", "email", "password", "is_superuser", "is_active"]
+        fields = [
+            "username",
+            "email",
+            "first_name",
+            "last_name",
+            "phone_no",
+            "is_staff",
+            "password",
+            "is_superuser",
+            "is_active",
+        ]
 
     def validate_username(self, value):
         return value.strip()
@@ -170,6 +208,9 @@ class TenantUserPatchSerializer(serializers.ModelSerializer):
         # update normal fields
         for attr, value in validated_data.items():
             setattr(instance, attr, value)
+
+        if instance.is_superuser:
+            instance.is_staff = True
 
         # handle password separately
         if password:

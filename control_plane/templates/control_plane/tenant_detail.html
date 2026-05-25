@@ -1,0 +1,127 @@
+{% extends "control_plane/base.html" %}
+{% block content %}
+<div class="space-y-6">
+  <section class="rounded-[2rem] border border-white/10 bg-white/5 p-6 text-slate-100 shadow-soft">
+    <div class="flex flex-col gap-6 lg:flex-row lg:items-start lg:justify-between">
+      <div>
+        <div class="flex items-center gap-3">
+          <span class="inline-flex rounded-full px-3 py-1 text-xs font-semibold {% if tenant.is_active %}bg-emerald-500/15 text-emerald-300{% else %}bg-amber-500/15 text-amber-300{% endif %}">
+            {% if tenant.is_active %}Active{% else %}Suspended{% endif %}
+          </span>
+          <span class="text-sm text-slate-400">Schema: {{ tenant.schema_name }}</span>
+        </div>
+        <h2 class="mt-4 text-3xl font-semibold tracking-tight text-white">{{ tenant.name }}</h2>
+        <p class="mt-3 max-w-2xl text-sm leading-6 text-slate-300">
+          This page collects the client's identity, lifecycle details, and the fastest path into user management.
+        </p>
+      </div>
+
+      <div class="flex flex-wrap items-center gap-3">
+        <a
+          href="{% url 'tenant-users' tenant.id %}"
+          class="rounded-2xl bg-slate-950 px-4 py-3 text-sm font-semibold text-white transition hover:bg-slate-800"
+        >
+          Manage users
+        </a>
+        <button
+          type="button"
+          data-modal-url="{% url 'tenant-edit' tenant.id %}"
+          class="rounded-2xl border border-white/10 px-4 py-3 text-sm font-semibold text-slate-200 transition hover:bg-white/5"
+        >
+          Edit client
+        </button>
+      </div>
+    </div>
+
+    <div class="mt-8 grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
+      <div class="rounded-3xl border border-white/10 bg-slate-950/60 p-5">
+        <p class="text-xs uppercase tracking-[0.2em] text-slate-400">Subdomain</p>
+        <p class="mt-2 break-all text-lg font-semibold text-white">{{ tenant.subdomain }}</p>
+      </div>
+      <div class="rounded-3xl border border-white/10 bg-slate-950/60 p-5">
+        <p class="text-xs uppercase tracking-[0.2em] text-slate-400">Primary domain</p>
+        <p class="mt-2 break-all text-lg font-semibold text-white">
+          {% if primary_domain %}{{ primary_domain.domain }}{% else %}Not configured{% endif %}
+        </p>
+      </div>
+      <div class="rounded-3xl border border-white/10 bg-slate-950/60 p-5">
+        <p class="text-xs uppercase tracking-[0.2em] text-slate-400">Created</p>
+        <p class="mt-2 text-lg font-semibold text-white">{{ tenant.created_at }}</p>
+      </div>
+      <div class="rounded-3xl border border-white/10 bg-slate-950/60 p-5">
+        <p class="text-xs uppercase tracking-[0.2em] text-slate-400">Users</p>
+        <p class="mt-2 text-lg font-semibold text-white">{{ user_stats.total|default:0 }} total</p>
+      </div>
+    </div>
+  </section>
+
+  <section class="grid gap-6 lg:grid-cols-[1.2fr_0.8fr]">
+    <div class="rounded-[2rem] border border-white/10 bg-white/5 p-6 text-slate-100 shadow-soft">
+      <div class="flex items-center justify-between gap-4">
+        <div>
+          <h3 class="text-base font-semibold text-white">Lifecycle</h3>
+          <p class="mt-1 text-sm text-slate-300">Track when the client was activated or suspended.</p>
+        </div>
+      </div>
+
+      <dl class="mt-6 grid gap-4 sm:grid-cols-2">
+        <div class="rounded-3xl border border-white/10 bg-slate-950/60 p-5">
+          <dt class="text-xs uppercase tracking-[0.2em] text-slate-400">Activated at</dt>
+          <dd class="mt-2 text-sm font-medium text-white">
+            {% if tenant.activated_at %}{{ tenant.activated_at }}{% else %}Not recorded{% endif %}
+          </dd>
+        </div>
+        <div class="rounded-3xl border border-white/10 bg-slate-950/60 p-5">
+          <dt class="text-xs uppercase tracking-[0.2em] text-slate-400">Suspended at</dt>
+          <dd class="mt-2 text-sm font-medium text-white">
+            {% if tenant.suspended_at %}{{ tenant.suspended_at }}{% else %}Not recorded{% endif %}
+          </dd>
+        </div>
+      </dl>
+
+      <div class="mt-6 flex flex-wrap gap-3">
+        {% if tenant.is_active %}
+          <button
+            type="button"
+            data-modal-url="{% url 'tenant-action-confirm' tenant.id 'deactivate' %}"
+            class="rounded-2xl border border-amber-200 bg-amber-50 px-4 py-3 text-sm font-semibold text-amber-700 transition hover:bg-amber-100"
+          >
+            Suspend client
+          </button>
+        {% else %}
+          <button
+            type="button"
+            data-modal-url="{% url 'tenant-action-confirm' tenant.id 'activate' %}"
+            class="rounded-2xl border border-emerald-200 bg-emerald-50 px-4 py-3 text-sm font-semibold text-emerald-700 transition hover:bg-emerald-100"
+          >
+            Activate client
+          </button>
+        {% endif %}
+      </div>
+    </div>
+
+    <div class="rounded-[2rem] border border-white/10 bg-white/5 p-6 text-slate-100 shadow-soft">
+      <h3 class="text-base font-semibold text-white">Domains</h3>
+      <p class="mt-1 text-sm text-slate-300">Primary and secondary hostnames bound to this client.</p>
+
+      <div class="mt-5 space-y-3">
+        {% for domain in tenant.domains.all %}
+          <div class="flex items-center justify-between gap-4 rounded-3xl border border-white/10 bg-slate-950/60 px-4 py-4">
+            <div>
+              <p class="font-medium text-white">{{ domain.domain }}</p>
+              <p class="text-sm text-slate-400">Added {{ domain.created_at }}</p>
+            </div>
+            {% if domain.is_primary %}
+              <span class="rounded-full bg-sky-500/15 px-3 py-1 text-xs font-semibold text-sky-300">Primary</span>
+            {% endif %}
+          </div>
+        {% empty %}
+          <div class="rounded-3xl border border-white/10 bg-slate-950/60 px-4 py-10 text-center text-sm text-slate-300">
+            No domains configured.
+          </div>
+        {% endfor %}
+      </div>
+    </div>
+  </section>
+</div>
+{% endblock %}
