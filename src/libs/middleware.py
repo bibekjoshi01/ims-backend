@@ -1,4 +1,4 @@
-from django.http import HttpResponseForbidden, JsonResponse
+from django.http import JsonResponse
 
 
 class TenantStatusMiddleware:
@@ -14,21 +14,12 @@ class TenantStatusMiddleware:
 
         if tenant and hasattr(tenant, "is_active"):
             if not tenant.is_active:
-                return self.blocked_response(tenant)
+                return JsonResponse(
+                    {"error": "Your account has been suspended. Please contact software vendor."},
+                    status=403,
+                )
 
         return self.get_response(request)
-
-    def blocked_response(self, tenant):
-        return HttpResponseForbidden(f"""
-            <html>
-                <body style="font-family:Arial;text-align:center;padding:50px;">
-                    <h2>Account Suspended</h2>
-                    <p>Your workspace <b>{tenant.name}</b> has been suspended.</p>
-                    <p>Please contact software vendor.</p>
-                    <p>Team Operon.</p>
-                </body>
-            </html>
-        """)
 
 
 class BlockPostmanMiddleware:

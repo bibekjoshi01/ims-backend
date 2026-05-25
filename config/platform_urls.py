@@ -7,7 +7,7 @@ from .schema import platform_docs_view, platform_schema_view
 
 urlpatterns = [
     path("", TemplateView.as_view(template_name="home.html"), name="home"),
-    path("api/tenant-mod/", include("tenants.urls")),
+    path("api/platform-mod/", include("control_plane.urls")),
 ]
 
 if settings.DEBUG:
