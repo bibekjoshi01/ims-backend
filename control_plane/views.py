@@ -35,18 +35,14 @@ from control_plane.serializers import (
     TenantUserPatchSerializer,
     TenantUserRetrieveSerializer,
 )
+from src.user.throttling import LoginThrottle
 from tenants.models import Domain, Tenant
 
 User = get_user_model()
 
 
-def _tenant_host_suffix():
-    host = next((value for value in settings.ALLOWED_HOSTS if value and value != "*"), "localhost")
-    return host.lstrip(".")
-
-
 def _tenant_domain_name(subdomain):
-    return f"{subdomain}.{_tenant_host_suffix()}"
+    return f"{subdomain}.{settings.PRIMARY_DOMAIN_SUFFIX}"
 
 
 def _primary_platform_user(request):
@@ -364,6 +360,7 @@ class TenantUserViewset(ModelViewSet):
 class LoginAPIView(CreateAPIView):
     authentication_classes = []
     permission_classes = [AllowAny]
+    throttle_classes = [LoginThrottle]
     serializer_class = LoginSerializer
 
     def create(self, request, *args, **kwargs):

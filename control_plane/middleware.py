@@ -22,6 +22,8 @@ class PlatformUserJWTMiddleware:
 
         try:
             payload = decode_token(token)
+            if payload.get("token_type") != "platform_access":
+                return self.get_response(request)
             platform_user = PlatformUser.objects.get(pk=payload["user_id"])
         except Exception:
             return self.get_response(request)

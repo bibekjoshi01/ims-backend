@@ -1,4 +1,4 @@
-from datetime import datetime, timedelta
+from datetime import UTC, datetime, timedelta
 
 import jwt
 from django.conf import settings
@@ -31,6 +31,8 @@ class PlatformJWTAuthentication(BaseAuthentication):
 
         try:
             payload = decode_token(token)
+            if payload.get("token_type") != "platform_access":
+                raise AuthenticationFailed("Invalid token")
             user = PlatformUser.objects.get(id=payload["user_id"])
         except Exception as err:
             raise AuthenticationFailed("Invalid token") from err
@@ -42,9 +44,12 @@ class PlatformJWTAuthentication(BaseAuthentication):
 
 
 def generate_token(user_id):
+    expires_at = datetime.now(UTC) + timedelta(minutes=60)
     payload = {
         "user_id": user_id,
-        "exp": datetime.now() + timedelta(minutes=60),
+        "token_type": "platform_access",
+        "iat": datetime.now(UTC),
+        "exp": expires_at,
     }
     return jwt.encode(payload, settings.SECRET_KEY, algorithm="HS256")
 

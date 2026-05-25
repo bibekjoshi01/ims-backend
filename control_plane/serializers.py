@@ -65,7 +65,7 @@ class TenantCreateSerializer(serializers.ModelSerializer):
 
         Domain.objects.create(
             tenant=tenant,
-            domain=f"{subdomain}{settings.ALLOWED_HOSTS[0]}",
+            domain=f"{subdomain}.{settings.PRIMARY_DOMAIN_SUFFIX}",
             is_primary=True,
         )
 
@@ -87,7 +87,7 @@ class TenantPatchSerializer(serializers.ModelSerializer):
 
         if new_subdomain and new_subdomain != instance.subdomain:
             domain = instance.domains.get(is_primary=True)
-            domain.domain = f"{new_subdomain}{settings.ALLOWED_HOSTS[0]}"
+            domain.domain = f"{new_subdomain}.{settings.PRIMARY_DOMAIN_SUFFIX}"
             domain.save()
 
             instance.subdomain = new_subdomain

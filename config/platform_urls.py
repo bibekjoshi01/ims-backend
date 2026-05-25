@@ -25,17 +25,27 @@ from control_plane.views import (
     tenants_list_page,
 )
 
+from .health import healthz, readyz
 from .schema import platform_docs_view, platform_schema_view
 
 urlpatterns = [
-    path("", TemplateView.as_view(template_name="home.html"), name="home"),
+    path(
+        "",
+        TemplateView.as_view(
+            template_name="home.html",
+            extra_context={"show_platform_docs": settings.DEBUG},
+        ),
+        name="home",
+    ),
+    path("healthz", healthz, name="healthz"),
+    path("readyz", readyz, name="readyz"),
     path(
         "api/platform-mod/",
         include(("control_plane.urls", "control_plane"), namespace="control_plane"),
     ),
-    path("accounts/login/", accounts_login_page, name="login"),
+    # Dashboard pages
     path("dashboard", dashboard_page, name="dashboard"),
-    # Dashboard pages (server-rendered)
+    path("accounts/login/", accounts_login_page, name="login"),
     path("dashboard/clients", tenants_list_page, name="tenants-list"),
     path("dashboard/clients/create", tenant_create, name="tenant-create"),
     path("dashboard/clients/<int:pk>/edit", tenant_edit, name="tenant-edit"),

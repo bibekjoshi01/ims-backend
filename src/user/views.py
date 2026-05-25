@@ -11,6 +11,7 @@ from .throttling import LoginThrottle
 
 class UserTokenRefreshView(TokenRefreshView):
     authentication_classes = [JWTAuthentication]
+    permission_classes = [AllowAny]
 
 
 class UserLoginView(APIView):

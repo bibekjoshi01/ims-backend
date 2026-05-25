@@ -2,22 +2,68 @@
 import os
 from datetime import timedelta
 from pathlib import Path
+
 from dotenv import load_dotenv
+from django.core.exceptions import ImproperlyConfigured
+
+from .ckeditor_settings import *
 from .jazzmin_settings import *
 from .logging_config import *
-from .ckeditor_settings import *
 
 load_dotenv()
 
 BASE_DIR = Path(__file__).resolve().parent.parent
 APPS_DIR = BASE_DIR / "src"
 
-SECRET_KEY = os.getenv("SECRET_KEY", "dev-secret")
-DEBUG = os.getenv("DEBUG", "True") == "True"
-ALLOWED_HOSTS = os.getenv("DJANGO_ALLOWED_HOSTS", "*").split(",")
 
-CORS_ALLOW_ALL_ORIGINS = os.getenv("CORS_ALLOW_ALL_ORIGINS", "True") == "True"
-CORS_ALLOWED_ORGINS = os.getenv("CORS_ALLOWED_ORIGINS", "*").split(",")
+def _as_bool(value):
+    return value.strip().lower() in {"1", "true", "yes", "on"}
+
+
+def _csv_env(name, default=""):
+    return [item.strip() for item in os.getenv(name, default).split(",") if item.strip()]
+
+
+def _first_domain_host(hosts):
+    for host in hosts:
+        cleaned_host = host.strip().lstrip(".")
+        if cleaned_host and cleaned_host != "*":
+            return cleaned_host
+    return ""
+
+
+DEBUG = _as_bool(os.getenv("DEBUG", "True"))
+
+SECRET_KEY = os.getenv("SECRET_KEY", "").strip()
+if not SECRET_KEY:
+    if DEBUG:
+        SECRET_KEY = "dev-secret"
+    else:
+        raise ImproperlyConfigured("SECRET_KEY must be set when DEBUG=False.")
+
+ALLOWED_HOSTS = _csv_env("DJANGO_ALLOWED_HOSTS")
+if not ALLOWED_HOSTS:
+    if DEBUG:
+        ALLOWED_HOSTS = ["localhost", "127.0.0.1", "[::1]", ".localhost"]
+    else:
+        raise ImproperlyConfigured("DJANGO_ALLOWED_HOSTS must be set when DEBUG=False.")
+
+PRIMARY_DOMAIN_SUFFIX = os.getenv("PRIMARY_DOMAIN_SUFFIX", "").strip().lstrip(".")
+if not PRIMARY_DOMAIN_SUFFIX:
+    PRIMARY_DOMAIN_SUFFIX = _first_domain_host(ALLOWED_HOSTS)
+if not PRIMARY_DOMAIN_SUFFIX:
+    if DEBUG:
+        PRIMARY_DOMAIN_SUFFIX = "localhost"
+    else:
+        raise ImproperlyConfigured("PRIMARY_DOMAIN_SUFFIX must be set when DEBUG=False.")
+
+CORS_ALLOW_ALL_ORIGINS = _as_bool(os.getenv("CORS_ALLOW_ALL_ORIGINS", "True" if DEBUG else "False"))
+CORS_ALLOWED_ORIGINS = _csv_env("CORS_ALLOWED_ORIGINS")
+CSRF_TRUSTED_ORIGINS = _csv_env("CSRF_TRUSTED_ORIGINS")
+if not DEBUG and not CORS_ALLOW_ALL_ORIGINS and not CORS_ALLOWED_ORIGINS:
+    raise ImproperlyConfigured(
+        "CORS_ALLOWED_ORIGINS must be set when CORS_ALLOW_ALL_ORIGINS=False.",
+    )
 
 
 SHARED_APPS = (
@@ -60,6 +106,9 @@ MIDDLEWARE = [
     "django.middleware.clickjacking.XFrameOptionsMiddleware",
     "src.libs.middleware.TenantStatusMiddleware",
 ]
+
+if not DEBUG:
+    MIDDLEWARE.insert(1, "src.libs.middleware.BlockPostmanMiddleware")
 
 
 ROOT_URLCONF = "config.tenant_urls"
@@ -113,6 +162,16 @@ CSRF_COOKIE_DOMAIN = None
 # ------------------------------------------------------------------------------
 SESSION_COOKIE_HTTPONLY = True
 CSRF_COOKIE_HTTPONLY = True
+SESSION_COOKIE_SECURE = not DEBUG
+CSRF_COOKIE_SECURE = not DEBUG
+SESSION_COOKIE_SAMESITE = "Lax"
+CSRF_COOKIE_SAMESITE = "Lax"
+SECURE_CONTENT_TYPE_NOSNIFF = True
+SECURE_REFERRER_POLICY = "same-origin"
+SECURE_SSL_REDIRECT = not DEBUG
+SECURE_HSTS_SECONDS = 31536000 if not DEBUG else 0
+SECURE_HSTS_INCLUDE_SUBDOMAINS = not DEBUG
+SECURE_HSTS_PRELOAD = not DEBUG
 X_FRAME_OPTIONS = "DENY"
 USE_X_FORWARDED_HOST = True
 SECURE_PROXY_SSL_HEADER = ("HTTP_X_FORWARDED_PROTO", "https")
@@ -172,9 +231,8 @@ MEDIA_ROOT = BASE_DIR / "media"
 REST_FRAMEWORK = {
     "DEFAULT_AUTHENTICATION_CLASSES": (
         "rest_framework_simplejwt.authentication.JWTAuthentication",
-        "rest_framework.authentication.SessionAuthentication",
     ),
-    "DEFAULT_PERMISSION_CLASSES": ("rest_framework.permissions.IsAuthenticatedOrReadOnly",),
+    "DEFAULT_PERMISSION_CLASSES": ("rest_framework.permissions.IsAuthenticated",),
     "DEFAULT_PAGINATION_CLASS": "rest_framework.pagination.LimitOffsetPagination",
     "PAGE_SIZE": 10,
     "DEFAULT_RENDERER_CLASSES": (
@@ -220,7 +278,9 @@ SPECTACULAR_SETTINGS = {
 
 
 SIMPLE_JWT = {
-    "ACCESS_TOKEN_LIFETIME": timedelta(days=int(os.getenv("ACCESS_TOKEN_TIME", default=7))),
+    "ACCESS_TOKEN_LIFETIME": timedelta(
+        minutes=int(os.getenv("ACCESS_TOKEN_TIME", default=60)),
+    ),
     "REFRESH_TOKEN_LIFETIME": timedelta(
         days=int(os.getenv("REFRESH_TOKEN_TIME", default=10)),
     ),
