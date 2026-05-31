@@ -2,6 +2,9 @@
 
 -r base.txt
 
+# Monitoring Logs
+sentry-sdk
+
 # ASGI / WSGI
 gunicorn==22.0.0
 uvicorn[standard]>=0.23,<0.24

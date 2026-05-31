@@ -1,7 +1,13 @@
+import logging
 import os
 from pathlib import Path
 
+import sentry_sdk
 from dotenv import load_dotenv
+from sentry_sdk.integrations.django import DjangoIntegration
+from sentry_sdk.integrations.logging import LoggingIntegration
+
+from version import VERSION
 
 load_dotenv()
 
@@ -109,3 +115,29 @@ LOGGING = {
         "level": LOG_LEVEL,
     },
 }
+
+
+# Sentry Setup
+# ---------------- ---------------- ---------------- ----------------
+SENTRY_DSN = os.getenv("SENTRY_DSN", "no-available")
+
+if SENTRY_DSN and not DEBUG:
+    sentry_logging = LoggingIntegration(
+        level=None,  # breadcrumbs (optional logs)
+        event_level=logging.ERROR,  # send ERROR logs as events
+    )
+
+    sentry_sdk.init(
+        dsn=SENTRY_DSN,
+        integrations=[
+            DjangoIntegration(
+                transaction_style="url",
+            ),
+            sentry_logging,
+        ],
+        traces_sample_rate=0.1,  # performance monitoring (10%)
+        send_default_pii=True,  # user context
+        environment="production",
+        release=VERSION,
+        attach_stacktrace=True,
+    )

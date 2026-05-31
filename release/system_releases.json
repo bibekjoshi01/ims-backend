@@ -1,0 +1,43 @@
+{
+  "schema_version": "1.0",
+  "current_version": "1.0.1",
+  "unreleased": {
+    "target_version": "1.2.0",
+    "changes": {
+      "added": [],
+      "improved": [],
+      "fixed": [],
+      "removed": []
+    }
+  },
+  "releases": [
+    {
+      "version": "1.0.1",
+      "released_at": "2026-02-06",
+      "changes": {
+        "added": [],
+        "improved": [
+          "Improved billing calculation accuracy and rounding logic",
+          "Improve QR code feature"
+        ],
+        "fixed": ["Resolved lab report download failure for large PDF files"],
+        "removed": []
+      }
+    },
+    {
+      "version": "1.0.0",
+      "released_at": "2025-01-28",
+      "changes": {
+        "added": [
+          "Initial stable system release",
+          "Core patient registration and visit management",
+          "Basic billing and invoice generation",
+          "Laboratory report viewing and export"
+        ],
+        "improved": [],
+        "fixed": [],
+        "removed": []
+      }
+    }
+  ]
+}
