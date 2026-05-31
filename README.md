@@ -1,4 +1,4 @@
-# Operon — Django SaaS Starter
+# Operon — IMS System Backend
 
 A modern Django SaaS application scaffold with multi-tenant support, subdomain-based tenant routing, and per-tenant admin dashboards.
 

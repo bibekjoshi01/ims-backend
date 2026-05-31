@@ -4,7 +4,7 @@ from pathlib import Path
 # LOGGING
 # ------------------------------------------------------------------------------
 
-BASE_DIR = Path(__file__).resolve().parent.parent
+BASE_DIR = Path(__file__).resolve().parent.parent.parent
 APPS_DIR = BASE_DIR / "src"
 
 
