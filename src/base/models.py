@@ -4,6 +4,8 @@ from django.db import models
 from django.utils import timezone
 from django.utils.translation import gettext_lazy as _
 
+from src.libs.storage import tenant_media_path
+
 
 class AuditInfoModel(models.Model):
     """Abstract Created Info Model"""
@@ -57,5 +59,5 @@ class AuditInfoModel(models.Model):
             self.is_active = False
         super().save(*args, **kwargs)
 
-    def get_upload_path(self, upload_path, filename):
-        return f"{upload_path}/{filename}"
+    def get_upload_path(self, filename):
+        return tenant_media_path(self, filename)
