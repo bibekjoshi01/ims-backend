@@ -1,8 +1,10 @@
+from typing import Any
+
 from rest_framework.permissions import BasePermission
 
 
 class IsPlatformUser(BasePermission):
-    def has_permission(self, request, view):
+    def has_permission(self, request: Any, view: Any) -> bool:
         user = request.user
 
         if not user:
@@ -16,6 +18,6 @@ class IsPlatformUser(BasePermission):
             return False
 
         if hasattr(user, "is_platform_admin"):
-            return user.is_platform_admin
+            return bool(user.is_platform_admin)
 
         return True

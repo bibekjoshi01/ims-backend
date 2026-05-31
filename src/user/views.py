@@ -10,16 +10,16 @@ from .throttling import LoginThrottle
 
 
 class UserTokenRefreshView(TokenRefreshView):
-    authentication_classes = (JWTAuthentication,)
-    permission_classes = (AllowAny,)
+    authentication_classes: tuple[type, ...] = (JWTAuthentication,)  # type: ignore[assignment]
+    permission_classes: tuple[type, ...] = (AllowAny,)  # type: ignore[assignment]
 
 
 class UserLoginView(APIView):
     """User Login API View"""
 
-    permission_classes = (AllowAny,)
+    permission_classes: tuple[type, ...] = (AllowAny,)
     serializer_class = UserLoginSerializer
-    throttle_classes = (LoginThrottle,)
+    throttle_classes: tuple[type, ...] = (LoginThrottle,)
 
     def post(self, request):
         serializer = self.serializer_class(
@@ -35,7 +35,7 @@ class UserLoginView(APIView):
 class UserLogoutView(APIView):
     """User LogOut View"""
 
-    permission_classes = (IsAuthenticated,)
+    permission_classes: tuple[type, ...] = (IsAuthenticated,)
     serializer_class = UserLogoutSerializer
 
     def post(self, request):

@@ -10,14 +10,14 @@ class CrawlProtectionTests(SimpleTestCase):
     def setUp(self):
         self.factory = RequestFactory()
 
-    def test_noindex_middleware_adds_response_header(self):
+    def test_noindex_middleware_adds_response_header(self) -> None:
         request = self.factory.get("/dashboard")
 
         response = NoIndexMiddleware(lambda incoming_request: HttpResponse("ok"))(request)
 
         assert response["X-Robots-Tag"] == "noindex, nofollow, noarchive"
 
-    def test_robots_txt_blocks_all_crawling_in_production(self):
+    def test_robots_txt_blocks_all_crawling_in_production(self) -> None:
         request = self.factory.get("/robots.txt")
 
         response = robots_txt(request)

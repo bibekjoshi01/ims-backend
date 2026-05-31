@@ -1,3 +1,5 @@
+from typing import Any, cast
+
 from django.contrib import admin
 from django.contrib.auth.admin import UserAdmin as BaseUserAdmin
 from django.contrib.auth.models import Group
@@ -133,7 +135,7 @@ class UserAdmin(BaseUserAdmin):
     def full_name(self, obj):
         return obj.get_full_name
 
-    full_name.short_description = "Full Name"
+    cast(Any, full_name).short_description = "Full Name"
 
     def photo_preview(self, obj):
         if not obj.photo:
@@ -143,4 +145,4 @@ class UserAdmin(BaseUserAdmin):
             obj.photo.url,
         )
 
-    photo_preview.short_description = "Preview"
+    cast(Any, photo_preview).short_description = "Preview"

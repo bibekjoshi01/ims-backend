@@ -1,4 +1,4 @@
-from typing import ClassVar
+from typing import Any, ClassVar, cast
 
 from django import forms
 from django.contrib import admin
@@ -50,13 +50,13 @@ class BaseAdmin(admin.ModelAdmin):
     def serial_number(self, obj):
         return getattr(obj, "serial_number", "-")
 
-    serial_number.short_description = "S.N"
+    cast(Any, serial_number).short_description = "S.N"
 
     def edit_action(self, obj):
         url = reverse(f"admin:{obj._meta.app_label}_{obj._meta.model_name}_change", args=[obj.pk])
         return format_html('<a href="{}" title="Edit"><i class="fas fa-edit"></i></a>', url)
 
-    edit_action.short_description = "Edit"
+    cast(Any, edit_action).short_description = "Edit"
 
     def save_model(self, request, obj, form, change):
         # Auto assign creator

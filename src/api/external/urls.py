@@ -1,3 +1,3 @@
-app_label = ["external"]
+app_label: list[str] = ["external"]
 
-urlpatterns = []
+urlpatterns: list = []

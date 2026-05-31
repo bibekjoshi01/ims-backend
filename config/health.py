@@ -1,13 +1,13 @@
 from django.core.cache import caches
 from django.db import connections
-from django.http import JsonResponse
+from django.http import HttpRequest, JsonResponse
 
 
-def healthz(request):
+def healthz(request: HttpRequest) -> JsonResponse:
     return JsonResponse({"status": "ok"}, status=200)
 
 
-def readyz(request):
+def readyz(request: HttpRequest) -> JsonResponse:
     checks = {
         "database": _check_database(),
         "cache": _check_cache(),
@@ -20,7 +20,7 @@ def readyz(request):
     return JsonResponse(payload, status=status_code)
 
 
-def _check_database():
+def _check_database() -> bool:
     try:
         with connections["default"].cursor() as cursor:
             cursor.execute("SELECT 1")
@@ -30,12 +30,12 @@ def _check_database():
         return False
 
 
-def _check_cache():
+def _check_cache() -> bool:
     cache = caches["default"]
     cache_key = "__operon_healthcheck__"
 
     try:
         cache.set(cache_key, "ok", timeout=5)
-        return cache.get(cache_key) == "ok"
+        return bool(cache.get(cache_key) == "ok")
     except Exception:
         return False

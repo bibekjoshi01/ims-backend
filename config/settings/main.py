@@ -4,6 +4,7 @@ from datetime import timedelta
 from pathlib import Path
 
 from dotenv import load_dotenv
+from typing import Any
 from django.core.exceptions import ImproperlyConfigured
 
 from .ckeditor_settings import *
@@ -136,7 +137,7 @@ TEMPLATES = [
 WSGI_APPLICATION = "config.wsgi.application"
 ASGI_APPLICATION = "config.asgi.application"
 
-DATABASES = {
+DATABASES: dict[str, dict[str, Any]] = {
     "default": {
         "ENGINE": "django_tenants.postgresql_backend",
         "NAME": os.getenv("DB_NAME"),

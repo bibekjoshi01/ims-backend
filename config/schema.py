@@ -1,3 +1,5 @@
+from typing import Any
+
 from drf_spectacular.views import SpectacularAPIView, SpectacularSwaggerView
 
 # Platform
@@ -7,7 +9,7 @@ platform_docs_view = SpectacularSwaggerView.as_view(url_name="platform-schema")
 
 # Tenant
 class CustomTenantSpectacularSwaggerView(SpectacularSwaggerView):
-    def dispatch(self, request, *args, **kwargs):
+    def dispatch(self, request: Any, *args: Any, **kwargs: Any) -> Any:
         from django.shortcuts import redirect
         from rest_framework.reverse import reverse
 
@@ -19,7 +21,7 @@ class CustomTenantSpectacularSwaggerView(SpectacularSwaggerView):
 
 
 class CustomTenantSpectacularAPIView(SpectacularAPIView):
-    def dispatch(self, request, *args, **kwargs):
+    def dispatch(self, request: Any, *args: Any, **kwargs: Any) -> Any:
         from django.shortcuts import redirect
         from rest_framework.reverse import reverse
 

@@ -1,3 +1,4 @@
+from typing import ClassVar
 from uuid import uuid4
 
 from django.conf import settings
@@ -237,7 +238,7 @@ class User(AbstractBaseUser, PermissionsMixin):
 
     EMAIL_FIELD = "email"
     USERNAME_FIELD = "username"
-    REQUIRED_FIELDS = ("email",)
+    REQUIRED_FIELDS: ClassVar[list[str]] = ["email"]
 
     class Meta:
         ordering = ("-id",)

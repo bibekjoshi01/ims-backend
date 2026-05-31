@@ -14,6 +14,7 @@ import sys
 from pathlib import Path
 
 from django.core.asgi import get_asgi_application
+from typing import Any
 
 # This allows easy placement of apps within the interior
 BASE_DIR = Path(__file__).resolve(strict=True).parent.parent
@@ -24,7 +25,7 @@ os.environ.setdefault("DJANGO_SETTINGS_MODULE", "config.settings")
 django_application = get_asgi_application()
 
 
-async def application(scope, receive, send):
+async def application(scope: dict[str, Any], receive: Any, send: Any) -> None:
     if scope["type"] == "http":
         await django_application(scope, receive, send)
     else:

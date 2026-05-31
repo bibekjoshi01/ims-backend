@@ -1,4 +1,4 @@
-from typing import ClassVar
+from typing import Any, ClassVar, cast
 
 from django import forms
 from django.contrib.auth import get_user_model
@@ -20,8 +20,8 @@ TEXTAREA_CLASS = INPUT_CLASS
 
 
 class TailwindFormMixin:
-    def _apply_tailwind(self):
-        for field in self.fields.values():
+    def _apply_tailwind(self) -> None:
+        for field in getattr(self, "fields", {}).values():
             widget = field.widget
 
             if isinstance(widget, forms.CheckboxInput):
@@ -43,7 +43,7 @@ class TenantForm(TailwindFormMixin, forms.ModelForm):
             "is_active": forms.CheckboxInput(),
         }
 
-    def __init__(self, *args, **kwargs):
+    def __init__(self, *args: Any, **kwargs: Any) -> None:
         super().__init__(*args, **kwargs)
         self._apply_tailwind()
         self.fields["name"].label = "Client name"
@@ -54,17 +54,17 @@ class TenantForm(TailwindFormMixin, forms.ModelForm):
                 "subdomain"
             ].help_text = "Changing this updates the client subdomain and primary domain."
 
-    def clean_name(self):
-        return self.cleaned_data["name"].strip()
+    def clean_name(self) -> str:
+        return cast(str, self.cleaned_data["name"].strip())
 
-    def clean_subdomain(self):
+    def clean_subdomain(self) -> str:
         value = self.cleaned_data["subdomain"].strip().lower()
 
         if value in RESERVED_SUBDOMAINS:
             raise forms.ValidationError("This subdomain is reserved.")
 
         subdomain_validator(value)
-        return value
+        return cast(str, value)
 
 
 class TenantUserForm(TailwindFormMixin, forms.ModelForm):
@@ -99,7 +99,7 @@ class TenantUserForm(TailwindFormMixin, forms.ModelForm):
             "is_active": forms.CheckboxInput(),
         }
 
-    def __init__(self, *args, **kwargs):
+    def __init__(self, *args: Any, **kwargs: Any) -> None:
         super().__init__(*args, **kwargs)
         self._apply_tailwind()
         self.fields["username"].label = "Username"
@@ -118,21 +118,21 @@ class TenantUserForm(TailwindFormMixin, forms.ModelForm):
             self.fields["is_staff"].initial = True
             self.fields["is_active"].initial = True
 
-    def clean_username(self):
-        return self.cleaned_data["username"].strip()
+    def clean_username(self) -> str:
+        return cast(str, self.cleaned_data["username"].strip())
 
-    def clean_email(self):
-        return self.cleaned_data["email"].strip().lower()
+    def clean_email(self) -> str:
+        return cast(str, self.cleaned_data["email"].strip().lower())
 
-    def clean(self):
-        cleaned_data = super().clean()
+    def clean(self) -> dict[str, Any]:
+        cleaned_data = cast(dict[str, Any], super().clean())
 
         if cleaned_data.get("is_superuser"):
             cleaned_data["is_staff"] = True
 
         return cleaned_data
 
-    def save(self, commit=True):
+    def save(self, commit: bool = True) -> Any:
         password = self.cleaned_data.get("password")
         user = super().save(commit=False)
 
