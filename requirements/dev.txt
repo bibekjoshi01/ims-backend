@@ -1,7 +1,14 @@
 -r base.txt
 
+# Testing Tools
 pytest==9.0.2
-black==26.3.0
-isort==8.0.1
-pre_commit==4.5.1
+pytest-django
+pytest-cov
+factory-boy
+faker
+# Code Quality
 ruff==0.15.5
+mypy
+django-stubs
+django-stubs-ext
+pre_commit==4.5.1

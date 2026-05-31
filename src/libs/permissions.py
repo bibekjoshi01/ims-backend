@@ -36,7 +36,4 @@ def validate_permissions(request, user_permissions_dict):
         method = "SAFE_METHODS"
 
     method_permission = user_permissions_dict.get(method, None)
-    if method_permission and method_permission in role_permissions:
-        return True
-
-    return False
+    return bool(method_permission and method_permission in role_permissions)

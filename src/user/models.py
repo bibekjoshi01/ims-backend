@@ -60,11 +60,11 @@ class Permission(models.Model):
     class Meta:
         verbose_name = _("permission")
         verbose_name_plural = _("permissions")
-        ordering = [
+        ordering = (
             "permission_category__main_module",
             "permission_category",
             "id",
-        ]
+        )
 
     def __str__(self):
         return f"{self.permission_category} : {self.name}"
@@ -191,7 +191,7 @@ class User(AbstractBaseUser, PermissionsMixin):
         _("superuser status"),
         default=False,
         help_text=_(
-            "Designates that this user has all permissions without " "explicitly assigning them.",
+            "Designates that this user has all permissions without explicitly assigning them.",
         ),
     )
     is_staff = models.BooleanField(
@@ -237,19 +237,19 @@ class User(AbstractBaseUser, PermissionsMixin):
 
     EMAIL_FIELD = "email"
     USERNAME_FIELD = "username"
-    REQUIRED_FIELDS = ["email"]
+    REQUIRED_FIELDS = ("email",)
 
     class Meta:
-        ordering = ["-id"]
+        ordering = ("-id",)
         verbose_name = _("user")
         verbose_name_plural = _("users")
-        constraints = [
+        constraints = (
             models.UniqueConstraint(
                 fields=["email"],
                 condition=models.Q(is_archived=False),
                 name="unique_email_active_user",
             ),
-        ]
+        )
 
     def clean(self):
         super().clean()
@@ -258,8 +258,8 @@ class User(AbstractBaseUser, PermissionsMixin):
     def __str__(self):
         return str(self.email)
 
-    def get_upload_path(self, upload_path, filename):
-        return f"{upload_path}/{filename}"
+    def get_upload_path(self, filename):
+        return f"{self.id}/{filename}"
 
     def is_system_user(self):
         return self.roles.filter(codename=SYSTEM_USER_ROLE).exists()
@@ -280,7 +280,7 @@ class UserForgetPasswordRequest(models.Model):
     is_archived = models.BooleanField(default=False)
 
     class Meta:
-        ordering = ["-id"]
+        ordering = ("-id",)
 
     def __str__(self) -> str:
         return f"User Id: {self.user.id!s} + '-' + {self.otp}"
@@ -296,7 +296,7 @@ class UserAccountVerification(models.Model):
     is_archived = models.BooleanField(default=False)
 
     class Meta:
-        ordering = ["-id"]
+        ordering = ("-id",)
 
     def __str__(self) -> str:
         return f"User Id: {self.user.id!s} + '-' + {self.otp}"

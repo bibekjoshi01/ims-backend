@@ -1,3 +1,4 @@
+import contextlib
 import os
 from pathlib import Path
 
@@ -12,10 +13,8 @@ APPS_DIR = BASE_DIR / "src"
 LOG_DIR = BASE_DIR / "logs"
 LOG_DIR.mkdir(parents=True, exist_ok=True)
 
-try:
+with contextlib.suppress(PermissionError):
     os.chmod(LOG_DIR, 0o775)
-except PermissionError:
-    pass
 
 
 LOGGING = {

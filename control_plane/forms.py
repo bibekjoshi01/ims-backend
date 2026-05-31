@@ -1,3 +1,5 @@
+from typing import ClassVar
+
 from django import forms
 from django.contrib.auth import get_user_model
 
@@ -34,8 +36,8 @@ class TailwindFormMixin:
 class TenantForm(TailwindFormMixin, forms.ModelForm):
     class Meta:
         model = Tenant
-        fields = ["name", "subdomain", "is_active"]
-        widgets = {
+        fields: ClassVar[tuple[str, ...]] = ("name", "subdomain", "is_active")
+        widgets: ClassVar[dict] = {
             "name": forms.TextInput(attrs={"placeholder": "Acme Health"}),
             "subdomain": forms.TextInput(attrs={"placeholder": "acme"}),
             "is_active": forms.CheckboxInput(),
@@ -76,7 +78,7 @@ class TenantUserForm(TailwindFormMixin, forms.ModelForm):
 
     class Meta:
         model = User
-        fields = [
+        fields: ClassVar[tuple[str, ...]] = (
             "username",
             "email",
             "first_name",
@@ -85,8 +87,8 @@ class TenantUserForm(TailwindFormMixin, forms.ModelForm):
             "is_staff",
             "is_superuser",
             "is_active",
-        ]
-        widgets = {
+        )
+        widgets: ClassVar[dict] = {
             "username": forms.TextInput(attrs={"placeholder": "jane.doe"}),
             "email": forms.EmailInput(attrs={"placeholder": "jane@example.com"}),
             "first_name": forms.TextInput(attrs={"placeholder": "Jane"}),

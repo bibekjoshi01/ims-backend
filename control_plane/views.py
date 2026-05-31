@@ -191,12 +191,12 @@ def _modal_form_error_response(request, template_name, context):
 
 
 class TenantViewset(ModelViewSet):
-    permission_classes = [IsPlatformUser]
-    authentication_classes = [PlatformJWTAuthentication]
-    throttle_classes = [PlatformAdminThrottle]
+    permission_classes = (IsPlatformUser,)
+    authentication_classes = (PlatformJWTAuthentication,)
+    throttle_classes = (PlatformAdminThrottle,)
     serializer_class = TenantListSerializer
     queryset = Tenant.objects.exclude(schema_name="public")
-    http_method_names = ["head", "options", "get", "post", "patch"]
+    http_method_names = ("head", "options", "get", "post", "patch")
 
     def get_serializer_class(self):
         if self.request.method == "GET":
@@ -267,10 +267,10 @@ class TenantViewset(ModelViewSet):
 
 
 class TenantUserViewset(ModelViewSet):
-    permission_classes = [IsPlatformUser]
-    authentication_classes = [PlatformJWTAuthentication]
-    throttle_classes = [PlatformAdminThrottle]
-    http_method_names = ["get", "post", "patch", "head", "options"]
+    permission_classes = (IsPlatformUser,)
+    authentication_classes = (PlatformJWTAuthentication,)
+    throttle_classes = (PlatformAdminThrottle,)
+    http_method_names = ("get", "post", "patch", "head", "options")
     serializer_class = TenantUserListSerializer
 
     def get_tenant(self):
@@ -361,9 +361,9 @@ class TenantUserViewset(ModelViewSet):
 
 
 class LoginAPIView(CreateAPIView):
-    authentication_classes = []
-    permission_classes = [AllowAny]
-    throttle_classes = [LoginThrottle]
+    authentication_classes = ()
+    permission_classes = (AllowAny,)
+    throttle_classes = (LoginThrottle,)
     serializer_class = LoginSerializer
 
     def create(self, request, *args, **kwargs):

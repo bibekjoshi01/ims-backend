@@ -12,7 +12,7 @@ class UserLoginSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = User
-        fields = ["password", "persona"]
+        fields = ("password", "persona")
 
     def validate(self, attrs):
         persona = attrs.get("persona").strip().lower()
@@ -55,14 +55,12 @@ class UserLoginSerializer(serializers.ModelSerializer):
             raise serializers.ValidationError({"password": "Invalid Password"})
 
     def check_system_user(self, user):
-        if user.is_superuser is not True:
-            if not user.roles.filter(codename="SYSTEM-USER").exists():
-                raise serializers.ValidationError({"persona": "Invalid Credentials"})
+        if user.is_superuser is not True and not user.roles.filter(codename="SYSTEM-USER").exists():
+            raise serializers.ValidationError({"persona": "Invalid Credentials"})
 
     def check_user_status(self, user):
-        if not user.is_superuser:
-            if not user.is_active or user.is_archived:
-                raise serializers.ValidationError({"persona": "Account disable"})
+        if not user.is_superuser and (not user.is_active or user.is_archived):
+            raise serializers.ValidationError({"persona": "Account disable"})
 
 
 class UserLogoutSerializer(serializers.Serializer):

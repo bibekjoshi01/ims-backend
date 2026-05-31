@@ -1,3 +1,5 @@
+from typing import ClassVar
+
 from django import forms
 from django.contrib import admin
 from django.core.exceptions import PermissionDenied
@@ -105,7 +107,7 @@ class BaseAdmin(admin.ModelAdmin):
 
         return formfield
 
-    formfield_overrides = {
+    formfield_overrides: ClassVar[dict] = {
         models.CharField: {"widget": forms.TextInput(attrs={"style": "width:300px;"})},
         models.EmailField: {"widget": forms.EmailInput(attrs={"style": "width:300px;"})},
         models.IntegerField: {"widget": forms.NumberInput(attrs={"style": "width:250px;"})},

@@ -1,3 +1,5 @@
+from typing import ClassVar
+
 from django.conf import settings
 from django.contrib.auth import get_user_model
 from rest_framework import serializers
@@ -11,7 +13,7 @@ User = get_user_model()
 class TenantListSerializer(serializers.ModelSerializer):
     class Meta:
         model = Tenant
-        fields = [
+        fields: ClassVar[tuple[str, ...]] = (
             "id",
             "name",
             "subdomain",
@@ -19,13 +21,13 @@ class TenantListSerializer(serializers.ModelSerializer):
             "created_at",
             "activated_at",
             "suspended_at",
-        ]
+        )
 
 
 class TenantRetrieveSerializer(serializers.ModelSerializer):
     class Meta:
         model = Tenant
-        fields = [
+        fields: ClassVar[tuple[str, ...]] = (
             "id",
             "name",
             "subdomain",
@@ -33,7 +35,7 @@ class TenantRetrieveSerializer(serializers.ModelSerializer):
             "created_at",
             "activated_at",
             "suspended_at",
-        ]
+        )
 
 
 class TenantCreateSerializer(serializers.ModelSerializer):
@@ -53,7 +55,7 @@ class TenantCreateSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Tenant
-        fields = ["id", "name", "subdomain", "is_active"]
+        fields: ClassVar[tuple[str, ...]] = ("id", "name", "subdomain", "is_active")
 
     def create(self, validated_data):
         subdomain = validated_data["subdomain"]
@@ -80,7 +82,7 @@ class TenantCreateSerializer(serializers.ModelSerializer):
 class TenantPatchSerializer(serializers.ModelSerializer):
     class Meta:
         model = Tenant
-        fields = ["id", "name", "subdomain", "is_active"]
+        fields: ClassVar[tuple[str, ...]] = ("id", "name", "subdomain", "is_active")
 
     def update(self, instance, validated_data):
         new_subdomain = validated_data.get("subdomain")
@@ -110,7 +112,7 @@ class TenantPatchSerializer(serializers.ModelSerializer):
 class TenantUserListSerializer(serializers.ModelSerializer):
     class Meta:
         model = User
-        fields = [
+        fields: ClassVar[tuple[str, ...]] = (
             "id",
             "username",
             "email",
@@ -120,13 +122,13 @@ class TenantUserListSerializer(serializers.ModelSerializer):
             "is_staff",
             "is_superuser",
             "is_active",
-        ]
+        )
 
 
 class TenantUserRetrieveSerializer(serializers.ModelSerializer):
     class Meta:
         model = User
-        fields = [
+        fields: ClassVar[tuple[str, ...]] = (
             "id",
             "username",
             "email",
@@ -136,7 +138,7 @@ class TenantUserRetrieveSerializer(serializers.ModelSerializer):
             "is_staff",
             "is_superuser",
             "is_active",
-        ]
+        )
 
 
 class TenantUserCreateSerializer(serializers.ModelSerializer):
@@ -148,7 +150,7 @@ class TenantUserCreateSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = User
-        fields = [
+        fields: ClassVar[tuple[str, ...]] = (
             "id",
             "username",
             "email",
@@ -159,7 +161,7 @@ class TenantUserCreateSerializer(serializers.ModelSerializer):
             "is_superuser",
             "password",
             "is_active",
-        ]
+        )
 
     def validate_username(self, value):
         return value.strip()
@@ -184,7 +186,7 @@ class TenantUserPatchSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = User
-        fields = [
+        fields: ClassVar[tuple[str, ...]] = (
             "username",
             "email",
             "first_name",
@@ -194,7 +196,7 @@ class TenantUserPatchSerializer(serializers.ModelSerializer):
             "password",
             "is_superuser",
             "is_active",
-        ]
+        )
 
     def validate_username(self, value):
         return value.strip()

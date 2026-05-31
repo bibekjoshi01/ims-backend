@@ -32,4 +32,5 @@ urlpatterns = [
         name="tenant-user-detail",
     ),
     path("login", LoginAPIView.as_view(), name="login"),
-] + router.urls
+    *router.urls,
+]

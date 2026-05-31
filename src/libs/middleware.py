@@ -91,12 +91,11 @@ class TenantStatusMiddleware:
     def __call__(self, request):
         tenant = getattr(request, "tenant", None)
 
-        if tenant and hasattr(tenant, "is_active"):
-            if not tenant.is_active:
-                return JsonResponse(
-                    {"error": "Your account has been suspended. Please contact software vendor."},
-                    status=403,
-                )
+        if tenant and hasattr(tenant, "is_active") and not tenant.is_active:
+            return JsonResponse(
+                {"error": "Your account has been suspended. Please contact software vendor."},
+                status=403,
+            )
 
         return self.get_response(request)
 

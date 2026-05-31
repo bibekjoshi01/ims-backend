@@ -7,8 +7,7 @@ name = "operon-backend-service"
 version = "0.1.0"
 description = "Operon Backend Service"
 readme = "README.md"
-requires-python = ">=3.11"
-
+requires-python = ">=3.12"
 
 [tool.pytest.ini_options]
 pythonpath = ["src"]
@@ -17,29 +16,20 @@ asyncio_mode = "auto"
 
 [tool.ruff]
 line-length = 100
-target-version = "py311"
+target-version = "py312"
 exclude = ["alembic/versions/*", "**/migrations/**", "venv/*", "media/*"]
 
-[tool.black]
-line-length = 100
-target-version = ["py311"]
-extend-exclude = '''
-(
-  .*/migrations/.*
-)
-'''
-
-[tool.isort]
-profile = "black"
-line_length = 100
-known_first_party = ["src"]
-multi_line_output = 3
-include_trailing_comma = true
-skip = ["migrations"]
-extend_skip_glob = ["**/migrations/*.py"]
-
 [tool.ruff.lint]
-select = ["E", "F", "I", "B", "UP"]
+select = [
+    "E",
+    "F",
+    "I",
+    "B",
+    "UP",
+    "C4",
+    "SIM",
+    "RUF",
+]
 ignore = ["B904", "E501", "B008"]
 
 [tool.ruff.lint.flake8-bugbear]
@@ -49,5 +39,25 @@ extend-immutable-calls = ["fastapi.Depends", "fastapi.Query", "fastapi.Header"]
 packages = ["app"]
 
 [tool.mypy]
-python_version = "3.11"
-mypy_path = "types"
+python_version = "3.12"
+plugins = ["mypy_django_plugin.main"]
+
+warn_unused_configs = true
+warn_return_any = true
+warn_unused_ignores = true
+
+disallow_untyped_defs = true
+check_untyped_defs = true
+
+strict_optional = true
+
+[mypy.plugins.django-stubs]
+django_settings_module = "config.settings"
+
+[tool.coverage.run]
+source = ["app"]
+omit = ["*/migrations/*", "*/tests/*"]
+
+[tool.coverage.report]
+show_missing = true
+fail_under = 80
