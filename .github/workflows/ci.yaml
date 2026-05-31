@@ -10,6 +10,13 @@ jobs:
   test:
     runs-on: ubuntu-latest
 
+    env:
+      DB_NAME: test_db
+      DB_USER: postgres
+      DB_PASSWORD: postgres
+      DB_HOST: 127.0.0.1
+      DB_PORT: 5432
+
     services:
       postgres:
         image: postgres:16
@@ -19,6 +26,11 @@ jobs:
           POSTGRES_DB: test_db
         ports:
           - 5432:5432
+        options: >-
+          --health-cmd pg_isready
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
 
     steps:
       - uses: actions/checkout@v4
@@ -29,6 +41,21 @@ jobs:
 
       - name: Install dependencies
         run: pip install -r requirements/dev.txt
+
+      - name: Wait for Postgres
+        run: |
+          echo "Waiting for Postgres to be ready on ${DB_HOST:-127.0.0.1}:${DB_PORT:-5432}..."
+          for i in $(seq 1 60); do
+            if bash -c "echo > /dev/tcp/${DB_HOST:-127.0.0.1}/${DB_PORT:-5432}" >/dev/null 2>&1; then
+              echo "Postgres is up"
+              break
+            fi
+            sleep 1
+          done
+          if ! bash -c "echo > /dev/tcp/${DB_HOST:-127.0.0.1}/${DB_PORT:-5432}" >/dev/null 2>&1; then
+            echo "Postgres did not become ready in time" >&2
+            exit 1
+          fi
 
       - name: Run CI pipeline
         run: make ci
