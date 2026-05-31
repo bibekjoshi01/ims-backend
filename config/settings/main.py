@@ -88,6 +88,8 @@ TENANT_APPS = (
     "django.contrib.humanize",
     "django.contrib.staticfiles",
     "rest_framework_simplejwt.token_blacklist",
+    "django_celery_results",
+    "django_celery_beat",
     "src.user",
 )
 
@@ -299,12 +301,13 @@ IMAGE_MAX_UPLOAD_SIZE = int(os.getenv("IMAGE_MAX_UPLOAD_SIZE", default=6291456))
 DATA_UPLOAD_MAX_MEMORY_SIZE = 50 * 1024 * 1024  # 50 MB
 FILE_UPLOAD_MAX_MEMORY_SIZE = 10 * 1024 * 1024  # 10 MB
 
-# Celery
+# Celery, Redis, Cache
 # ------------------------------------------------------------------------------
 REDIS_HOST = os.getenv("REDIS_HOST", "127.0.0.1")
 REDIS_PORT = os.getenv("REDIS_PORT", "6379")
-REDIS_DB = os.getenv("REDIS_DB", "0")
-
+REDIS_DB_BROKER = 0
+REDIS_DB_CACHE = 1
+REDIS_DB_RESULTS = 2
 
 SESSION_ENGINE = "django.contrib.sessions.backends.cache"
 SESSION_CACHE_ALIAS = "default"
@@ -312,9 +315,44 @@ SESSION_CACHE_ALIAS = "default"
 CACHES = {
     "default": {
         "BACKEND": "django_redis.cache.RedisCache",
-        "LOCATION": f"redis://{REDIS_HOST}:{REDIS_PORT}/{REDIS_DB}",
+        "LOCATION": f"redis://{REDIS_HOST}:{REDIS_PORT}/{REDIS_DB_CACHE}",
         "OPTIONS": {
             "CLIENT_CLASS": "django_redis.client.DefaultClient",
         },
+        "TIMEOUT": 300,  # default TTL
     },
+}
+
+CELERY_BROKER_URL = f"redis://{REDIS_HOST}:{REDIS_PORT}/{REDIS_DB_BROKER}"
+CELERY_RESULT_BACKEND = f"redis://{REDIS_HOST}:{REDIS_PORT}/{REDIS_DB_RESULTS}"
+
+CELERY_ACCEPT_CONTENT = ["json"]
+CELERY_TASK_SERIALIZER = "json"
+CELERY_RESULT_SERIALIZER = "json"
+
+CELERY_ENABLE_UTC = True
+CELERY_TIMEZONE = TIME_ZONE
+
+CELERY_TASK_ACKS_LATE = True
+CELERY_TASK_REJECT_ON_WORKER_LOST = True
+CELERY_WORKER_PREFETCH_MULTIPLIER = 1
+
+CELERY_TASK_IGNORE_RESULT = False
+CELERY_TASK_TRACK_STARTED = True
+CELERY_WORKER_SEND_TASK_EVENTS = True
+CELERY_TASK_SEND_SENT_EVENT = True
+CELERY_RESULT_EXTENDED = True
+
+CELERY_RESULT_EXPIRES = 3600
+
+# Beat settings for periodic tasks
+CELERY_BEAT_SCHEDULER = "django_celery_beat.schedulers:DatabaseScheduler"
+
+CELERY_TASK_DEFAULT_QUEUE = "default"
+
+CELERY_TASK_QUEUES = {
+    "default": {},
+    "critical": {},
+    "email": {},
+    "low": {},
 }
