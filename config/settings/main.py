@@ -94,10 +94,10 @@ TENANT_APPS = (
 INSTALLED_APPS = list(SHARED_APPS) + [app for app in TENANT_APPS if app not in SHARED_APPS]
 
 MIDDLEWARE = [
+    "django.middleware.security.SecurityMiddleware",
     "django_tenants.middleware.TenantMainMiddleware",
     "src.libs.middleware.RequestContextMiddleware",
     "src.libs.middleware.NoIndexMiddleware",
-    "django.middleware.security.SecurityMiddleware",
     "corsheaders.middleware.CorsMiddleware",
     "django.contrib.sessions.middleware.SessionMiddleware",
     "django.middleware.locale.LocaleMiddleware",

@@ -1,20 +1,23 @@
-import contextlib
 import os
 from pathlib import Path
 
-# LOGGING
-# ------------------------------------------------------------------------------
+from dotenv import load_dotenv
+
+load_dotenv()
+
+
+def _as_bool(value):
+    return value.strip().lower() in {"1", "true", "yes", "on"}
+
 
 BASE_DIR = Path(__file__).resolve().parent.parent.parent
-APPS_DIR = BASE_DIR / "src"
 
+DEBUG = _as_bool(os.getenv("DEBUG", "True"))
 
-# Define the log directory
+LOG_LEVEL = "DEBUG" if DEBUG else "INFO"
+
 LOG_DIR = BASE_DIR / "logs"
-LOG_DIR.mkdir(parents=True, exist_ok=True)
-
-with contextlib.suppress(PermissionError):
-    os.chmod(LOG_DIR, 0o775)
+LOG_DIR.mkdir(exist_ok=True)
 
 
 LOGGING = {
@@ -26,100 +29,83 @@ LOGGING = {
         },
     },
     "formatters": {
-        "detailed": {
+        # Dev readable format
+        "pretty": {
             "format": (
                 "[{asctime}] {levelname} {name} "
-                "| request_id={request_id} schema={schema_name} "
-                "method={method} path={path} status={status_code} duration_ms={duration_ms} "
-                "| {filename}:{lineno} in {funcName}() | {message}"
+                "| request_id={request_id} "
+                "| schema={schema_name} "
+                "| method={method} "
+                "| path={path} "
+                "| status={status_code} "
+                "| duration={duration_ms}ms "
+                "| {message}"
             ),
             "style": "{",
         },
+        # Prod JSON format
+        "json": {
+            "()": "pythonjsonlogger.jsonlogger.JsonFormatter",
+            "fmt": (
+                "%(asctime)s "
+                "%(levelname)s "
+                "%(name)s "
+                "%(request_id)s "
+                "%(schema_name)s "
+                "%(method)s "
+                "%(path)s "
+                "%(status_code)s "
+                "%(duration_ms)s "
+                "%(message)s"
+            ),
+        },
     },
     "handlers": {
-        "security_file": {
+        # DEV: file logging (human readable)
+        "dev_file": {
             "class": "logging.handlers.TimedRotatingFileHandler",
-            "filename": str(LOG_DIR / "security_log"),
-            "when": "midnight",  # rotate at midnight
-            "interval": 1,  # every 1 day
-            "backupCount": 7,  # keep last 7 days
-            "formatter": "detailed",
-            "level": "INFO",
-            "encoding": "utf-8",
-            "filters": ["request_context"],
-        },
-        "server_error_file": {
-            "class": "logging.handlers.TimedRotatingFileHandler",
-            "filename": str(LOG_DIR / "server_log"),  # base filename
-            "when": "midnight",  # rotate at midnight
-            "interval": 1,  # every 1 day
-            "backupCount": 7,  # keep last 7 days
-            "formatter": "detailed",
-            "level": "INFO",
-            "encoding": "utf-8",
-            "filters": ["request_context"],
-        },
-        "exception_error_file": {
-            "class": "logging.handlers.TimedRotatingFileHandler",
-            "filename": str(LOG_DIR / "exception_log"),  # base filename
-            "when": "midnight",  # rotate at midnight
-            "interval": 1,  # every 1 day
-            "backupCount": 7,  # keep last 7 days
-            "formatter": "detailed",
-            "level": "INFO",
-            "encoding": "utf-8",
-            "filters": ["request_context"],
-        },
-        "email_error_file": {
-            "class": "logging.handlers.TimedRotatingFileHandler",
-            "filename": str(LOG_DIR / "email_log"),  # base filename
-            "when": "midnight",  # rotate at midnight
-            "interval": 1,  # every 1 day
-            "backupCount": 7,  # keep last 7 days
-            "formatter": "detailed",
-            "level": "INFO",
-            "encoding": "utf-8",
-            "filters": ["request_context"],
-        },
-        "access_file": {
-            "class": "logging.handlers.TimedRotatingFileHandler",
-            "filename": str(LOG_DIR / "access_log"),
+            "filename": str(LOG_DIR / "app.log"),
             "when": "midnight",
-            "interval": 1,
             "backupCount": 7,
-            "formatter": "detailed",
-            "level": "INFO",
-            "encoding": "utf-8",
+            "formatter": "pretty",
+            "filters": ["request_context"],
+        },
+        # PROD: stdout JSON
+        "console": {
+            "class": "logging.StreamHandler",
+            "formatter": "json",
             "filters": ["request_context"],
         },
     },
     "loggers": {
-        # Django internal logs (Automatic)
-        "django.security": {  # CSRF/auth/security warnings
-            "handlers": ["security_file"],
-            "level": "INFO",
+        "django.request": {
+            "handlers": ["console"],
+            "level": "ERROR",
             "propagate": False,
         },
-        # Customer Manual logs
-        "server_error": {
-            "handlers": ["server_error_file"],
+        "django.utils.autoreload": {
+            "handlers": ["console"],
+            "level": "ERROR",
+            "propagate": False,
+        },
+        "request_access": {
+            "handlers": ["dev_file" if DEBUG else "console"],
             "level": "INFO",
             "propagate": False,
         },
         "exception_error": {
-            "handlers": ["exception_error_file"],
-            "level": "INFO",
+            "handlers": ["dev_file" if DEBUG else "console"],
+            "level": "ERROR",
             "propagate": False,
         },
-        "email_error": {
-            "handlers": ["email_error_file"],
-            "level": "INFO",
+        "validation_error": {
+            "handlers": ["dev_file" if DEBUG else "console"],
+            "level": "WARNING",
             "propagate": False,
         },
-        "request_access": {
-            "handlers": ["access_file"],
-            "level": "INFO",
-            "propagate": False,
-        },
+    },
+    "root": {
+        "handlers": ["dev_file" if DEBUG else "console"],
+        "level": LOG_LEVEL,
     },
 }

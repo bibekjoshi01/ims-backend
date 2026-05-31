@@ -1,51 +1,49 @@
 import logging
-import traceback
 
-from django.http import HttpRequest
 from rest_framework.exceptions import ValidationError
 from rest_framework.views import exception_handler
 
 from .request_context import get_request_context
 
-logger = logging.getLogger("exception_error")
+exception_logger = logging.getLogger("exception_error")
+validation_logger = logging.getLogger("validation_error")
 
 
 def custom_exception_handler(exc, context):
-    request: HttpRequest | None = context.get("request")
-    request_context = get_request_context()
-    log_extra = {
-        "request_id": request_context["request_id"],
-        "schema_name": request_context["schema_name"],
-        "method": request_context["method"],
-        "path": request_context["path"],
-        "status_code": "-",
-        "duration_ms": "-",
-    }
+    ctx = get_request_context() or {}
 
-    if request is not None:
-        log_extra["method"] = request.method
-        log_extra["path"] = request.path
-        log_extra["schema_name"] = getattr(getattr(request, "tenant", None), "schema_name", "-")
-        log_extra["request_id"] = getattr(request, "request_id", request_context["request_id"])
-
-    tb = "".join(traceback.format_tb(exc.__traceback__))
+    # Validation errors (expected)
+    # -------------------------
     if isinstance(exc, ValidationError):
-        logger.warning(
+        validation_logger.warning(
             "validation error",
             extra={
-                **log_extra,
-                "detail": str(exc),
-                "traceback": tb,
-            },
-        )
-    else:
-        logger.error(
-            "api exception",
-            extra={
-                **log_extra,
-                "detail": str(exc),
-                "traceback": tb,
+                "request_id": ctx.get("request_id", "-"),
+                "schema_name": ctx.get("schema_name", "-"),
+                "method": ctx.get("method", "-"),
+                "path": ctx.get("path", "-"),
+                "status_code": 400,
+                "duration_ms": ctx.get("duration_ms", "-"),
+                "detail": getattr(exc, "detail", str(exc)),
             },
         )
 
-    return exception_handler(exc, context=context)
+    # System errors (unexpected)
+    # -------------------------
+    else:
+        exception_logger.exception(
+            "api exception",
+            extra={
+                "request_id": ctx.get("request_id", "-"),
+                "schema_name": ctx.get("schema_name", "-"),
+                "method": ctx.get("method", "-"),
+                "path": ctx.get("path", "-"),
+            },
+        )
+
+    response = exception_handler(exc, context)
+
+    if response is not None and isinstance(response.data, dict):
+        response.data.setdefault("success", False)
+
+    return response

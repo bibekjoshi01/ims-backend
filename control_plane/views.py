@@ -211,6 +211,7 @@ class TenantViewset(ModelViewSet):
         return super().get_serializer_class()
 
     def get_queryset(self):
+        raise ValueError("Hey bibek")
         queryset = (
             Tenant.objects.exclude(schema_name="public")
             .prefetch_related("domains")

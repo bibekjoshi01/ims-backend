@@ -16,7 +16,7 @@ access_logger = logging.getLogger("request_access")
 
 class RequestContextMiddleware:
     """
-    Attach a request ID and structured request context to every request.
+    Adds request context + ensures consistent logging metadata.
     """
 
     def __init__(self, get_response):
@@ -24,43 +24,60 @@ class RequestContextMiddleware:
 
     @staticmethod
     def _request_id(request):
-        incoming_request_id = request.headers.get("X-Request-ID", "").strip()
-        if incoming_request_id and len(incoming_request_id) <= 64:
-            return incoming_request_id
+        incoming = request.headers.get("X-Request-ID", "").strip()
+
+        if incoming and len(incoming) <= 64:
+            return incoming
+
         return uuid4().hex
 
     def __call__(self, request):
         schema_name = getattr(getattr(request, "tenant", None), "schema_name", "-")
+
         request_id = self._request_id(request)
+
+        user = getattr(request, "user", None)
+        user_id = user.id if user and user.is_authenticated else "-"
+
+        ip_address = request.META.get("HTTP_X_FORWARDED_FOR", "").split(",")[0] or request.META.get(
+            "REMOTE_ADDR", "-"
+        )
+
         tokens = set_request_context(
             request_id=request_id,
             schema_name=schema_name,
             method=request.method,
             path=request.path,
+            user_id=user_id,
+            ip_address=ip_address,
         )
-        request.request_id = request_id
-        started_at = perf_counter()
+
+        start = perf_counter()
+
+        status_code = "-"
+        response = None
 
         try:
             response = self.get_response(request)
-        finally:
-            duration_ms = round((perf_counter() - started_at) * 1000, 2)
-            set_response_context(status_code="-", duration_ms=duration_ms)
-            reset_request_context(tokens)
+            status_code = response.status_code
 
-        response["X-Request-ID"] = request_id
-        access_logger.info(
-            "request completed",
-            extra={
-                "request_id": request_id,
-                "schema_name": schema_name,
-                "method": request.method,
-                "path": request.path,
-                "status_code": response.status_code,
-                "duration_ms": round((perf_counter() - started_at) * 1000, 2),
-            },
-        )
-        return response
+            return response
+
+        except Exception:
+            status_code = 500
+            raise
+
+        finally:
+            duration_ms = round((perf_counter() - start) * 1000, 2)
+            set_response_context(status_code=status_code, duration_ms=duration_ms)
+
+            if response is not None:
+                response["X-Request-ID"] = request_id
+                access_logger.info("request completed")
+            else:
+                access_logger.error("request failed")
+
+            reset_request_context(tokens)
 
 
 class NoIndexMiddleware:
