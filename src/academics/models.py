@@ -23,6 +23,44 @@ from .constants import (
 )
 
 
+class InstitutionProfile(AuditInfoModel):
+    """College identity in this tenant's schema; it has no cross-tenant relation."""
+
+    history = HistoricalRecords()
+    singleton_key = models.BooleanField(default=True, editable=False)
+    name = models.CharField(max_length=150)
+    university_name = models.CharField(max_length=150)
+    institute_name = models.CharField(max_length=150, blank=True)
+    address = models.CharField(max_length=250, blank=True)
+
+    class Meta:
+        ordering = ("id",)
+        constraints = (
+            models.UniqueConstraint(
+                fields=("singleton_key",),
+                condition=models.Q(is_archived=False),
+                name="one_unarchived_institution_profile",
+                violation_error_message="Edit the existing institution details instead.",
+            ),
+            models.CheckConstraint(
+                condition=models.Q(singleton_key=True), name="institution_singleton_key_true"
+            ),
+        )
+
+    def clean(self):
+        super().clean()
+        for field in ("name", "university_name"):
+            if not getattr(self, field, "").strip():
+                raise ValidationError({field: "This field cannot be blank."})
+
+    def save(self, *args, **kwargs):
+        self.full_clean()
+        super().save(*args, **kwargs)
+
+    def __str__(self):
+        return self.name
+
+
 class Department(AuditInfoModel):
     history = HistoricalRecords()
     """An academic department of the college — owns programs and teachers."""
@@ -77,6 +115,7 @@ class Program(AuditInfoModel):
         verbose_name=_("department"),
     )
     name = models.CharField(_("name"), max_length=150)
+    academic_level = models.CharField(max_length=50, blank=True, default="")
     code = models.CharField(
         _("code"),
         max_length=20,
@@ -304,6 +343,15 @@ class Subject(AuditInfoModel):
     code = models.CharField(_("code"), max_length=20, help_text=_("e.g. CSC 201."))
     name = models.CharField(_("name"), max_length=150)
     credit_hours = models.PositiveSmallIntegerField(_("credit hours"), default=3)
+    internal_full_marks = models.PositiveSmallIntegerField(
+        default=40, validators=[MinValueValidator(1), MaxValueValidator(1000)]
+    )
+    internal_pass_marks = models.PositiveSmallIntegerField(default=16)
+    assessment_component = models.CharField(
+        max_length=20,
+        choices=(("THEORY", "Theory"), ("PRACTICAL", "Practical"), ("COMBINED", "Combined")),
+        default="THEORY",
+    )
     is_elective = models.BooleanField(
         _("elective"),
         default=False,
@@ -327,11 +375,30 @@ class Subject(AuditInfoModel):
                     "That program already has a subject with this code in this semester."
                 ),
             ),
+            models.CheckConstraint(
+                condition=models.Q(internal_full_marks__gte=1, internal_full_marks__lte=1000),
+                name="subject_internal_full_marks_range",
+            ),
+            models.CheckConstraint(
+                condition=models.Q(internal_pass_marks__lte=models.F("internal_full_marks")),
+                name="subject_internal_pass_marks_lte_full",
+            ),
+            models.CheckConstraint(
+                condition=models.Q(assessment_component__in=("THEORY", "PRACTICAL", "COMBINED")),
+                name="subject_assessment_component_valid",
+            ),
         )
         indexes = (models.Index(fields=["program", "semester"]),)
 
     def clean(self):
         super().clean()
+
+        if (
+            self.internal_pass_marks is not None
+            and self.internal_full_marks is not None
+            and self.internal_pass_marks > self.internal_full_marks
+        ):
+            raise ValidationError({"internal_pass_marks": "Pass marks cannot exceed full marks."})
 
         if self.program_id and self.semester > self.program.total_semesters:
             raise ValidationError(

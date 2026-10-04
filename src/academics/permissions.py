@@ -56,3 +56,12 @@ class AcademicCalendarEntryPermission(ModelPermission):
         "PATCH": "__superuser_only__",
         "DELETE": "__superuser_only__",
     }
+
+
+class InstitutionPermission(ModelPermission):
+    permission_map: ClassVar[dict[str, object]] = {
+        "SAFE_METHODS": "__superuser_only__",
+        "POST": "__superuser_only__",
+        "PATCH": "__superuser_only__",
+        "DELETE": "__superuser_only__",
+    }

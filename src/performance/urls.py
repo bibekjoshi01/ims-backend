@@ -12,6 +12,7 @@ from .analytics import (
     OverviewView,
 )
 from .calendar_views import ClassCalendarView
+from .internal_evaluation import InternalEvaluationPDFView, InternalEvaluationView
 from .student_portal import (
     StudentPortalAttendanceView,
     StudentPortalOverviewView,
@@ -34,6 +35,16 @@ router.register("internal-exams", InternalExamViewSet, basename="internal-exam")
 router.register("assignments", AssignmentViewSet, basename="assignment")
 
 urlpatterns = [
+    path(
+        "allocations/<int:allocation_id>/internal-evaluation",
+        InternalEvaluationView.as_view(),
+        name="internal-evaluation",
+    ),
+    path(
+        "allocations/<int:allocation_id>/internal-evaluation/pdf",
+        InternalEvaluationPDFView.as_view(),
+        name="internal-evaluation-pdf",
+    ),
     path("calendar/class", ClassCalendarView.as_view(), name="class-calendar"),
     path(
         "student-portal/overview",

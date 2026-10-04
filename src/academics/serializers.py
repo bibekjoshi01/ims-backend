@@ -20,6 +20,7 @@ from .models import (
     BatchSemester,
     ClassMeeting,
     Department,
+    InstitutionProfile,
     Program,
     Subject,
     SubjectAllocation,
@@ -270,6 +271,7 @@ class ProgramListSerializer(serializers.ModelSerializer):
             "name",
             "code",
             "total_semesters",
+            "academic_level",
             "department",
             "coordinator",
             "is_active",
@@ -279,7 +281,7 @@ class ProgramListSerializer(serializers.ModelSerializer):
 class ProgramCreateSerializer(AuditedModelSerializer):
     class Meta:
         model = Program
-        fields = ("department", "name", "code", "total_semesters", "coordinator")
+        fields = ("department", "name", "code", "total_semesters", "academic_level", "coordinator")
 
     validate_coordinator = staticmethod(validate_authority_user)
 
@@ -303,7 +305,15 @@ class ProgramCreateSerializer(AuditedModelSerializer):
 class ProgramPatchSerializer(AuditedModelSerializer):
     class Meta:
         model = Program
-        fields = ("department", "name", "code", "total_semesters", "coordinator", "is_active")
+        fields = (
+            "department",
+            "name",
+            "code",
+            "total_semesters",
+            "academic_level",
+            "coordinator",
+            "is_active",
+        )
 
     validate_coordinator = staticmethod(validate_authority_user)
 
@@ -448,15 +458,42 @@ class SubjectListSerializer(serializers.ModelSerializer):
             "program",
             "semester",
             "credit_hours",
+            "internal_full_marks",
+            "internal_pass_marks",
+            "assessment_component",
             "is_elective",
             "is_active",
         )
 
 
-class SubjectCreateSerializer(AuditedModelSerializer):
+class SubjectInternalMarksValidationMixin:
+    def validate(self, attrs):
+        attrs = super().validate(attrs)
+        full = attrs.get("internal_full_marks", getattr(self.instance, "internal_full_marks", 40))
+        passing = attrs.get(
+            "internal_pass_marks", getattr(self.instance, "internal_pass_marks", 16)
+        )
+        if passing > full:
+            raise serializers.ValidationError(
+                {"internal_pass_marks": "Pass marks cannot exceed full marks."}
+            )
+        return attrs
+
+
+class SubjectCreateSerializer(SubjectInternalMarksValidationMixin, AuditedModelSerializer):
     class Meta:
         model = Subject
-        fields = ("program", "semester", "code", "name", "credit_hours", "is_elective")
+        fields = (
+            "program",
+            "semester",
+            "code",
+            "name",
+            "credit_hours",
+            "internal_full_marks",
+            "internal_pass_marks",
+            "assessment_component",
+            "is_elective",
+        )
 
     def validate_program(self, value):
         validate_program_scope(self.context, value)
@@ -466,10 +503,20 @@ class SubjectCreateSerializer(AuditedModelSerializer):
     to_representation = created("Subject")
 
 
-class SubjectPatchSerializer(AuditedModelSerializer):
+class SubjectPatchSerializer(SubjectInternalMarksValidationMixin, AuditedModelSerializer):
     class Meta:
         model = Subject
-        fields = ("semester", "code", "name", "credit_hours", "is_elective", "is_active")
+        fields = (
+            "semester",
+            "code",
+            "name",
+            "credit_hours",
+            "internal_full_marks",
+            "internal_pass_marks",
+            "assessment_component",
+            "is_elective",
+            "is_active",
+        )
 
     to_representation = updated("Subject")
 
@@ -806,3 +853,32 @@ class CalendarYearSerializer(serializers.Serializer):
     max_year = serializers.IntegerField()
     weekend_days = serializers.ListField(child=serializers.IntegerField())
     months = CalendarMonthSerializer(many=True)
+
+
+class InstitutionListSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = InstitutionProfile
+        fields = ("id", "uuid", "name", "university_name", "institute_name", "address")
+
+
+class InstitutionCreateSerializer(AuditedModelSerializer):
+    class Meta:
+        model = InstitutionProfile
+        fields = ("name", "university_name", "institute_name", "address")
+
+    def validate(self, attrs):
+        if InstitutionProfile.objects.filter(is_archived=False).exists():
+            raise serializers.ValidationError(
+                {"name": "Edit the existing institution details instead."}
+            )
+        return attrs
+
+    to_representation = created("Institution")
+
+
+class InstitutionPatchSerializer(AuditedModelSerializer):
+    class Meta:
+        model = InstitutionProfile
+        fields = ("name", "university_name", "institute_name", "address")
+
+    to_representation = updated("Institution")

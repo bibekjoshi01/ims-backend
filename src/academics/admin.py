@@ -6,6 +6,7 @@ from .models import (
     Batch,
     BatchSemester,
     Department,
+    InstitutionProfile,
     Program,
     Subject,
     SubjectAllocation,
@@ -75,3 +76,8 @@ class SubjectAllocationAdmin(BaseAdmin):
     )
     search_fields = ("subject__code", "subject__name")
     list_filter = ("teacher", "batch_semester__batch__program", "is_active")
+
+
+@admin.register(InstitutionProfile)
+class InstitutionAdmin(BaseAdmin):
+    list_display = ("name", "university_name", "is_active", "edit_action")

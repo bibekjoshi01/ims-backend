@@ -9,7 +9,9 @@ students and enrollments, class rosters, attendance, assessments, assignments,
 class-performance ratings, management attention queues, individual student
 performance reports, spreadsheet import of students and curriculum, and the
 read-only student portal with academic progression, subject marks, assignment
-deadlines/feedback, timetable, and paginated personal attendance history.
+deadlines/feedback, timetable, and paginated personal attendance history. The supported surface also includes
+admin-only institution details, subject internal full/pass marks, and blank or
+calculated internal evaluation PDF registers.
 Batch/semester performance reports aggregate those parameters across the
 student's active subject enrollments and normalize configured weights over only
 the parameters that have recorded evidence. The attendance requirement that
@@ -148,6 +150,26 @@ makeup overrides. Its BS/AD picker shares Academics' conversion and closure data
   as an A4 PDF without letterhead. Exports use authorized calendar responses,
   preserve Nepali text, exclude inactive entries, and paginate long event notes.
 
+## Internal evaluation sheets
+
+- [x] College identity has tenant-local admin CRUD, soft archive, singleton
+  constraints and attributed history. No college identity ID is accepted by exports.
+- [x] Internal full marks default to 40, pass marks to 16; model, serializer and
+  database enforce valid ranges and pass marks not exceeding full marks.
+- [x] Teacher class cards and management allocation reports offer blank and
+  calculated sheets. Server downloads always use the complete authorized roster.
+- [x] Exact weighted scaling rounds up; missing enabled evidence blocks calculated
+  downloads and is listed by student, while blank sheets remain available.
+- [x] Guessed peer/department/program allocation IDs, revoked authority/permissions,
+  student identities with staff flags, and unauthenticated requests are rejected.
+- [x] Archived evidence/roster rows are excluded; completed classes remain readable.
+  Downloading never mutates grades, weights or correction history.
+- [x] A4 layout follows the supplied register: headings, year/part, figures/words,
+  status rows, red circles for failures/absence, pagination and signatures.
+  An embedded, shaped Nepali font preserves Devanagari college/student names.
+- [x] Synthetic browser checks cover downloads, server refusals after preview,
+  institution create/edit/archive, setup errors, permission gating and mobile sizing.
+
 ## Auditability
 
 - [x] Core academic, student, enrollment, attendance, assessment, assignment, and
@@ -216,6 +238,7 @@ venv/bin/pytest -q
 cd spas-frontend
 yarn verify
 yarn build
+yarn test:internal-evaluation  # synthetic sheet downloads and institution CRUD
 yarn test:student-portal  # synthetic student screens and isolation regression
 yarn test:session  # Node 22+ and Chrome; synthetic browser regression scenarios
 ```

@@ -14,3 +14,5 @@ repos:
       - id: check-yaml
       - id: check-merge-conflict
       - id: check-added-large-files
+        # Bundled OFL font needed for shaped Nepali text in official PDFs.
+        exclude: ^src/performance/fonts/NotoSansDevanagari\.ttf$

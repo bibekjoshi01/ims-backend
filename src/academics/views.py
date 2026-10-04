@@ -39,6 +39,7 @@ from .models import (
     Batch,
     BatchSemester,
     Department,
+    InstitutionProfile,
     Program,
     Subject,
     SubjectAllocation,
@@ -48,6 +49,7 @@ from .permissions import (
     BatchPermission,
     BatchSemesterPermission,
     DepartmentPermission,
+    InstitutionPermission,
     ProgramPermission,
     SubjectAllocationPermission,
     SubjectPermission,
@@ -68,6 +70,9 @@ from .serializers import (
     DepartmentCreateSerializer,
     DepartmentListSerializer,
     DepartmentPatchSerializer,
+    InstitutionCreateSerializer,
+    InstitutionListSerializer,
+    InstitutionPatchSerializer,
     ProgramCreateSerializer,
     ProgramListSerializer,
     ProgramPatchSerializer,
@@ -756,3 +761,14 @@ class AcademicCalendarEntryViewSet(BaseAcademicViewSet):
     search_fields = ("title", "note")
     ordering = ("date", "title")
     ordering_fields = ("date", "kind", "title")
+
+
+class InstitutionViewSet(AuthorityScopedMixin, BaseAcademicViewSet):
+    """Admin-only tenant identity; no department/program may widen this scope."""
+
+    permission_classes = (InstitutionPermission,)
+    queryset = InstitutionProfile.objects.filter(is_archived=False)
+    list_serializer_class = InstitutionListSerializer
+    create_serializer_class = InstitutionCreateSerializer
+    patch_serializer_class = InstitutionPatchSerializer
+    archive_message = "Institution details archived successfully."

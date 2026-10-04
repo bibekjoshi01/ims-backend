@@ -12,6 +12,9 @@ TEMPLATE_EXAMPLE = {
     "name": "Data Structures and Algorithms",
     "semester": "3",
     "credit_hours": "3",
+    "internal_full_marks": "40",
+    "internal_pass_marks": "16",
+    "assessment_component": "THEORY",
     "is_elective": "false",
 }
 
@@ -30,6 +33,9 @@ class SubjectImporter(SpreadsheetImporter):
         "name": True,
         "semester": True,
         "credit_hours": False,
+        "internal_full_marks": False,
+        "internal_pass_marks": False,
+        "assessment_component": False,
         "is_elective": False,
     }
     identity_columns: ClassVar[tuple[str, ...]] = ("code", "semester")

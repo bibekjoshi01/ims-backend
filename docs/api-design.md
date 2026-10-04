@@ -124,3 +124,69 @@ Dedicated read-only student endpoints and disclosure rules are documented in
 types rather than staff report types. Personal records derive exclusively from
 the authenticated account; an owned subject-enrollment ID scopes details and
 attendance history. No student role or superuser flag bypasses this ownership.
+
+
+## Internal evaluation sheets
+
+Institution identity is tenant-local and admin-only. `/academics-mod/institutions`
+supports paginated GET and POST; `/<id>` supports GET, PATCH and soft-archive
+DELETE. Fields are `name` (college/campus), `universityName`, optional
+`instituteName`, and optional `address`. One unarchived profile may exist per
+college. Writes preserve the creator and retain attributed history; department
+heads, coordinators, teachers and students cannot change the letterhead.
+
+Program create/update/list adds `academicLevel`, for example `Bachelor`.
+Existing programs keep this blank until reviewed. Subject create/update/list adds
+`internalFullMarks` (integer 1–1000, default **40**), `internalPassMarks` (integer
+0–full marks, default **16**), and `assessmentComponent` (`THEORY`, `PRACTICAL`,
+`COMBINED`, default `THEORY`). The component is a printed paper label; no external
+examination marks are stored. Curriculum import accepts the corresponding
+optional snake_case columns and retains existing values when omitted on updates.
+
+`GET /performance-mod/allocations/<id>/internal-evaluation` previews the entire
+unarchived class roster in roll-number order. `/pdf` returns an authenticated
+`application/pdf` attachment. Optional query parameters are `mode=blank|calculated`
+(default calculated), `sheetDate` (Gregorian date, defaults to the local date and
+prints in BS), and `programmeSection` (up to 20 characters, for example `A`).
+Responses are private and non-cacheable. No client-provided marks, totals,
+student IDs, institution IDs, search or pagination determine the exported roster.
+
+Both reads require `view_attendance`, `view_internal_exam`, `view_assignment`
+and `view_class_performance`, or tenant superuser authority. Allocation scope is
+live department-head/program-coordinator authority or the teacher's own class.
+A teacher who is also a manager can read their own classes outside the programs
+they manage. Cross-scope/archived allocation IDs return 404; student identities
+are denied even if mistakenly granted staff roles or flags. Completed classes
+remain readable. All authorization is repeated at download time.
+
+The calculation uses the tenant performance weights without redistributing
+missing evidence: attendance = present/late records divided by held classes;
+class performance = rating / 10; assignments = DONE 100%, PARTIAL 50%, NOT_DONE
+0%; assessments = total obtained / total full marks, with explicitly absent
+assessments contributing zero. These fractions are weighted, scaled to the
+subject's internal full marks, and **rounded up to a whole mark** using exact
+rational arithmetic. A mathematically whole result is never increased because
+of a floating-point error.
+
+Every positive-weight component must have complete recorded evidence. The
+preview reports setup issues and missing entries per student. The calculated
+PDF returns field-level 400 `evidence` errors when incomplete; the blank sheet
+remains downloadable after institution/academic-level/roster setup is complete.
+Zero-weight components require no evidence. An explicit absence from every
+assessment prints `A`; dropout, transferred and withdrawn students retain a
+status row without a numeric mark. Unknown dropout year/part is not invented.
+Failed marks and A are encircled in red. Headings and table columns repeat over
+multiple A4 pages, and the last page includes examiner/HOD signature areas.
+
+Sheets are generated from current records and current settings; downloads do
+not save marks or freeze a final result. Progress dashboards continue their
+existing recorded-evidence normalization and can therefore differ from the
+complete-evidence official internal score.
+
+English text retains the sample's serif style; Devanagari text uses an embedded
+OFL-licensed font with HarfBuzz shaping.
+
+Deployment adds `academics.0014`, ReportLab and uharfbuzz. Follow the reviewed tenant
+backup/migration process, then configure institution details, program academic
+levels and subject totals/pass lines before use. Existing subjects receive 40/16;
+review those defaults against the college's rules before submitting sheets.

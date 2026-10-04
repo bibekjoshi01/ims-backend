@@ -8,6 +8,7 @@ from .views import (
     BatchSemesterViewSet,
     BatchViewSet,
     DepartmentViewSet,
+    InstitutionViewSet,
     ProgramViewSet,
     StudentPortalCalendarYearView,
     SubjectAllocationViewSet,
@@ -16,6 +17,7 @@ from .views import (
 )
 
 router = DefaultRouter(trailing_slash=False)
+router.register("institutions", InstitutionViewSet, basename="institution")
 router.register("departments", DepartmentViewSet, basename="department")
 router.register("programs", ProgramViewSet, basename="program")
 router.register("batches", BatchViewSet, basename="batch")
