@@ -112,6 +112,24 @@ class InternalEvaluationTests(WorkflowTestCase):
         ):
             assert value in text
 
+    def test_administrator_can_preview_and_download_another_teachers_class(self):
+        self.complete_evidence()
+        self.authenticate_as_admin()
+        response = self.client.get(self.url, {"sheetDate": "2026-10-04", "programmeSection": ""})
+        assert response.status_code == 200, response.data
+        assert response.json()["canDownloadCalculated"] is True
+        assert len(response.json()["rows"]) == 3
+        for mode in ("blank", "calculated"):
+            response = self.client.get(self.pdf_url, {"mode": mode})
+            assert response.status_code == 200
+            assert response["Content-Type"] == "application/pdf"
+
+        allocation = SubjectAllocation.objects.get(pk=self.allocation)
+        allocation.is_archived = True
+        allocation.save()
+        assert self.client.get(self.url).status_code == 404
+        assert self.client.get(self.pdf_url, {"mode": "blank"}).status_code == 404
+
     def test_missing_evidence_blocks_final_but_allows_blank(self):
         data = self.preview()
         assert data["canDownloadBlank"] is True

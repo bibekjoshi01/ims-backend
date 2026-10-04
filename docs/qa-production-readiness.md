@@ -162,6 +162,8 @@ makeup overrides. Its BS/AD picker shares Academics' conversion and closure data
   downloads and is listed by student, while blank sheets remain available.
 - [x] Guessed peer/department/program allocation IDs, revoked authority/permissions,
   student identities with staff flags, and unauthenticated requests are rejected.
+- [x] Administrators can preview and download another teacher's class in both
+  blank and calculated modes; archived allocation IDs still return 404.
 - [x] Archived evidence/roster rows are excluded; completed classes remain readable.
   Downloading never mutates grades, weights or correction history.
 - [x] A4 layout follows the supplied register: headings, year/part, figures/words,

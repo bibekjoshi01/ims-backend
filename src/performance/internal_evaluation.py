@@ -60,6 +60,8 @@ def evaluation_allocations(user):
         "subject__program__department__head", "batch_semester__batch", "teacher"
     )
     scope = management_scope(user)
+    if scope.unlimited:
+        return queryset
     if not scope.is_empty:
         managed = scope_by_authority(
             queryset,
