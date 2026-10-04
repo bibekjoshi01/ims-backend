@@ -46,7 +46,7 @@ def student_portal_access_error(user, *, allow_initial_password_change=False) ->
     """Return why a student account cannot use its portal, without trusting token claims."""
     if not user.is_active or user.is_archived:
         return "This account is disabled. Contact your college administrator."
-    if not user.roles.filter(codename="STUDENT").exists():
+    if not user.roles.filter(codename="STUDENT", is_active=True, is_archived=False).exists():
         return "This account is not a student account."
     if not StudentPortalConfiguration.current().login_enabled:
         return "Student login is disabled for this college."

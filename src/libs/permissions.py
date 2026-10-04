@@ -5,6 +5,15 @@ from rest_framework.permissions import SAFE_METHODS, BasePermission
 from src.user.models import Permission, User
 
 
+def is_student_account(user: Any) -> bool:
+    """Linked student identity survives role removal and takes precedence over staff flags."""
+    return bool(
+        user
+        and user.is_authenticated
+        and (hasattr(user, "student_profile") or user.roles.filter(codename="STUDENT").exists())
+    )
+
+
 def is_staff_account(user: Any) -> TypeGuard[User]:
     """Student identity takes precedence over accidentally attached staff roles."""
     return bool(
@@ -12,7 +21,7 @@ def is_staff_account(user: Any) -> TypeGuard[User]:
         and user.is_authenticated
         and user.is_active
         and not user.is_archived
-        and not user.roles.filter(codename="STUDENT").exists()
+        and not is_student_account(user)
     )
 
 

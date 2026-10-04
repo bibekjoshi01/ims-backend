@@ -37,7 +37,6 @@ from src.libs.permissions import get_permissions_for_user, scope_to_allocation_o
 from src.libs.scoping import management_scope, scope_by_authority
 from src.libs.validation import positive_query_id
 from src.students.models import SemesterEnrollment, Student, SubjectEnrollment
-from src.students.permissions import StudentPortalPermission
 
 from .constants import AssignmentStatus, AttendanceStatus
 from .models import (
@@ -433,37 +432,6 @@ class ManagementStudentReportView(generics.GenericAPIView):
         return BatchSemesterPerformanceReportView.build_student_report(
             students, student_id, request.user
         )
-
-
-class StudentPortalOverviewView(generics.GenericAPIView):
-    """The authenticated student's own record; no student identifier is accepted."""
-
-    permission_classes = (StudentPortalPermission,)
-    pagination_class = None
-
-    @extend_schema(operation_id="student_portal_overview", responses=dict)
-    def get(self, request):
-        student = request.user.student_profile
-        response = BatchSemesterPerformanceReportView.build_student_report(
-            Student.objects.filter(pk=student.pk).select_related("batch__program__department"),
-            student.pk,
-            request.user,
-            permissions={
-                "view_attendance",
-                "view_internal_exam",
-                "view_assignment",
-                "view_class_performance",
-            },
-        )
-        policy = PerformanceWeightConfiguration.current()
-        response.data["policy"] = {
-            "attendance_weight": policy.attendance_weight,
-            "class_performance_weight": policy.class_performance_weight,
-            "assignment_weight": policy.assignment_weight,
-            "assessment_weight": policy.assessment_weight,
-            "attendance_eligibility_threshold": policy.attendance_eligibility_threshold,
-        }
-        return response
 
 
 class BatchSemesterPerformanceReportView(generics.GenericAPIView):

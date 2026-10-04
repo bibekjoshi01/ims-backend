@@ -116,3 +116,11 @@ negative tests, including a guessed cross-scope ID.
 - Curriculum/semester edits cannot contradict existing classes. Archived records
   still protect class identity; reducing assessment full marks cannot invalidate
   recorded scores. Rejected writes return actionable validation errors.
+
+## Student portal contract
+
+Dedicated read-only student endpoints and disclosure rules are documented in
+[student-portal.md](student-portal.md). The portal uses explicit student response
+types rather than staff report types. Personal records derive exclusively from
+the authenticated account; an owned subject-enrollment ID scopes details and
+attendance history. No student role or superuser flag bypasses this ownership.

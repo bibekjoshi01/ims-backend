@@ -10,9 +10,13 @@ from .analytics import (
     ManagementAttendanceReportView,
     ManagementStudentReportView,
     OverviewView,
-    StudentPortalOverviewView,
 )
 from .calendar_views import ClassCalendarView
+from .student_portal import (
+    StudentPortalAttendanceView,
+    StudentPortalOverviewView,
+    StudentPortalSubjectView,
+)
 from .views import (
     AssignmentSubmissionView,
     AssignmentViewSet,
@@ -35,6 +39,16 @@ urlpatterns = [
         "student-portal/overview",
         StudentPortalOverviewView.as_view(),
         name="student-portal-overview",
+    ),
+    path(
+        "student-portal/subjects/<int:enrollment_id>",
+        StudentPortalSubjectView.as_view(),
+        name="student-portal-subject",
+    ),
+    path(
+        "student-portal/subjects/<int:enrollment_id>/attendance",
+        StudentPortalAttendanceView.as_view(),
+        name="student-portal-attendance",
     ),
     path(
         "settings/performance-weights",

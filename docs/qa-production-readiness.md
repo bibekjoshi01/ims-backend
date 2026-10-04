@@ -8,7 +8,8 @@ departments, programs, batches and semesters, curriculum, class allocations,
 students and enrollments, class rosters, attendance, assessments, assignments,
 class-performance ratings, management attention queues, individual student
 performance reports, spreadsheet import of students and curriculum, and the
-read-only student portal.
+read-only student portal with academic progression, subject marks, assignment
+deadlines/feedback, timetable, and paginated personal attendance history.
 Batch/semester performance reports aggregate those parameters across the
 student's active subject enrollments and normalize configured weights over only
 the parameters that have recorded evidence. The attendance requirement that
@@ -29,6 +30,13 @@ decides eligibility is a per-tenant setting rather than a fixed 75%.
   superuser flag were accidentally attached. Portal access remains separate.
 - [x] Student portal reads derive the student exclusively from the authenticated
   account relationship and accept no client-supplied student identifier.
+- [x] Student subject detail/history return 404 for guessed peer enrollment IDs,
+  including peers in the same class; shared class metadata excludes staff IDs,
+  usernames, roster counts, and classmates' attendance aggregates.
+- [x] Linked student accounts remain excluded from staff APIs after role removal;
+  inactive/archived student roles grant no portal access. Session profiles hide
+  accidental staff roles/superuser flags and recheck live student access policy.
+- [x] Personal portal responses prohibit browser/proxy caching with no-store.
 - [x] Access and refresh tokens are bound to the issuing tenant schema and are
   rejected when replayed against another college hostname.
 - [x] Password-reset tokens are tenant-bound; logout checks both the tenant and
@@ -180,6 +188,12 @@ makeup overrides. Its BS/AD picker shares Academics' conversion and closure data
   teacher workspace and remain read-only for non-running semesters.
 - [x] Student navigation exposes only the student's dashboard, profile and account
   actions; staff dashboard and management routes explicitly reject the Student role.
+- [x] Student portal separates current/upcoming/completed subjects, retains empty
+  profiles and progression, and supports subject search and semester filtering.
+- [x] Subject records show dated marks, pass lines, assignment deadlines/feedback,
+  latest rating and timetable, plus paginated own attendance with unmarked states.
+- [x] Attendance eligibility is per subject, and dashboard progress averages only
+  current active subjects with evidence. Missing scores remain distinct from zero.
 - [x] Student identity is read-only in the portal so account-profile edits cannot
   diverge from the authoritative student record.
 - [x] Missing marks and ratings remain "not recorded" and are not presented or
@@ -202,6 +216,7 @@ venv/bin/pytest -q
 cd spas-frontend
 yarn verify
 yarn build
+yarn test:student-portal  # synthetic student screens and isolation regression
 yarn test:session  # Node 22+ and Chrome; synthetic browser regression scenarios
 ```
 

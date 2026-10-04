@@ -17,6 +17,7 @@ from rest_framework_simplejwt.views import TokenRefreshView
 # Project Imports
 from src.base.schemas import MessageResponseSerializer
 from src.libs.get_context import get_user_by_request
+from src.libs.permissions import is_student_account
 from src.user.models import PermissionCategory, User, UserRole
 from src.user.password_reset import (
     GENERIC_REQUEST_MESSAGE,
@@ -186,11 +187,17 @@ class CurrentUserView(generics.GenericAPIView):
 
     @extend_schema(responses=UserRetrieveSerializer)
     def get(self, request):
+        if is_student_account(request.user):
+            from src.students.permissions import student_portal_access_error
+
+            error = student_portal_access_error(request.user, allow_initial_password_change=True)
+            if error:
+                raise PermissionDenied(error)
         return Response(build_user_payload(self.get_object()))
 
     @transaction.atomic
     def patch(self, request):
-        if request.user.roles.filter(codename="STUDENT").exists():
+        if is_student_account(request.user):
             raise PermissionDenied(
                 "Student profiles are read-only. Ask your college to correct personal details."
             )

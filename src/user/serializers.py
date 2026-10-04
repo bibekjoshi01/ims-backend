@@ -8,7 +8,7 @@ from rest_framework_simplejwt.tokens import RefreshToken
 
 # Project Imports
 from src.libs.get_context import get_user_by_context
-from src.libs.permissions import get_permissions_for_user
+from src.libs.permissions import get_permissions_for_user, is_student_account
 from src.user.constants import SYSTEM_USER_ROLE
 from src.user.models import Permission, PermissionCategory, User, UserRole
 
@@ -28,6 +28,10 @@ def build_user_payload(user: User) -> dict:
     Login and `account/me` both return this, so the client has one parser and
     one source of truth for what the user may do.
     """
+    student_account = is_student_account(user)
+    roles = user.roles.filter(is_active=True, is_archived=False)
+    if student_account:
+        roles = roles.filter(codename="STUDENT")
     return {
         "id": user.id,
         "uuid": str(user.uuid),
@@ -40,11 +44,9 @@ def build_user_payload(user: User) -> dict:
         "phone_no": user.phone_no,
         "alternate_phone_no": user.alternate_phone_no,
         "photo": user.photo.url if user.photo else None,
-        "is_superuser": user.is_superuser,
+        "is_superuser": user.is_superuser and not student_account,
         "must_change_password": user.must_change_password,
-        "roles": UserRoleBriefSerializer(
-            user.roles.filter(is_active=True, is_archived=False), many=True
-        ).data,
+        "roles": UserRoleBriefSerializer(roles, many=True).data,
         "permissions": get_permissions_for_user(user),
     }
 
@@ -100,7 +102,7 @@ class UserLoginSerializer(serializers.Serializer):
             raise serializers.ValidationError(
                 {"persona": "This account is disabled. Contact your administrator."}
             )
-        if user.roles.filter(codename="STUDENT").exists():
+        if is_student_account(user):
             from src.students.permissions import student_portal_access_error
 
             error = student_portal_access_error(user, allow_initial_password_change=True)
@@ -118,7 +120,7 @@ class UserTokenRefreshSerializer(TokenRefreshSerializer):
         user = User.objects.filter(pk=refresh["user_id"], is_archived=False).first()
         if user is None or not user.is_active:
             raise AuthenticationFailed("This account is no longer active.")
-        if user.roles.filter(codename="STUDENT").exists():
+        if is_student_account(user):
             from src.students.permissions import student_portal_access_error
 
             error = student_portal_access_error(user, allow_initial_password_change=True)
