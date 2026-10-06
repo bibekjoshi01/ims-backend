@@ -190,8 +190,12 @@ makeup overrides. Its BS/AD picker shares Academics' conversion and closure data
 - [x] Sidebar, routes, and actions use the same permission vocabulary as the API.
 - [x] Protected screens wait for session validation. Expired access cookies can
   recover through refresh; temporary network failures provide retry.
-- [x] Late requests and refreshes cannot cross an account switch. Fresh profile
-  validation and logout clear cached protected records.
+- [x] Late requests and refreshes cannot cross an account switch. Account or
+  authority changes and logout clear cached protected records.
+- [x] Returning from the CSV file picker preserves the student import dialog
+  and pending preview during session checks. Unchanged authority refreshes data;
+  account or authority changes still clear protected caches. Preview errors stay
+  visible and only an explicit import writes rows.
 - [x] Teacher workspace is hidden from non-teachers; management areas are hidden from teachers.
 - [x] Management filters and API results remain within the caller's authority scope.
 - [x] Individual student reports retain semester and subject context, keep
