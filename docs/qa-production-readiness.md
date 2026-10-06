@@ -86,6 +86,18 @@ decides eligibility is a per-tenant setting rather than a fixed 75%.
   when two students would otherwise receive the same username).
 - [x] Initial roll-number passwords are hashed, require replacement before any
   portal data is readable, and password changes rotate access and refresh tokens.
+- [x] Staff accounts created with temporary passwords require replacement at
+  first sign-in. Login/profile flags drive the shared initial-password screen;
+  pending accounts cannot access staff features, even with a superuser flag.
+  Rejected changes retain the requirement; valid changes restore role permissions.
+- [x] Teacher assignments support basic formatted task descriptions and up to five
+  private resources (10 MiB each), with audited create/edit/soft removal and atomic
+  validation. Teacher downloads remain allocation-owned; student downloads require
+  the caller's own enrollment and the live student login policy.
+- [x] Students have an ongoing/all assignments section and task details with safe
+  formatting, resources and only their manual evaluation/feedback. Future-dated,
+  inactive and archived tasks stay unpublished. Student submission remains out of
+  scope; teachers retain the existing manual evaluation workflow.
 - [x] A batch has at most one running semester.
 - [x] Duplicate batch entry years within a program return a field-level `year`
   error on create and edit, including database conflicts after validation.
@@ -159,7 +171,7 @@ makeup overrides. Its BS/AD picker shares Academics' conversion and closure data
   constraints and attributed history. No college identity ID is accepted by exports.
 - [x] Internal full marks default to 40, pass marks to 16; model, serializer and
   database enforce valid ranges and pass marks not exceeding full marks.
-- [x] Teacher class cards and management allocation reports offer blank and
+- [x] Teacher workspaces and management allocation reports offer blank and
   calculated sheets. Server downloads always use the complete authorized roster.
 - [x] Exact weighted scaling rounds up; missing enabled evidence blocks calculated
   downloads and is listed by student, while blank sheets remain available.
@@ -250,6 +262,8 @@ yarn build
 yarn test:internal-evaluation  # synthetic sheet downloads and institution CRUD
 yarn test:student-portal  # synthetic student screens and isolation regression
 yarn test:session  # Node 22+ and Chrome; synthetic browser regression scenarios
+yarn test:assignments  # teacher editor/resources, manual evaluation, student visibility
+yarn test:responsive  # teacher/student layouts and calendar controls
 ```
 
 Apply shared and tenant migrations using the deployment process documented in

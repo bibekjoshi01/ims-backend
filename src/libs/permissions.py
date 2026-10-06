@@ -15,12 +15,13 @@ def is_student_account(user: Any) -> bool:
 
 
 def is_staff_account(user: Any) -> TypeGuard[User]:
-    """Student identity takes precedence over accidentally attached staff roles."""
+    """Staff features require an active staff identity with a private password."""
     return bool(
         user
         and user.is_authenticated
         and user.is_active
         and not user.is_archived
+        and not user.must_change_password
         and not is_student_account(user)
     )
 

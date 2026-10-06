@@ -9,6 +9,8 @@ from typing import ClassVar
 from django.db.models import Count, F, Prefetch, Q
 from django.utils import timezone
 from django_filters.rest_framework import DjangoFilterBackend
+from drf_spectacular.types import OpenApiTypes
+from drf_spectacular.utils import extend_schema
 from rest_framework import generics, serializers
 from rest_framework.filters import OrderingFilter
 from rest_framework.response import Response
@@ -17,8 +19,10 @@ from src.academics.models import ClassMeeting
 from src.students.models import SemesterEnrollment, Student, SubjectEnrollment
 from src.students.permissions import StudentPortalPermission
 
+from .assignment_files import assignment_attachment_response
 from .models import (
     Assignment,
+    AssignmentAttachment,
     AssignmentSubmission,
     AttendanceRecord,
     AttendanceSession,
@@ -27,7 +31,7 @@ from .models import (
     InternalExamMark,
     PerformanceWeightConfiguration,
 )
-from .serializers import PerformanceWeightConfigurationSerializer
+from .serializers import AssignmentAttachmentSerializer, PerformanceWeightConfigurationSerializer
 
 
 def student_subjects(user):
@@ -63,9 +67,9 @@ def student_subjects(user):
             ),
             Prefetch(
                 "allocation__assignments",
-                queryset=Assignment.objects.filter(is_archived=False).order_by(
-                    "-assigned_date", "id"
-                ),
+                queryset=Assignment.objects.filter(
+                    is_archived=False, is_active=True, assigned_date__lte=timezone.localdate()
+                ).order_by("-assigned_date", "id"),
                 to_attr="portal_assignments",
             ),
             Prefetch(
@@ -446,6 +450,83 @@ class StudentPortalSubjectView(StudentPortalReadMixin, generics.RetrieveAPIView)
                 subject_payload(self.get_object(), PerformanceWeightConfiguration.current())
             ).data
         )
+
+
+class PortalAssignmentDetailSerializer(PortalAssignmentSerializer):
+    description = serializers.JSONField()
+    attachments = AssignmentAttachmentSerializer(many=True)
+    subject_code = serializers.CharField()
+    subject_name = serializers.CharField()
+    teacher_name = serializers.CharField()
+
+
+class StudentPortalAssignmentView(StudentPortalReadMixin, generics.RetrieveAPIView):
+    """An assignment shared with the caller's own enrolled class, with only their evaluation."""
+
+    permission_classes = (StudentPortalPermission,)
+    serializer_class = PortalAssignmentDetailSerializer
+    lookup_url_kwarg = "assignment_id"
+    http_method_names = ("get", "head", "options")
+
+    def get_queryset(self):
+        if getattr(self, "swagger_fake_view", False):
+            return Assignment.objects.none()
+        allocations = SubjectEnrollment.objects.filter(
+            student__user=self.request.user, is_archived=False, allocation__is_archived=False
+        ).values("allocation_id")
+        return (
+            Assignment.objects.filter(
+                allocation_id__in=allocations,
+                is_archived=False,
+                is_active=True,
+                assigned_date__lte=timezone.localdate(),
+            )
+            .select_related("allocation__subject", "allocation__teacher")
+            .prefetch_related(
+                Prefetch(
+                    "attachments",
+                    to_attr="portal_attachments",
+                    queryset=AssignmentAttachment.objects.filter(is_archived=False),
+                ),
+                Prefetch(
+                    "submissions",
+                    to_attr="portal_personal_submission",
+                    queryset=AssignmentSubmission.objects.filter(
+                        enrollment__student__user=self.request.user,
+                        enrollment__is_archived=False,
+                        is_archived=False,
+                        enrollment__allocation_id=F("assignment__allocation_id"),
+                    ),
+                ),
+            )
+        )
+
+    def retrieve(self, request, *args, **kwargs):
+        assignment = self.get_object()
+        personal = assignment.portal_personal_submission
+        return Response(
+            self.get_serializer(
+                {
+                    "assignment_id": assignment.id,
+                    "title": assignment.title,
+                    "assigned_date": assignment.assigned_date,
+                    "due_date": assignment.due_date,
+                    "description": assignment.description,
+                    "attachments": assignment.portal_attachments,
+                    "status": personal[0].status if personal else None,
+                    "remarks": personal[0].remarks if personal else "",
+                    "subject_code": assignment.allocation.subject.code,
+                    "subject_name": assignment.allocation.subject.name,
+                    "teacher_name": assignment.allocation.teacher.full_name,
+                }
+            ).data
+        )
+
+
+class StudentPortalAssignmentAttachmentView(StudentPortalAssignmentView):
+    @extend_schema(responses={(200, "application/octet-stream"): OpenApiTypes.BINARY})
+    def retrieve(self, request, *args, **kwargs):
+        return assignment_attachment_response(self.get_object(), self.kwargs["attachment_id"])
 
 
 class PortalAttendanceHistorySerializer(serializers.ModelSerializer):

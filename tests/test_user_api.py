@@ -169,6 +169,127 @@ class AuthFlowTests(UserAPITestCase):
         assert response.status_code == status.HTTP_401_UNAUTHORIZED
 
 
+class TemporaryPasswordTests(UserAPITestCase):
+    def create_staff(self, username="new-teacher", role="TEACHER"):
+        self.authenticate_as_admin()
+        response = self.client.post(
+            f"{BASE}/users",
+            {
+                "username": username,
+                "email": f"{username}@college.edu",
+                "password": self.password,
+                "roles": [UserRole.objects.get(codename=role).pk],
+            },
+            format="json",
+        )
+        assert response.status_code == status.HTTP_201_CREATED, response.data
+        return User.objects.get(pk=response.data["id"])
+
+    def test_new_staff_logins_and_profile_require_password_replacement(self):
+        for role in ("TEACHER", "DEPARTMENT-HEAD", "PROGRAM-COORDINATOR"):
+            with self.subTest(role=role):
+                user = self.create_staff(username=role.lower(), role=role)
+                assert user.must_change_password is True
+                assert user.created_by_id == self.admin.pk
+                assert user.history.first().must_change_password is True
+                assert user.history.first().history_user_id == self.admin.pk
+                self.client.credentials()
+                login = self.authenticate(user.username)
+                assert login["must_change_password"] is True
+                response = self.client.get(f"{BASE}/account/me")
+                assert response.status_code == status.HTTP_200_OK
+                assert response.json()["mustChangePassword"] is True
+
+    def test_temporary_password_blocks_staff_features_until_replaced(self):
+        user = self.create_staff()
+        self.authenticate(user.username)
+        classes_url = f"{INTERNAL}/performance-mod/analytics/classes"
+        assert self.client.get(classes_url).status_code == status.HTTP_403_FORBIDDEN
+
+        response = self.client.post(
+            f"{BASE}/account/change-password",
+            {"currentPassword": self.password, "newPassword": "PrivateTeacher!2345"},
+            format="json",
+        )
+        assert response.status_code == status.HTTP_200_OK, response.data
+        user.refresh_from_db()
+        assert user.must_change_password is False
+        assert user.check_password("PrivateTeacher!2345")
+        assert user.created_by_id == self.admin.pk
+        assert user.history.first().must_change_password is False
+        assert user.history.first().history_user_id == user.pk
+        self.client.credentials(HTTP_AUTHORIZATION=f"Bearer {response.data['tokens']['access']}")
+        assert self.client.get(classes_url).status_code == status.HTTP_200_OK
+        # Password replacement unlocks the teacher's features, not staff administration.
+        assert self.client.get(f"{BASE}/users").status_code == status.HTTP_403_FORBIDDEN
+        assert self.client.get(f"{BASE}/account/me").json()["mustChangePassword"] is False
+        self.client.credentials()
+        login = self.login(user.username, "PrivateTeacher!2345")
+        assert login["must_change_password"] is False
+        assert "add_attendance" in login["permissions"]
+
+    def test_rejected_password_changes_keep_the_first_login_requirement(self):
+        user = self.create_staff()
+        self.authenticate(user.username)
+        history_count = user.history.count()
+        for current, new, field in (
+            ("wrong-password", "PrivateTeacher!2345", "currentPassword"),
+            (self.password, self.password, "newPassword"),
+            (self.password, "123", "newPassword"),
+        ):
+            response = self.client.post(
+                f"{BASE}/account/change-password",
+                {"currentPassword": current, "newPassword": new},
+                format="json",
+            )
+            assert response.status_code == status.HTTP_400_BAD_REQUEST
+            assert field in response.json()
+            user.refresh_from_db()
+            assert user.must_change_password is True
+            assert user.check_password(self.password)
+            assert user.history.count() == history_count
+
+    def test_replacing_a_draft_password_sets_the_first_login_requirement(self):
+        self.authenticate_as_admin()
+        user = self.make_user("draft-teacher", "TEACHER")
+        assert user.must_change_password is False
+        response = self.client.patch(
+            f"{BASE}/users/{user.pk}", {"password": "ReplacedTemporary!2345"}, format="json"
+        )
+        assert response.status_code == status.HTTP_200_OK, response.data
+        user.refresh_from_db()
+        assert user.must_change_password is True
+        assert user.created_by_id is None
+        self.client.credentials()
+        assert self.login(user.username, "ReplacedTemporary!2345")["must_change_password"] is True
+
+    def test_role_edits_do_not_force_another_password_change(self):
+        user = self.make_user("existing-teacher", "TEACHER")
+        self.login(user.username)
+        self.authenticate_as_admin()
+        response = self.client.patch(f"{BASE}/users/{user.pk}", {"roles": []}, format="json")
+        assert response.status_code == status.HTTP_200_OK, response.data
+        user.refresh_from_db()
+        assert user.must_change_password is False
+
+    def test_superuser_cannot_bypass_a_pending_password_change(self):
+        self.admin.must_change_password = True
+        self.admin.save(update_fields=["must_change_password"])
+        login = self.authenticate_as_admin()
+        assert login["must_change_password"] is True
+        assert self.client.get(f"{BASE}/users").status_code == status.HTTP_403_FORBIDDEN
+        assert self.client.get(f"{BASE}/account/me").status_code == status.HTTP_200_OK
+        response = self.client.post(
+            f"{BASE}/account/change-password",
+            {"currentPassword": self.password, "newPassword": "PrivateAdmin!2345"},
+            format="json",
+        )
+        assert response.status_code == status.HTTP_200_OK, response.data
+        assert self.client.get(f"{BASE}/users").status_code == status.HTTP_401_UNAUTHORIZED
+        self.client.credentials(HTTP_AUTHORIZATION=f"Bearer {response.data['tokens']['access']}")
+        assert self.client.get(f"{BASE}/users").status_code == status.HTTP_200_OK
+
+
 class PermissionGatingTests(UserAPITestCase):
     def test_a_teacher_cannot_list_users(self):
         self.make_user("teacher1", "TEACHER")

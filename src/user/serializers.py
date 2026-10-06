@@ -345,6 +345,7 @@ class UserCreateSerializer(UserNameValidationMixin, serializers.ModelSerializer)
         user = User.objects.create_user(
             **validated_data,
             password=password,
+            must_change_password=True,
             created_by=get_user_by_context(self.context),
         )
         user.full_name = user.compose_full_name()
@@ -453,6 +454,7 @@ class UserPatchSerializer(UserNameValidationMixin, serializers.ModelSerializer):
         instance.full_name = instance.compose_full_name()
         if password is not None:
             instance.set_password(password)
+            instance.must_change_password = True
         instance.save()
 
         if roles is not None:

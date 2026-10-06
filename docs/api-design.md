@@ -117,6 +117,53 @@ negative tests, including a guessed cross-scope ID.
   still protect class identity; reducing assessment full marks cannot invalidate
   recorded scores. Rejected writes return actionable validation errors.
 
+## Temporary staff passwords
+
+Staff accounts created through `/user-mod/users`, and temporary passwords
+replaced before first sign-in, require password replacement. Login and
+`/user-mod/account/me` return `mustChangePassword: true`; the frontend shows the
+initial password form before mounting the workspace. Staff permissions are
+unavailable while that requirement is pending, including for a superuser.
+Profile reads, token renewal, logout and `/user-mod/account/change-password`
+remain available. A successful password change clears the flag and returns new
+tokens; rejected changes preserve it. Existing accounts are not retroactively
+flagged, because their current password cannot be identified as temporary.
+
+## Assignment instructions and resources
+
+`performance-mod/assignments` retains teacher-owned class scope and manual
+evaluation through the existing `/<id>/submissions` endpoint. Create and patch
+accept `description`, a basic editor JSON document: `doc`, `paragraph`, `heading`
+(levels 2/3), `text` with optional `bold` marks, `hardBreak`, `bulletList`,
+`orderedList` and `listItem`. HTML, links, images, executable attributes and unknown
+nodes are rejected with a field-level 400. The limit is 20,000 text characters,
+2,000 nodes, depth 12, and 100 KB serialized content. Existing assignments default
+to an empty description.
+
+List responses remain compact. `GET /assignments/<id>` adds the document and
+`attachments: [{id, name, size}]`; storage names and public URLs are never returned.
+Multipart create/patch sends `description` as JSON text, files as `newFiles[0]`,
+`newFiles[1]`, etc., and removals as `removeAttachments[0]`, etc. JSON writes without
+files remain supported. At most five live attachments are allowed, each nonempty
+and at most 10 MiB. Allowed extensions: PDF, DOC/DOCX/ODT, XLS/XLSX/ODS, PPT/PPTX,
+TXT, CSV, ZIP, JPG/JPEG/PNG/WEBP. Validate the complete request before mutation;
+assignment changes, file metadata and soft removals are transactional and audited.
+Concurrent edits lock the assignment. Failed writes clean up newly stored bytes.
+Removed resources retain historical metadata and bytes, with no API visibility.
+
+`GET /assignments/<id>/attachments/<attachment_id>` streams an authenticated,
+owner-scoped download using attachment disposition and `private, no-store`.
+The relation reaches department/program through attachment -> assignment ->
+allocation -> subject -> program -> department. Guessed parent or attachment IDs
+cannot cross a teacher's scope. Non-running semesters remain immutable.
+
+Files use `PRIVATE_MEDIA_ROOT` (default `<BASE_DIR>/private_media`), outside public
+`MEDIA_ROOT`. Persist and back up this directory alongside the database. Do not
+map it to a public web-server location. Rollout requires the standard backup and
+tenant migration process for `performance.0010_assignment_description_and_more`,
+then backend/frontend deployment. The draft migration's file field length was
+corrected before release to accommodate tenant schema names and UUID paths.
+
 ## Student portal contract
 
 Dedicated read-only student endpoints and disclosure rules are documented in

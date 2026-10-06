@@ -6,7 +6,14 @@ from simple_history.models import HistoricalRecords
 
 # Project Imports
 from src.base.models import AuditInfoModel
+from src.libs.storage import PrivateAssignmentStorage, assignment_attachment_path
 
+from .assignment_content import (
+    ATTACHMENT_EXTENSIONS,
+    MAX_ASSIGNMENT_ATTACHMENTS,
+    MAX_ATTACHMENT_BYTES,
+    validate_assignment_description,
+)
 from .constants import (
     DEFAULT_ELIGIBILITY_THRESHOLD,
     AssignmentStatus,
@@ -420,6 +427,9 @@ class Assignment(AuditInfoModel):
     title = models.CharField(_("title"), max_length=150)
     assigned_date = models.DateField(_("assigned date"))
     due_date = models.DateField(_("due date"), null=True, blank=True)
+    description = models.JSONField(
+        default=dict, blank=True, validators=[validate_assignment_description]
+    )
 
     class Meta:
         verbose_name = _("assignment")
@@ -456,6 +466,51 @@ class Assignment(AuditInfoModel):
 
     def __str__(self):
         return f"{self.allocation.subject.code} — {self.title}"
+
+
+class AssignmentAttachment(AuditInfoModel):
+    """Teacher resource; scope follows assignment -> allocation -> subject -> program -> department."""
+
+    history = HistoricalRecords()
+    assignment = models.ForeignKey(Assignment, on_delete=models.PROTECT, related_name="attachments")
+    file = models.FileField(
+        upload_to=assignment_attachment_path, storage=PrivateAssignmentStorage(), max_length=255
+    )
+    name = models.CharField(max_length=255)
+    size = models.PositiveIntegerField()
+
+    class Meta:
+        ordering = ("created_at", "id")
+        constraints = (
+            models.CheckConstraint(
+                condition=models.Q(size__gt=0, size__lte=MAX_ATTACHMENT_BYTES),
+                name="assignment_attachment_size_valid",
+            ),
+        )
+
+    def clean(self):
+        super().clean()
+        if self.name.rsplit(".", 1)[-1].lower() not in ATTACHMENT_EXTENSIONS:
+            raise ValidationError({"name": "Choose a document, image, spreadsheet or ZIP file."})
+        if any(ord(char) < 32 or ord(char) == 127 for char in self.name):
+            raise ValidationError({"name": "Use a filename without control characters."})
+        if (
+            not self.is_archived
+            and self.assignment_id
+            and self.assignment.attachments.filter(is_archived=False).exclude(pk=self.pk).count()
+            >= MAX_ASSIGNMENT_ATTACHMENTS
+        ):
+            raise ValidationError({"assignment": "Attach up to five files per assignment."})
+        if self.pk:
+            previous = type(self).objects.get(pk=self.pk)
+            if previous.assignment_id != self.assignment_id or previous.file.name != self.file.name:
+                raise ValidationError(
+                    "Create a new attachment rather than moving an existing file."
+                )
+
+    def save(self, *args, **kwargs):
+        self.full_clean()
+        super().save(*args, **kwargs)
 
 
 class AssignmentSubmission(AuditInfoModel):

@@ -17,6 +17,8 @@ class TenantOpenAPITests(SimpleTestCase):
             "/api/v1/internal/performance-mod/student-portal/overview",
             "/api/v1/internal/performance-mod/student-portal/subjects/{enrollment_id}",
             "/api/v1/internal/performance-mod/student-portal/subjects/{enrollment_id}/attendance",
+            "/api/v1/internal/performance-mod/student-portal/assignments/{assignment_id}",
+            "/api/v1/internal/performance-mod/student-portal/assignments/{assignment_id}/attachments/{attachment_id}",
         ):
             assert {"TenantJWTAuth": []} in paths[path]["get"]["security"]
             assert {} not in paths[path]["get"]["security"]
@@ -29,6 +31,10 @@ class TenantOpenAPITests(SimpleTestCase):
         assert "attendancePercentage" not in schemas["PortalClass"]["properties"]
         assert set(schemas["PortalTeacher"]["properties"]) == {"fullName"}
         assert "class" in schemas["PortalSubject"]["properties"]
+        assert {"description", "attachments"}.issubset(
+            schemas["PortalAssignmentDetail"]["properties"]
+        )
+        assert set(schemas["AssignmentAttachment"]["properties"]) == {"id", "name", "size"}
         for path, operations in schema["paths"].items():
             if "/performance-mod/student-portal/" in path:
                 assert set(operations) == {"get"}

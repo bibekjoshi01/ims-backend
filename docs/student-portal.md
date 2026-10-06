@@ -7,6 +7,10 @@ name, timetable, dated assessments and pass marks, assignment deadlines and
 feedback, the latest 1–10 class rating, and paginated personal attendance history.
 The existing academic calendar, password change, and logout remain available.
 Profiles and academic records are read-only; corrections go through college staff.
+An **Assignments** section defaults to ongoing tasks in active running subjects,
+with an all-assignments view for completed work and historical subjects. Each task
+opens its formatted instructions, dates, teacher resources and the student's own
+manual evaluation/feedback. Student submission and file uploads are not offered.
 
 ## API contract
 
@@ -20,6 +24,8 @@ in the separate `spas-frontend` repository.
 | `GET /overview` | `asOfDate`, `student`, `semesters`, `subjects`, `policy` |
 | `GET /subjects/<enrollment_id>` | One of the caller's own subject records |
 | `GET /subjects/<enrollment_id>/attendance` | Standard `count/next/previous/results` envelope |
+| `GET /assignments/<assignment_id>` | Instructions, resources, subject/teacher display names and the caller's own evaluation |
+| `GET /assignments/<assignment_id>/attachments/<attachment_id>` | Authenticated attachment download |
 
 Attendance accepts `limit`, `offset`, `ordering=date` or `-date`, `period`, and
 DRF date filters `date`, `date__gte`, `date__lte`. `limit=0` returns all authorized
@@ -55,6 +61,16 @@ line with existing college policy. Eligibility is checked independently per
 subject; the dashboard does not average away a subject below the requirement.
 `asOfDate` comes from Django's local academic date and drives deadline displays.
 
+Assignment detail adds `description` (the basic editor document described in
+`docs/api-design.md`), `attachments: [{id, name, size}]`, `subjectCode`,
+`subjectName` and `teacherName` to the established assignment fields. Shared task
+definitions are readable only through the caller's non-archived subject
+enrollment. Peer classes and mismatched resource IDs return 404. Assignment
+definitions appear once active, non-archived and on/after their assigned date;
+future-dated definitions remain unpublished. A missing manual evaluation stays
+null and is shown as **Not recorded**. Downloads recheck the same login policy,
+initial password and account lifecycle as every other student portal read.
+
 ## Access and lifecycle
 
 Every portal request requires a live active, non-archived STUDENT role, an active
@@ -75,11 +91,14 @@ frontend account-boundary handling clears cached data when the account changes.
 
 ## Verification and rollout
 
-No models, fixtures, or migrations change. Deploy backend and frontend together
+Assignment resources add `performance.0010_assignment_description_and_more`.
+Existing assignments receive an empty document. Use the normal backup/tenant
+migration process; persist and back up `PRIVATE_MEDIA_ROOT` outside public media.
+Deploy backend and frontend together
 because the student response now uses an explicit, narrower contract. Keep the
 existing tenant login switch disabled until the college chooses to enable it.
 
 Backend regressions: `tests/test_student_portal_api.py`, existing portal/login
 and calendar tests, and `tests/test_openapi_schema.py`. Run the repository release
 checks, frontend `yarn verify`, `yarn build`, `yarn test:session`, and
-`yarn test:student-portal` before deployment.
+`yarn test:student-portal` and `yarn test:assignments` before deployment.

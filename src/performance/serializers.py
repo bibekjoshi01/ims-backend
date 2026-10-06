@@ -1,3 +1,7 @@
+import json
+from pathlib import Path
+
+from django.core.validators import FileExtensionValidator
 from django.db import transaction
 from django.utils import timezone
 from rest_framework import serializers
@@ -13,9 +17,16 @@ from src.libs.get_context import get_user_by_context
 from src.libs.permissions import get_permissions_for_user, scope_to_allocation_owner
 from src.students.models import SubjectEnrollment
 
+from .assignment_content import (
+    ATTACHMENT_EXTENSIONS,
+    MAX_ASSIGNMENT_ATTACHMENTS,
+    MAX_ATTACHMENT_BYTES,
+    validate_assignment_description,
+)
 from .constants import AssignmentStatus, AttendanceStatus
 from .models import (
     Assignment,
+    AssignmentAttachment,
     AssignmentSubmission,
     AttendanceRecord,
     AttendanceSession,
@@ -542,7 +553,7 @@ class AssignmentListSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Assignment
-        fields = (
+        fields: tuple[str, ...] = (
             "id",
             "uuid",
             "allocation",
@@ -556,22 +567,145 @@ class AssignmentListSerializer(serializers.ModelSerializer):
         )
 
 
-class AssignmentCreateSerializer(OwnAllocationMixin, AuditedModelSerializer):
+class AssignmentAttachmentSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = AssignmentAttachment
+        fields = ("id", "name", "size")
+        read_only_fields = fields
+
+
+class AssignmentRetrieveSerializer(AssignmentListSerializer):
+    attachments = serializers.SerializerMethodField()
+
+    class Meta(AssignmentListSerializer.Meta):
+        fields = (*AssignmentListSerializer.Meta.fields, "description", "attachments")
+
+    def get_attachments(self, obj) -> list[dict]:
+        return list(
+            AssignmentAttachmentSerializer(
+                [row for row in obj.attachments.all() if not row.is_archived], many=True
+            ).data
+        )
+
+
+class AssignmentDescriptionField(serializers.JSONField):
+    def to_internal_value(self, data):
+        if isinstance(data, str):
+            try:
+                data = json.loads(data)
+            except (ValueError, RecursionError) as error:
+                raise serializers.ValidationError("Enter a valid task description.") from error
+        return super().to_internal_value(data)
+
+
+class AssignmentWriteSerializer(AuditedModelSerializer):
+    description = AssignmentDescriptionField(
+        required=False, validators=[validate_assignment_description]
+    )
+    new_files = serializers.ListField(
+        child=serializers.FileField(), required=False, write_only=True
+    )
+    remove_attachments = serializers.ListField(
+        child=serializers.IntegerField(min_value=1), required=False, write_only=True
+    )
+
+    def validate_new_files(self, files):
+        if len(files) > MAX_ASSIGNMENT_ATTACHMENTS:
+            raise serializers.ValidationError("Attach up to five files per assignment.")
+        for file in files:
+            if any(ord(char) < 32 or ord(char) == 127 for char in file.name):
+                raise serializers.ValidationError("Use filenames without control characters.")
+            FileExtensionValidator(ATTACHMENT_EXTENSIONS)(file)
+            if file.size > MAX_ATTACHMENT_BYTES:
+                raise serializers.ValidationError(
+                    f"{file.name}: each file must be 10 MB or smaller."
+                )
+        return files
+
+    def validate(self, attrs):
+        if self.instance:
+            validate_allocation_is_writable(self.instance.allocation)
+        removes = attrs.get("remove_attachments", [])
+        live = list(self.instance.attachments.filter(is_archived=False)) if self.instance else []
+        if len(set(removes)) != len(removes) or not set(removes).issubset({row.id for row in live}):
+            raise serializers.ValidationError(
+                {"remove_attachments": "Choose attachments belonging to this assignment."}
+            )
+        if len(live) - len(removes) + len(attrs.get("new_files", [])) > MAX_ASSIGNMENT_ATTACHMENTS:
+            raise serializers.ValidationError(
+                {"new_files": "Attach up to five files per assignment."}
+            )
+        return super().validate(attrs)
+
+    def _persist(self, validated_data, instance=None):
+        files = validated_data.pop("new_files", [])
+        removes = validated_data.pop("remove_attachments", [])
+        saved_files = []
+        try:
+            with transaction.atomic():
+                assignment = (
+                    super().update(instance, validated_data)
+                    if instance
+                    else super().create(validated_data)
+                )
+                actor = get_user_by_context(self.context)
+                for attachment in assignment.attachments.filter(pk__in=removes, is_archived=False):
+                    attachment.is_archived = True
+                    attachment.updated_by = actor
+                    attachment.save()
+                for file in files:
+                    attachment = AssignmentAttachment(
+                        assignment=assignment,
+                        file=file,
+                        size=file.size,
+                        name=Path(file.name.replace("\\", "/")).name,
+                        created_by=actor,
+                    )
+                    saved_files.append(attachment.file)
+                    attachment.save()
+                return assignment
+        except Exception:
+            # Storage isn't transactional. Remove only newly uploaded files on rollback.
+            for file in saved_files:
+                if file._committed:
+                    file.storage.delete(file.name)
+            raise
+
+    def create(self, validated_data):
+        return self._persist(validated_data)
+
+    def update(self, instance, validated_data):
+        return self._persist(validated_data, instance)
+
+
+class AssignmentCreateSerializer(OwnAllocationMixin, AssignmentWriteSerializer):
     class Meta:
         model = Assignment
-        fields = ("allocation", "title", "assigned_date", "due_date")
+        fields = (
+            "allocation",
+            "title",
+            "assigned_date",
+            "due_date",
+            "description",
+            "new_files",
+            "remove_attachments",
+        )
 
     to_representation = created("Assignment")
 
 
-class AssignmentPatchSerializer(AuditedModelSerializer):
+class AssignmentPatchSerializer(AssignmentWriteSerializer):
     class Meta:
         model = Assignment
-        fields = ("title", "assigned_date", "due_date", "is_active")
-
-    def validate(self, attrs):
-        validate_allocation_is_writable(self.instance.allocation)
-        return super().validate(attrs)
+        fields = (
+            "title",
+            "assigned_date",
+            "due_date",
+            "is_active",
+            "description",
+            "new_files",
+            "remove_attachments",
+        )
 
     to_representation = updated("Assignment")
 

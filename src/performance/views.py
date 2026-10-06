@@ -2,8 +2,10 @@ from django.db import transaction
 from django.db.models import Avg, Count, F, Q
 from django.shortcuts import get_object_or_404
 from django_filters.rest_framework import DjangoFilterBackend
+from drf_spectacular.types import OpenApiTypes
 from drf_spectacular.utils import OpenApiParameter, extend_schema
 from rest_framework import generics, status
+from rest_framework.decorators import action
 from rest_framework.filters import OrderingFilter
 from rest_framework.permissions import SAFE_METHODS, BasePermission
 from rest_framework.response import Response
@@ -20,6 +22,7 @@ from src.libs.permissions import (
 from src.libs.validation import positive_query_id
 from src.students.models import SubjectEnrollment
 
+from .assignment_files import assignment_attachment_response
 from .constants import AttendanceStatus
 from .models import (
     Assignment,
@@ -42,6 +45,7 @@ from .serializers import (
     AssignmentCreateSerializer,
     AssignmentListSerializer,
     AssignmentPatchSerializer,
+    AssignmentRetrieveSerializer,
     AssignmentSubmissionBulkSerializer,
     AssignmentSubmissionReadSerializer,
     AttendanceSessionCreateSerializer,
@@ -312,6 +316,7 @@ class AssignmentViewSet(
     queryset = (
         Assignment.objects.filter(is_archived=False)
         .select_related("allocation__subject")
+        .prefetch_related("attachments")
         .annotate(
             evaluated_count=Count(
                 "submissions",
@@ -334,6 +339,23 @@ class AssignmentViewSet(
     filterset_fields = ("allocation", "is_active")
     ordering = ("-assigned_date",)
     ordering_fields = ("id", "assigned_date", "due_date")
+
+    def get_serializer_class(self):
+        if self.action == "retrieve":
+            return AssignmentRetrieveSerializer
+        return super().get_serializer_class()
+
+    def get_queryset(self):
+        queryset = super().get_queryset()
+        if self.request.method == "PATCH":
+            # Serialize attachment count checks and edits for the same assignment.
+            queryset = Assignment.objects.filter(pk__in=queryset.values("pk")).select_for_update()
+        return queryset
+
+    @extend_schema(responses={(200, "application/octet-stream"): OpenApiTypes.BINARY})
+    @action(detail=True, methods=["get"], url_path=r"attachments/(?P<attachment_id>[0-9]+)")
+    def attachment(self, request, pk=None, attachment_id=None):
+        return assignment_attachment_response(self.get_object(), attachment_id)
 
 
 class AssignmentSubmissionView(generics.GenericAPIView):
