@@ -87,6 +87,9 @@ decides eligibility is a per-tenant setting rather than a fixed 75%.
 - [x] Initial roll-number passwords are hashed, require replacement before any
   portal data is readable, and password changes rotate access and refresh tokens.
 - [x] A batch has at most one running semester.
+- [x] Duplicate batch entry years within a program return a field-level `year`
+  error on create and edit, including database conflicts after validation.
+  Archived years may be reused; inactive, unarchived batches still reserve theirs.
 - [x] Semester end date cannot precede start date; both dates remain optional.
 - [x] Attendance cannot be recorded in the future or outside configured semester dates.
 - [x] Upcoming and completed semesters are read-only for performance records.

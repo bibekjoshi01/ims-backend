@@ -1,5 +1,7 @@
 import re
 
+from django.db import IntegrityError, transaction
+
 # Project Imports
 from rest_framework import serializers
 
@@ -361,7 +363,37 @@ class BatchListSerializer(serializers.ModelSerializer):
         )
 
 
-class BatchCreateSerializer(AuditedModelSerializer):
+class BatchWriteSerializer(AuditedModelSerializer):
+    duplicate_year_message = "That program already has a batch for this year."
+
+    def validate(self, attrs):
+        attrs = super().validate(attrs)
+        program = attrs.get("program", self.instance.program if self.instance else None)
+        year = attrs.get("year", self.instance.year if self.instance else None)
+        duplicates = Batch.objects.filter(program=program, year=year, is_archived=False)
+        if self.instance:
+            duplicates = duplicates.exclude(pk=self.instance.pk)
+        if duplicates.exists():
+            raise serializers.ValidationError({"year": [self.duplicate_year_message]})
+        return attrs
+
+    def save(self, **kwargs):
+        try:
+            # Roll back a conflicting write before translating its error. The
+            # database remains the final guard against concurrent submissions.
+            with transaction.atomic():
+                return super().save(**kwargs)
+        except IntegrityError as error:
+            diagnostic = getattr(error.__cause__, "diag", None)
+            if (
+                getattr(diagnostic, "constraint_name", None)
+                != "unique_active_batch_per_program_year"
+            ):
+                raise
+            raise serializers.ValidationError({"year": [self.duplicate_year_message]}) from error
+
+
+class BatchCreateSerializer(BatchWriteSerializer):
     class Meta:
         model = Batch
         fields = ("program", "year")
@@ -374,7 +406,7 @@ class BatchCreateSerializer(AuditedModelSerializer):
     to_representation = created("Batch")
 
 
-class BatchPatchSerializer(AuditedModelSerializer):
+class BatchPatchSerializer(BatchWriteSerializer):
     class Meta:
         model = Batch
         # Status is not edited here. Graduating a cohort changes rows outside

@@ -1,5 +1,8 @@
 """Academics endpoints, permission gating and teacher-scoped visibility."""
 
+from typing import ClassVar
+from unittest.mock import patch
+
 from rest_framework import status
 
 from src.academics.models import (
@@ -72,6 +75,137 @@ class AcademicsAPITestCase(TenantAPITestCase):
     def make_teacher(self, username, department_id):
         user = self.make_user(username, "TEACHER")
         return user, user.pk
+
+
+class BatchValidationTests(AcademicsAPITestCase):
+    duplicate_error: ClassVar[dict] = {
+        "year": ["That program already has a batch for this year."],
+        "success": False,
+    }
+
+    def test_duplicate_create_returns_a_year_field_error_without_writing(self):
+        ids = self.seed_structure()
+        batch = Batch.objects.get(pk=ids["batch"])
+        history_count = batch.history.count()
+
+        response = self.client.post(
+            f"{BASE}/batches", {"program": ids["program"], "year": 2079}, format="json"
+        )
+
+        assert response.status_code == status.HTTP_400_BAD_REQUEST
+        assert response.json() == self.duplicate_error
+        assert Batch.objects.count() == 1
+        assert batch.history.count() == history_count
+
+    def test_duplicate_edit_returns_a_year_field_error_without_writing(self):
+        ids = self.seed_structure()
+        other_id = self.post(f"{BASE}/batches", {"program": ids["program"], "year": 2080})
+        batch = Batch.objects.get(pk=other_id)
+        history_count = batch.history.count()
+
+        response = self.client.patch(
+            f"{BASE}/batches/{other_id}", {"year": 2079, "isActive": False}, format="json"
+        )
+
+        assert response.status_code == status.HTTP_400_BAD_REQUEST
+        assert response.json() == self.duplicate_error
+        batch.refresh_from_db()
+        assert batch.year == 2080
+        assert batch.is_active is True
+        assert batch.updated_by is None
+        assert batch.history.count() == history_count
+
+    def test_unchanged_year_and_partial_edits_preserve_audit_fields(self):
+        ids = self.seed_structure()
+        editor = User.objects.create_superuser(
+            username="batch-editor", email="batch-editor@college.edu", password=self.password
+        )
+        self.authenticate(editor.username)
+
+        for payload in ({"year": 2079}, {"isActive": False}, {"isActive": True}):
+            response = self.client.patch(f"{BASE}/batches/{ids['batch']}", payload, format="json")
+            assert response.status_code == status.HTTP_200_OK, response.data
+
+        batch = Batch.objects.get(pk=ids["batch"])
+        assert batch.year == 2079
+        assert batch.is_active is True
+        assert batch.created_by_id == self.admin.pk
+        assert batch.updated_by_id == editor.pk
+        assert batch.history.first().history_user_id == editor.pk
+
+    def test_same_year_in_another_program_is_allowed_on_create_and_edit(self):
+        ids = self.seed_structure()
+        program = self.post(
+            f"{BASE}/programs",
+            {"department": ids["department"], "name": "BIT", "code": "BIT", "totalSemesters": 8},
+        )
+        batch_id = self.post(f"{BASE}/batches", {"program": program, "year": 2079})
+        self.post(f"{BASE}/batches", {"program": ids["program"], "year": 2080})
+
+        response = self.client.patch(f"{BASE}/batches/{batch_id}", {"year": 2080}, format="json")
+
+        assert response.status_code == status.HTTP_200_OK, response.data
+        assert Batch.objects.get(pk=batch_id).year == 2080
+
+    def test_archived_year_can_be_reused_on_create_and_edit(self):
+        ids = self.seed_structure()
+        archived_id = self.post(f"{BASE}/batches", {"program": ids["program"], "year": 2080})
+        response = self.client.delete(f"{BASE}/batches/{archived_id}")
+        assert response.status_code == status.HTTP_200_OK, response.data
+        replacement_id = self.post(f"{BASE}/batches", {"program": ids["program"], "year": 2080})
+        assert self.client.delete(f"{BASE}/batches/{replacement_id}").status_code == 200
+
+        response = self.client.patch(
+            f"{BASE}/batches/{ids['batch']}", {"year": 2080}, format="json"
+        )
+
+        assert response.status_code == status.HTTP_200_OK, response.data
+        assert Batch.objects.get(pk=ids["batch"]).year == 2080
+
+    def test_inactive_unarchived_batch_still_blocks_duplicate_create_and_edit(self):
+        ids = self.seed_structure()
+        assert (
+            self.client.patch(
+                f"{BASE}/batches/{ids['batch']}", {"isActive": False}, format="json"
+            ).status_code
+            == status.HTTP_200_OK
+        )
+        other_id = self.post(f"{BASE}/batches", {"program": ids["program"], "year": 2080})
+
+        created = self.client.post(
+            f"{BASE}/batches", {"program": ids["program"], "year": 2079}, format="json"
+        )
+        edited = self.client.patch(f"{BASE}/batches/{other_id}", {"year": 2079}, format="json")
+
+        for response in (created, edited):
+            assert response.status_code == status.HTTP_400_BAD_REQUEST
+            assert response.json() == self.duplicate_error
+
+    def test_database_conflict_after_validation_returns_a_year_error_on_create_and_edit(self):
+        ids = self.seed_structure()
+        other_id = self.post(f"{BASE}/batches", {"program": ids["program"], "year": 2080})
+        batch = Batch.objects.get(pk=other_id)
+        history_count = batch.history.count()
+
+        # Skip the preliminary check to exercise a real PostgreSQL constraint
+        # violation, as can happen when another request wins after validation.
+        with patch(
+            "src.academics.serializers.BatchWriteSerializer.validate",
+            side_effect=lambda attrs: attrs,
+        ):
+            created = self.client.post(
+                f"{BASE}/batches", {"program": ids["program"], "year": 2079}, format="json"
+            )
+            edited = self.client.patch(f"{BASE}/batches/{other_id}", {"year": 2079}, format="json")
+
+        for response in (created, edited):
+            assert response.status_code == status.HTTP_400_BAD_REQUEST
+            assert response.json() == self.duplicate_error
+        assert Batch.objects.count() == 2
+        batch.refresh_from_db()
+        assert batch.year == 2080
+        assert batch.updated_by is None
+        assert batch.history.count() == history_count
 
 
 class StructureTests(AcademicsAPITestCase):
